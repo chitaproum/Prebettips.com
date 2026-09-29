@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ScorePredict — Football Predictions &amp; Betting Tips</title>
+  <meta name="description" content="Mathematical football predictions: 1X2 win probabilities, correct score, over/under and average goals, computed with a Poisson statistical model." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="#">Score<span>Predict</span></a>
+      <nav class="main-nav" aria-label="Main navigation">
+        <button class="nav-btn active" data-view="predictions">Predictions</button>
+        <button class="nav-btn" data-view="results">Results &amp; Accuracy</button>
+        <button class="nav-btn" data-view="how">How it works</button>
+      </nav>
+      <div class="header-search">
+        <input type="search" id="searchBox" placeholder="Search team…" aria-label="Search team" />
+      </div>
+    </div>
+  </header>
+
+  <main class="container layout">
+    <aside id="sidebar" class="sidebar" aria-label="Leagues and countries"><!-- built by app.js --></aside>
+    <div class="content">
+    <!-- Ad: top leaderboard banner (728x90) -->
+    <div class="ad-slot ad-leaderboard" aria-label="Advertisement">
+      <span class="ad-body">Your banner here<span class="ad-size">Leaderboard 728×90</span></span>
+    </div>
+    <!-- PREDICTIONS VIEW -->
+    <section id="view-predictions" class="view">
+      <div class="toolbar">
+        <div class="filters">
+          <label>League
+            <select id="leagueFilter"><option value="all">All leagues</option></select>
+          </label>
+          <label>Tip type
+            <select id="tipFilter">
+              <option value="all">All tips</option>
+              <option value="1">Home win (1)</option>
+              <option value="X">Draw (X)</option>
+              <option value="2">Away win (2)</option>
+              <option value="over">Over 2.5</option>
+              <option value="under">Under 2.5</option>
+            </select>
+          </label>
+          <label>Min. probability
+            <select id="probFilter">
+              <option value="0">Any</option>
+              <option value="50">≥ 50%</option>
+              <option value="60">≥ 60%</option>
+              <option value="70">≥ 70%</option>
+            </select>
+          </label>
+          <div class="engine-toggle" role="group" aria-label="Prediction data source">
+            <span class="engine-label">Data</span>
+            <div class="engine-seg">
+              <button type="button" class="eng-btn active" data-engine="poisson" aria-pressed="true">Poisson</button>
+              <button type="button" class="eng-btn" data-engine="random" aria-pressed="false">Random</button>
+            </div>
+          </div>
+        </div>
+        <div class="mode-switch" role="tablist" aria-label="Prediction type">
+          <button class="mode-btn m1x2 active" data-mode="1x2" role="tab">1 x 2</button>
+          <button class="mode-btn mou" data-mode="ou" role="tab">Over/Under 2.5</button>
+          <button class="mode-btn mstats" data-mode="stats" role="tab">Stats</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="pred-table">
+          <thead id="predHead"><!-- built by app.js --></thead>
+          <tbody id="predBody"><!-- rows injected --></tbody>
+        </table>
+        <p id="emptyMsg" class="empty" hidden>No matches match your filters.</p>
+      </div>
+
+      <!-- Ad: in-content leaderboard below the table -->
+      <div class="ad-slot ad-inline" aria-label="Advertisement">
+        <span class="ad-body">Your banner here<span class="ad-size">Leaderboard 728×90</span></span>
+      </div>
+
+      <!-- Affiliate bookmaker offers (primary monetization for tipster sites) -->
+      <section class="affiliate" aria-label="Sponsored bookmaker offers">
+        <h2>Top Bookmaker Offers — Sponsored</h2>
+        <div class="aff-grid">
+          <div class="aff-card">
+            <span class="aff-rank">#1</span>
+            <span class="aff-name">BetSlot</span>
+            <span class="aff-stars">★★★★★</span>
+            <span class="aff-offer">100% welcome bonus up to $100 on your first deposit.</span>
+            <a class="aff-cta" href="#" rel="nofollow sponsored noopener">Claim offer</a>
+          </div>
+          <div class="aff-card">
+            <span class="aff-rank">#2</span>
+            <span class="aff-name">GoalBet</span>
+            <span class="aff-stars">★★★★☆</span>
+            <span class="aff-offer">Bet $10 get $30 in free bets for new customers.</span>
+            <a class="aff-cta" href="#" rel="nofollow sponsored noopener">Claim offer</a>
+          </div>
+          <div class="aff-card">
+            <span class="aff-rank">#3</span>
+            <span class="aff-name">KickOdds</span>
+            <span class="aff-stars">★★★★☆</span>
+            <span class="aff-offer">Enhanced acca odds + $20 risk-free first bet.</span>
+            <a class="aff-cta" href="#" rel="nofollow sponsored noopener">Claim offer</a>
+          </div>
+        </div>
+        <p class="aff-disc">Sponsored placeholders. 18+ | T&amp;Cs apply | Please gamble responsibly. These are demo links, not real offers.</p>
+      </section>
+    </section>
+
+    <!-- RESULTS VIEW -->
+    <section id="view-results" class="view" hidden>
+      <div class="cards">
+        <div class="stat-card"><span class="stat-num" id="accOverall">–</span><span class="stat-lbl">1X2 hit rate</span></div>
+        <div class="stat-card"><span class="stat-num" id="accScore">–</span><span class="stat-lbl">Correct score</span></div>
+        <div class="stat-card"><span class="stat-num" id="accOu">–</span><span class="stat-lbl">Over/Under hit rate</span></div>
+        <div class="stat-card"><span class="stat-num" id="settled">–</span><span class="stat-lbl">Settled matches</span></div>
+      </div>
+      <div class="table-wrap">
+        <table class="pred-table">
+          <thead>
+            <tr><th>Date</th><th class="col-league">League</th><th class="col-match">Match</th><th>Tip</th><th>Pred. score</th><th>Result</th><th>Verdict</th></tr>
+          </thead>
+          <tbody id="resultsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS VIEW -->
+    <section id="view-how" class="view" hidden>
+      <article class="prose">
+        <h1>How the predictions are calculated</h1>
+        <p>Every tip on this site is produced by a <strong>Poisson statistical model</strong>, the same family of models used by professional football-rating systems. No tips are hand-picked.</p>
+        <ol>
+          <li><strong>Team strength.</strong> Each team gets an <em>attack</em> and <em>defence</em> rating derived from goals scored and conceded, normalised against the league average.</li>
+          <li><strong>Expected goals.</strong> For a fixture we compute expected goals for each side: <code>λ_home = attack_home × defence_away × league_avg × home_advantage</code>, and the mirror for the away side.</li>
+          <li><strong>Score matrix.</strong> A Poisson distribution turns each λ into the probability of 0,1,2… goals. Multiplying home×away probabilities gives a full score grid (0–0, 1–0 …).</li>
+          <li><strong>Outcomes.</strong> Summing the grid gives 1 / X / 2 probabilities, the most likely correct score, expected total goals and the Over/Under 2.5 split.</li>
+        </ol>
+        <p class="muted">This is a demonstration app using sample fixtures and ratings. Predictions are for entertainment and study only — no gambling advice is implied.</p>
+      </article>
+    </section>
+    </div><!-- /.content -->
+  </main>
+
+  <div class="container">
+    <!-- Ad: footer banner -->
+    <div class="ad-slot ad-footer" aria-label="Advertisement">
+      <span class="ad-body">Your banner here<span class="ad-size">Billboard 970×90</span></span>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>ScorePredict &middot; Poisson-model football predictions &middot; Demo project. 18+ Please gamble responsibly.</p>
+    </div>
+  </footer>
+
+  <!-- Ad: sticky bottom anchor -->
+  <div id="anchorAd" class="ad-slot ad-anchor" aria-label="Advertisement">
+    <span class="ad-body">Your sticky banner here<span class="ad-size">Anchor 320×50</span></span>
+    <button type="button" class="ad-close" id="anchorAdClose" aria-label="Close advertisement">×</button>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
