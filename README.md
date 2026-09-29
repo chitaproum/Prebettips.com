@@ -53,5 +53,5 @@ Replace the static `data.js` with data pulled from a football data API
 - Keep your API key on the server, never in the browser.
 - Cache responses and refresh on a schedule (fixtures change slowly).
 
-> Demo/educational project. Predictions are statistical estimates, not betting
+> Predictions are statistical estimates, not betting
 > advice. 18+ — please gamble responsibly.
