@@ -74,7 +74,7 @@ stays well within quota.
 **Run**
 ```bash
 cd forebet-clone
-export API_FOOTBALL_KEY=f43f844a2315db7a9c990206a97cdb8c     # Windows PowerShell: $env:API_FOOTBALL_KEY="your_key"
+export API_FOOTBALL_KEY='API_KEY'     # Windows PowerShell: $env:API_FOOTBALL_KEY="your_key"
 node fetch-data.js                         # writes data.js
 node fetch-data.js --dry                   # preview only, don't write
 ```
