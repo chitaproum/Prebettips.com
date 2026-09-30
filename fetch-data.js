@@ -101,7 +101,7 @@ const COUNTRIES = [
  * and the correct RapidAPI host header is sent automatically.
  */
 // Paste your API key inside the quotes below:
-const HARDCODED_API_KEY = f43f844a2315db7a9c990206a97cdb8c ;
+const HARDCODED_API_KEY = 'f43f844a2315db7a9c990206a97cdb8c' ;
 
 const API_KEY = process.env.API_FOOTBALL_KEY || HARDCODED_API_KEY;
 const USE_RAPID = process.env.API_FOOTBALL_RAPID === '1';
@@ -237,7 +237,7 @@ function serialize(DATA) {
 
 /* ------------------------------- MAIN -------------------------------------*/
 async function main() {
-  if (!API_KEY || API_KEY === f43f844a2315db7a9c990206a97cdb8c) {
+  if (!API_KEY || API_KEY === 'f43f844a2315db7a9c990206a97cdb8c') {
     console.error('ERROR: Set your API key in fetch-data.js (HARDCODED_API_KEY) or in API_FOOTBALL_KEY env variable.');
     process.exit(1);
   }
