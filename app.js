@@ -1,11 +1,29 @@
-/* ScorePredict — Poisson football prediction engine + UI (no inline handlers) */
+/* PreBetTips — Poisson football prediction engine + UI (no inline handlers) */
 (function () {
   "use strict";
   var D = window.DATA;
   var MAX_GOALS = 8; // score grid size
   var dateFilter = "all"; // all | today | tomorrow | weekend | yesterday
-  var mode = "1x2";       // 1x2 | ou | stats
+  var mode = "1x2";       // 1x2 | ou | stats | selection
   var engine = "poisson";  // poisson | random  (prediction data source)
+
+  /* ---------- "Your Selection" coupon ---------- */
+  // User-ticked picks from the 1 x 2 / Over-Under columns, capped at SEL_MAX,
+  // persisted in localStorage so the coupon survives a reload.
+  var SEL_MAX = 20;
+  var SEL_KEY = "sp_selection_v1";
+  function loadSelection(){
+    try{ var s=JSON.parse(localStorage.getItem(SEL_KEY));
+      return Array.isArray(s)?s.slice(0,SEL_MAX):[]; }catch(e){ return []; }
+  }
+  function saveSelection(){
+    try{ localStorage.setItem(SEL_KEY, JSON.stringify(selection)); }catch(e){}
+  }
+  var selection = loadSelection();
+  function isSelected(home,away,m){
+    return selection.some(function(s){
+      return s.home===home && s.away===away && s.mode===m; });
+  }
 
   /* ---------- Math ---------- */
   function factorial(n){ var f=1; for(var i=2;i<=n;i++) f*=i; return f; }
@@ -82,11 +100,27 @@
   /* ---------- Helpers ---------- */
   function esc(s){ return String(s).replace(/[&<>"']/g,function(c){
     return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+  // 3-letter uppercase team abbreviations for compact match-history rows
+  var ABBR = {
+    "Man City":"MCI","Arsenal":"ARS","Liverpool":"LIV","Tottenham":"TOT",
+    "Chelsea":"CHE","Man United":"MUN","Brighton":"BHA","Everton":"EVE",
+    "Burnley":"BUR","Sheffield Utd":"SHU","Real Madrid":"RMA","Barcelona":"BAR",
+    "Atletico":"ATM","Girona":"GIR","Sevilla":"SEV","Getafe":"GET",
+    "Cadiz":"CAD","Almeria":"ALM","Inter":"INT","Juventus":"JUV",
+    "Milan":"MIL","Napoli":"NAP","Roma":"ROM","Lazio":"LAZ",
+    "Salernitana":"SAL","Empoli":"EMP"
+  };
+  function abbr(name){
+    if(ABBR[name]) return ABBR[name];
+    var w=(name||"").replace(/[^A-Za-z ]/g,"").split(/\s+/).filter(Boolean);
+    var s = w.length>1 ? w.map(function(x){return x.charAt(0);}).join("") : (w[0]||name);
+    return s.substring(0,3).toUpperCase();
+  }
   function fmtDate(s){
     var d=new Date(s.replace(" ","T"));
     if(isNaN(d)) return esc(s);
     var day=d.toLocaleDateString(undefined,{day:"2-digit",month:"short"});
-    var t=d.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"});
+    var t=d.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit",hour12:false});
     return {day:day,time:t};
   }
 
@@ -125,8 +159,13 @@
      data.js, e.g. teams['Man City'].form = {home:{p,w,d,l,gf,ga}, away:{...}}
      and it will be used verbatim. */
   function computeForm(name, venue){
+    var r = rawForm(name, venue);
+    return r ? finalizeForm(r) : null;
+  }
+  // Raw season figures {p,w,d,l,gf,ga} for a venue (home|away)
+  function rawForm(name, venue){
     var t = D.teams[name]; if(!t) return null;
-    if(t.form && t.form[venue]){ return finalizeForm(t.form[venue]); }
+    if(t.form && t.form[venue]){ return t.form[venue]; }
     var base = D.leagueAvgGoals/2;
     var gfPer, gaPer, P;
     if(venue===HOME){
@@ -146,7 +185,13 @@
     var w=Math.round(pw*P), d=Math.round(pd*P);
     if(w+d>P) d=P-w; var l=P-w-d; if(l<0){ l=0; }
     var gf=Math.round(gfPer*P), ga=Math.round(gaPer*P);
-    return finalizeForm({p:P,w:w,d:d,l:l,gf:gf,ga:ga});
+    return {p:P,w:w,d:d,l:l,gf:gf,ga:ga};
+  }
+  // Combined home+away (overall) season form
+  function overallForm(name){
+    var h=rawForm(name,'home'), a=rawForm(name,'away');
+    if(!h||!a) return null;
+    return finalizeForm({p:h.p+a.p,w:h.w+a.w,d:h.d+a.d,l:h.l+a.l,gf:h.gf+a.gf,ga:h.ga+a.ga});
   }
   function finalizeForm(r){
     var P=r.p||1, pts=3*r.w+r.d;
@@ -259,9 +304,9 @@
     return "<div class='rs-row'>"+
       "<span class='rs-date'>"+fmtDMY(m.date)+"</span>"+
       "<span class='rs-teams'>"+
-        "<span class='rs-tn"+(hWin?" win":"")+"'>"+esc(m.home)+"</span>"+
+        "<span class='rs-tn"+(hWin?" win":"")+"' title='"+esc(m.home)+"'>"+esc(abbr(m.home))+"</span>"+
         "<span class='rs-sc'>"+m.ft[0]+"-"+m.ft[1]+" <em>("+m.ht[0]+"-"+m.ht[1]+")</em></span>"+
-        "<span class='rs-tn"+(aWin?" win":"")+"'>"+esc(m.away)+"</span>"+
+        "<span class='rs-tn"+(aWin?" win":"")+"' title='"+esc(m.away)+"'>"+esc(abbr(m.away))+"</span>"+
       "</span>"+lg+"</div>";
   }
   function resultModuleHtml(title, tag, rows, footer, showLg){
@@ -291,14 +336,14 @@
       if(homeGoals>awayGoals) hw++; else if(homeGoals<awayGoals) aw++; else dr++;
     });
     var t=rows.length;
-    return "<span class='rs-w'>"+esc(home)+" "+hw+" ("+pct(hw,t)+"%)</span>"+
+    return "<span class='rs-w'>"+esc(abbr(home))+" "+hw+" ("+pct(hw,t)+"%)</span>"+
            "<span class='rs-d'>Draw "+dr+" ("+pct(dr,t)+"%)</span>"+
-           "<span class='rs-l'>"+esc(away)+" "+aw+" ("+pct(aw,t)+"%)</span>";
+           "<span class='rs-l'>"+esc(abbr(away))+" "+aw+" ("+pct(aw,t)+"%)</span>";
   }
   function resultsPanelHtml(f){
     var home=f.home, away=f.away;
-    var hTag=(home.match(/\b\w/g)||[]).join("").slice(0,3).toUpperCase();
-    var aTag=(away.match(/\b\w/g)||[]).join("").slice(0,3).toUpperCase();
+    var hTag=abbr(home);
+    var aTag=abbr(away);
     var h2h=h2hResults(home,away,4);
     var hLast=teamResults(home,6,'any','L6'),  aLast=teamResults(away,6,'any','L6');
     var hHome=teamResults(home,4,'home','HM'), aAway=teamResults(away,4,'away','AW');
@@ -316,8 +361,9 @@
     if(!f) return '';
     var pos = leaguePosition(label);
     var posBadge = pos ? "<span class='ft-pos' title='League position'>"+pos+'</span>' : '';
+    var venue = venueLbl ? " <span class='ft-venue'>"+venueLbl+'</span>' : '';
     return '<tr>'+
-      "<td class='ft-team'>"+posBadge+esc(label)+" <span class='ft-venue'>"+venueLbl+'</span></td>'+
+      "<td class='ft-team'>"+posBadge+esc(label)+venue+'</td>'+
       "<td><span class='p-badge'>"+f.p+'</span></td>'+
       '<td>'+f.w+'</td><td>'+f.d+'</td><td>'+f.l+'</td>'+
       '<td>'+f.gf+'</td><td>'+f.ga+'</td>'+
@@ -330,28 +376,35 @@
       "<td class='ovg'>"+f.ovgLast8+'%</td>'+
     '</tr>';
   }
-  function detailRowHtml(f, colspan){
-    var fh=computeForm(f.home,'home'), fa=computeForm(f.away,'away');
-    // fixed column widths so every column fits and the Over 2.5 headers don't merge
+  // One statistics table (colgroup + 2-row header + given team rows)
+  function formTableHtml(title, bodyRows){
     var cg="<colgroup><col class='cg-team'>";
     FORM_COLS.forEach(function(){ cg+="<col class='cg-num'>"; });
     cg+="<col class='cg-ovg'><col class='cg-ovg'></colgroup>";
     var head="<tr><th class='ft-team' rowspan='2'>Team</th>";
     FORM_COLS.forEach(function(c){ head+="<th rowspan='2'>"+c+'</th>'; });
     head+="<th class='ovg-group' colspan='2'>Over 2.5</th></tr>";
-    head+="<tr><th class='ovg'>Total</th>"+
-          "<th class='ovg'>Last 8</th></tr>";
+    head+="<tr><th class='ovg'>Total</th><th class='ovg'>Last 8</th></tr>";
+    return "<div class='form-title'>"+esc(title)+"</div>"+
+      "<table class='form-table'>"+cg+"<thead>"+head+'</thead><tbody>'+bodyRows+'</tbody></table>';
+  }
+  function detailRowHtml(f, colspan){
+    var oh=overallForm(f.home), oa=overallForm(f.away);       // combined home+away
+    var fh=computeForm(f.home,'home'), fa=computeForm(f.away,'away'); // venue-specific
+    var overallTbl=formTableHtml("Overall Statistic",
+      formRowHtml(f.home,'',oh)+formRowHtml(f.away,'',oa));
+    var venueTbl=formTableHtml("Home / Away Statistic",
+      formRowHtml(f.home,'HOME',fh)+formRowHtml(f.away,'AWAY',fa));
     return "<tr class='detail-row'><td colspan='"+colspan+"'>"+
-      "<div class='form-panel'><table class='form-table'>"+cg+"<thead>"+head+'</thead><tbody>'+
-      formRowHtml(f.home,'HOME',fh)+formRowHtml(f.away,'AWAY',fa)+
-      '</tbody></table></div>'+resultsPanelHtml(f)+'</td></tr>';
+      "<div class='form-panel'>"+overallTbl+venueTbl+"</div>"+
+      resultsPanelHtml(f)+'</td></tr>';
   }
 
   function bar(v){ return '<span class="bar" style="width:'+v+'%"></span>'; }
 
-  // In-feed native sponsored row (spans all 8 table columns)
-  function adRowHtml(){
-    return "<tr class='ad-row'><td colspan='8'>"+
+  // In-feed native sponsored row (spans all table columns)
+  function adRowHtml(cols){
+    return "<tr class='ad-row'><td colspan='"+(cols||8)+"'>"+
       "<div class='ad-native'>"+
         "<span class='ad-badge'>Ad</span>"+
         "<span class='ad-thumb'>\u26bd</span>"+
@@ -371,12 +424,16 @@
   };
 
   function renderPredictions(){
+    if(mode==="selection"){ renderSelection(); return; }
     var league = document.getElementById("leagueFilter").value;
     var tip = document.getElementById("tipFilter").value;
     var minP = parseInt(document.getElementById("probFilter").value,10);
     var q = (document.getElementById("searchBox").value||"").toLowerCase();
     var body = document.getElementById("predBody");
-    document.getElementById("predHead").innerHTML = "<tr>"+HEADS[mode]+"</tr>";
+    var pickable = (mode==="1x2" || mode==="ou");
+    var headHtml = HEADS[mode];
+    if(pickable){ headHtml += "<th class='col-pick' title='Add to Your Selection'>Pick</th>"; }
+    document.getElementById("predHead").innerHTML = "<tr>"+headHtml+"</tr>";
     var html = "";
     var shown = 0;
 
@@ -427,10 +484,19 @@
       if(mode==="stats"){
         html += "<tr class='stats-row' data-home=\""+esc(f.home)+"\" data-away=\""+esc(f.away)+"\">"+lead+cells+"</tr>";
       } else {
+        if(pickable){
+          var pickTip = (mode==="1x2") ? best : (p.over?"Over 2.5":"Under 2.5");
+          var checked = isSelected(f.home,f.away,mode) ? " checked" : "";
+          cells += "<td class='col-pick'><input type='checkbox' class='pick-cb'"+checked+
+            " data-home=\""+esc(f.home)+"\" data-away=\""+esc(f.away)+"\""+
+            " data-mode=\""+mode+"\" data-tip=\""+esc(pickTip)+"\""+
+            " data-league=\""+esc(f.league)+"\" data-date=\""+esc(f.date)+"\""+
+            " aria-label='Add to Your Selection'></td>";
+        }
         html += "<tr>"+lead+cells+"</tr>";
       }
       // Ad: in-feed native sponsored row after the 3rd match
-      if(shown===3){ html += adRowHtml(); }
+      if(shown===3){ html += adRowHtml(pickable?9:8); }
     });
 
     body.innerHTML = html;
@@ -441,6 +507,156 @@
         tr.addEventListener("click", function(){ toggleDetail(tr); });
       });
     }
+    if(pickable){
+      body.querySelectorAll("input.pick-cb").forEach(function(cb){
+        cb.addEventListener("change", function(){ onPickToggle(cb); });
+      });
+    }
+  }
+
+  /* Add/remove a pick when its checkbox is toggled; enforce the 20-item cap. */
+  function onPickToggle(cb){
+    var home=cb.getAttribute("data-home"), away=cb.getAttribute("data-away"),
+        m=cb.getAttribute("data-mode");
+    if(cb.checked){
+      if(selection.length>=SEL_MAX){
+        cb.checked=false;
+        window.alert("You can add up to "+SEL_MAX+" predictions to Your Selection.");
+        return;
+      }
+      selection.push({home:home, away:away, mode:m,
+        tip:cb.getAttribute("data-tip"),
+        league:cb.getAttribute("data-league"),
+        date:cb.getAttribute("data-date")});
+    } else {
+      selection = selection.filter(function(s){
+        return !(s.home===home && s.away===away && s.mode===m); });
+    }
+    saveSelection();
+    updateSelBadges();
+  }
+
+  /* Keep the top button + sidebar counters in sync with the coupon size. */
+  function updateSelBadges(){
+    var n=selection.length;
+    var top=document.getElementById("selCount");
+    if(top){ top.textContent=n; top.hidden = (n===0); }
+    var side=document.getElementById("sideSelCount");
+    if(side){ side.textContent=n; }
+  }
+
+  function setMode(m){
+    mode=m;
+    document.querySelectorAll(".mode-btn").forEach(function(x){
+      x.classList.toggle("active", x.getAttribute("data-mode")===m);
+    });
+  }
+
+  /* ---------- "Your Selection" view ---------- */
+  function selTipHtml(s){
+    if(s.mode==="ou"){
+      var over=(s.tip||"").toLowerCase().indexOf("over")>=0;
+      return "<span class='ou "+(over?"over":"under")+"'>"+esc(s.tip)+"</span>";
+    }
+    return "<span class='tip t"+esc(s.tip)+"'>"+esc(s.tip)+"</span>";
+  }
+  // Probability cell: 1 x 2 shows three values, Over/Under shows two.
+  function selProbHtml(s){
+    var p=activePredict(s.home,s.away);
+    if(!p) return "<span class='muted'>\u2013</span>";
+    if(s.mode==="ou"){
+      return "<span class='pp "+(p.over?"hi":"")+"'>"+p.overPct+"%</span>"+
+             "<span class='pp "+(!p.over?"hi":"")+"'>"+p.underPct+"%</span>";
+    }
+    var best=p.tip;
+    return "<span class='pp "+(best==='1'?'hi':'')+"'>"+p.p1+"%</span>"+
+           "<span class='pp "+(best==='X'?'hi':'')+"'>"+p.pX+"%</span>"+
+           "<span class='pp "+(best==='2'?'hi':'')+"'>"+p.p2+"%</span>";
+  }
+  function selDateStr(s){
+    var d=fmtDate(s.date);
+    return d && d.day ? d.day+" "+d.time : esc(String(s.date));
+  }
+  // Open a clean print window so the browser can "Save as PDF".
+  function downloadSelectionPdf(){
+    if(!selection.length){ window.alert("Your Selection is empty."); return; }
+    var w=window.open("","_blank");
+    if(!w){ window.alert("Please allow pop-ups to download the PDF."); return; }
+    var body="";
+    selection.forEach(function(s){
+      var p=activePredict(s.home,s.away);
+      var prob = p ? (s.mode==="ou"
+        ? (p.overPct+"% / "+p.underPct+"%")
+        : (p.p1+"% / "+p.pX+"% / "+p.p2+"%")) : "\u2013";
+      var market = s.mode==="ou" ? "Over/Under 2.5" : "1 x 2";
+      body+="<tr><td>"+esc(selDateStr(s))+"</td><td>"+esc(s.home)+" v "+esc(s.away)+"</td>"+
+        "<td>"+esc(s.league)+"</td><td>"+esc(prob)+"</td><td>"+esc(market)+"</td>"+
+        "<td>"+esc(s.tip)+"</td></tr>";
+    });
+    var stamp=new Date().toLocaleString();
+    var doc="<!DOCTYPE html><html><head><meta charset='utf-8'>"+
+      "<title>PreBetTips \u2014 Your Selection</title><style>"+
+      "body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:28px}"+
+      "h1{font-size:20px;margin:0 0 2px}p.sub{color:#666;font-size:12px;margin:0 0 16px}"+
+      "table{border-collapse:collapse;width:100%;font-size:12px}"+
+      "th,td{border:1px solid #ccc;padding:7px 9px;text-align:left}"+
+      "th{background:#0b1b34;color:#fff}tbody tr:nth-child(even){background:#f4f6f9}"+
+      "footer{margin-top:16px;color:#888;font-size:11px}"+
+      "</style></head><body>"+
+      "<h1>PreBetTips \u2014 Your Selection</h1>"+
+      "<p class='sub'>"+selection.length+" prediction(s) \u00b7 generated "+esc(stamp)+"</p>"+
+      "<table><thead><tr><th>Date</th><th>Match</th><th>League</th>"+
+      "<th>Probability (%)</th><th>Market</th><th>Pick</th></tr></thead>"+
+      "<tbody>"+body+"</tbody></table>"+
+      "<footer>Demo project \u00b7 18+ \u00b7 Please gamble responsibly.</footer>"+
+      "</body></html>";
+    w.document.open(); w.document.write(doc); w.document.close(); w.focus();
+    setTimeout(function(){ try{ w.print(); }catch(e){} }, 400);
+  }
+  function renderSelection(){
+    document.getElementById("predHead").innerHTML =
+      "<tr><th>Date</th><th class='col-match'>Match</th><th class='col-league'>League</th>"+
+      "<th class='col-prob'>Probability (%)</th><th>Market</th><th>Pick</th>"+
+      "<th class='col-pick'>Remove</th></tr>";
+    var body=document.getElementById("predBody");
+    var em=document.getElementById("emptyMsg");
+    if(!selection.length){
+      body.innerHTML="";
+      em.hidden=false;
+      em.textContent="Your Selection is empty. Tick the checkbox on any 1 x 2 or "+
+        "Over/Under 2.5 prediction to add it here (up to "+SEL_MAX+").";
+      return;
+    }
+    em.hidden=true;
+    var html="<tr class='sel-tools'><td colspan='7'>"+
+      "<span class='sel-info'>"+selection.length+" / "+SEL_MAX+" selected</span>"+
+      "<button type='button' class='sel-pdf' id='selPdf'>Download PDF</button>"+
+      "<button type='button' class='sel-clear' id='selClear'>Clear all</button></td></tr>";
+    selection.forEach(function(s,i){
+      var market = s.mode==="ou" ? "Over/Under 2.5" : "1 x 2";
+      html+="<tr>"+
+        "<td>"+selDateStr(s)+"</td>"+
+        "<td class='col-match'><div class='match-cell'><span class='teams'>"+esc(s.home)+" v "+esc(s.away)+"</span></div></td>"+
+        "<td class='col-league'><span class='league-cell'>"+esc(s.league)+"</span></td>"+
+        "<td class='col-prob'>"+selProbHtml(s)+"</td>"+
+        "<td>"+esc(market)+"</td>"+
+        "<td>"+selTipHtml(s)+"</td>"+
+        "<td class='col-pick'><button type='button' class='sel-remove' data-idx='"+i+"' aria-label='Remove'>\u00d7</button></td>"+
+      "</tr>";
+    });
+    body.innerHTML=html;
+    body.querySelectorAll(".sel-remove").forEach(function(b){
+      b.addEventListener("click", function(){
+        selection.splice(parseInt(b.getAttribute("data-idx"),10),1);
+        saveSelection(); updateSelBadges(); renderSelection();
+      });
+    });
+    var clr=document.getElementById("selClear");
+    if(clr){ clr.addEventListener("click", function(){
+      selection=[]; saveSelection(); updateSelBadges(); renderSelection();
+    }); }
+    var pdf=document.getElementById("selPdf");
+    if(pdf){ pdf.addEventListener("click", downloadSelectionPdf); }
   }
 
   function toggleDetail(tr){
@@ -514,13 +730,14 @@
       {key:"yesterday",lbl:"Predictions from YESTERDAY",  cnt:bucketCount("yesterday")},
       {key:"all",      lbl:"ALL predictions",             cnt:D.fixtures.length},
       {key:"top",      lbl:"TOP predictions",             cnt:null},
-      {key:"values",   lbl:"Values",                      cnt:null},
+      {key:"selection",lbl:"Your Selection",               cnt:selection.length},
       {key:"fav",      lbl:"Favourites",                  cnt:null},
       {key:"lists",    lbl:"Lists",                       cnt:null}
     ];
     html+='<div class="side-group"><div class="side-title">Football</div>';
     football.forEach(function(it){
-      var cnt = it.cnt!=null ? '<span class="cnt">'+it.cnt+'</span>' : '';
+      var cntId = it.key==="selection" ? " id=\"sideSelCount\"" : "";
+      var cnt = it.cnt!=null ? '<span class="cnt"'+cntId+'>'+it.cnt+'</span>' : '';
       html+='<button class="side-item" data-kind="date" data-val="'+it.key+'">'+
         '<span class="ico">\u26bd</span><span class="lbl">'+esc(it.lbl)+'</span>'+cnt+'</button>';
     });
@@ -604,8 +821,14 @@
     var val=btn.getAttribute("data-val");
     switchView("predictions");
     setActive(btn);
+    if(kind==="date" && val==="selection"){
+      setMode("selection");
+      renderPredictions();
+      return;
+    }
+    if(mode==="selection"){ setMode("1x2"); }
     if(kind==="date"){
-      // buttons without real data (live/top/values/fav/lists) fall back to "all"
+      // buttons without real data (live/top/fav/lists) fall back to "all"
       dateFilter = ("today tomorrow weekend yesterday all".indexOf(val)>=0) ? val : "all";
       document.getElementById("leagueFilter").value="all";
     } else if(kind==="league"){
@@ -644,6 +867,7 @@
   document.addEventListener("DOMContentLoaded", function(){
     initLeagueFilter();
     buildSidebar();
+    updateSelBadges();
     renderPredictions();
     ["leagueFilter","tipFilter","probFilter"].forEach(function(id){
       document.getElementById(id).addEventListener("change", renderPredictions);

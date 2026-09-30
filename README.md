@@ -1,4 +1,4 @@
-# ScorePredict — a Forebet-style football prediction site
+# PreBetTips — a Forebet-style football prediction site
 
 A self-contained football prediction web app inspired by forebet.com. It shows
 upcoming fixtures with **1X2 win probabilities, a predicted correct score,
@@ -53,5 +53,52 @@ Replace the static `data.js` with data pulled from a football data API
 - Keep your API key on the server, never in the browser.
 - Cache responses and refresh on a schedule (fixtures change slowly).
 
-> Predictions are statistical estimates, not betting
+## Auto-refresh `data.js` from API-Football (`fetch-data.js`)
+A ready-to-use Node script that pulls live data from **API-Football
+(api-sports.io)** and regenerates `data.js` in the exact shape the app expects.
+
+**What it derives**
+- `teams{att,def,league}` from each league's **standings** (goals for/against
+  per game, normalised so `1.0 = league average`).
+- `fixtures[]` — upcoming (not-started) matches.
+- `history[]` — recently finished matches with final scores.
+- `leagueAvgGoals` and `homeAdvantage` — computed from the fetched data.
+
+**Requirements:** Node.js **18+** (uses built-in `fetch`, no `npm install`).
+
+**Get a key:** sign up at https://dashboard.api-football.com and copy your key.
+The **free plan** allows ~100 requests/day; the script uses ~3 requests per
+league (standings + upcoming + finished), so a few leagues once or twice a day
+stays well within quota.
+
+**Run**
+```bash
+cd forebet-clone
+export API_FOOTBALL_KEY=your_key_here     # Windows PowerShell: $env:API_FOOTBALL_KEY="your_key"
+node fetch-data.js                         # writes data.js
+node fetch-data.js --dry                   # preview only, don't write
+```
+Using a **RapidAPI** subscription instead of direct api-sports.io? Set
+`API_FOOTBALL_RAPID=1` and use your RapidAPI key as `API_FOOTBALL_KEY` — the
+correct host header is sent automatically.
+
+**Configure** (top of `fetch-data.js`)
+- `CONFIG.season` — season start year (e.g. `2025`).
+- `CONFIG.leagues` — add/remove `{ id, name }` (IDs from API-Football's
+  `/leagues`; e.g. Premier League `39`, La Liga `140`, Serie A `135`,
+  Bundesliga `78`, Ligue 1 `61`). `name` should match a `POPULAR_LEAGUES`
+  entry so the sidebar shows a count.
+- `CONFIG.upcomingPerLeague` / `finishedPerLeague` — how many matches to pull.
+- `NAME_OVERRIDES` — shorten API team names (e.g. `Manchester City` →
+  `Man City`) so they match the `ABBR` map used for the compact rows.
+
+**Automate** with cron (regenerate every 6 hours):
+```bash
+0 */6 * * *  cd /path/to/forebet-clone && API_FOOTBALL_KEY=your_key /usr/bin/node fetch-data.js
+```
+
+> ⚠️ Keep the API key in this build step / server only. Never commit it or put
+> it in `data.js` — anything in `data.js` is shipped to the browser.
+
+> Demo/educational project. Predictions are statistical estimates, not betting
 > advice. 18+ — please gamble responsibly.

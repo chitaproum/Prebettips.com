@@ -60,6 +60,24 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Aria
 .mode-btn.m1x2{background:#2ecc71}
 .mode-btn.mou{background:#1ab4c8}
 .mode-btn.mstats{background:#2b62b3}
+.mode-btn.msel{background:#e67e22;display:inline-flex;align-items:center;gap:6px}
+.sel-count{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:rgba(0,0,0,.28);color:#fff;font-size:11px;font-weight:800;line-height:1}
+/* Pick checkbox column (1 x 2 / Over-Under tables) */
+.pred-table th.col-pick,.pred-table td.col-pick{width:44px;text-align:center;white-space:nowrap}
+input.pick-cb{width:16px;height:16px;cursor:pointer;accent-color:#e67e22}
+/* Your Selection view */
+.sel-tools td{background:#12213a;padding:10px 12px}
+.sel-info{color:var(--muted);font-weight:700;font-size:13px}
+.sel-clear{float:right;border:0;cursor:pointer;background:#c0392b;color:#fff;font-weight:700;font-size:12px;padding:6px 12px;border-radius:6px}
+.sel-clear:hover{background:#e04b3a}
+.sel-pdf{float:right;margin-left:8px;border:0;cursor:pointer;background:#2b62b3;color:#fff;font-weight:700;font-size:12px;padding:6px 12px;border-radius:6px}
+.sel-pdf:hover{background:#3573cc}
+.pred-table td.col-prob,.pred-table th.col-prob{white-space:nowrap}
+td.col-prob .pp{display:inline-block;min-width:34px;text-align:right;color:var(--muted);font-weight:700;font-size:12px}
+td.col-prob .pp.hi{color:var(--text)}
+td.col-prob .pp+.pp{margin-left:6px}
+.sel-remove{border:0;cursor:pointer;background:#2a3b57;color:#fff;font-weight:800;font-size:14px;line-height:1;width:26px;height:26px;border-radius:6px}
+.sel-remove:hover{background:#c0392b}
 
 /* Table */
 .table-wrap{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow-x:auto}
@@ -95,6 +113,8 @@ tr.stats-row.open .exp-caret{transform:rotate(90deg)}
 tr.stats-row.open{background:var(--surface2)}
 tr.detail-row>td{background:#0b1017;padding:0;border-bottom:1px solid var(--line)}
 .form-panel{padding:12px 14px;overflow-x:auto}
+.form-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--accent2);margin:0 0 6px}
+.form-panel .form-table+.form-title{margin-top:16px}
 .form-table{width:100%;border-collapse:collapse;font-size:11.5px;table-layout:fixed}
 .form-table th{background:transparent;color:var(--muted);text-transform:uppercase;font-size:10px;letter-spacing:.2px;text-align:center;padding:5px 3px;border-bottom:1px solid var(--line);white-space:nowrap}
 .form-table td{text-align:center;padding:6px 3px;border-bottom:1px solid rgba(255,255,255,.05);font-variant-numeric:tabular-nums;color:var(--text)}

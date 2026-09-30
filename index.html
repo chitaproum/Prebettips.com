@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ScorePredict — Football Predictions &amp; Betting Tips</title>
+  <title>PreBetTips — Football Predictions &amp; Betting Tips</title>
   <meta name="description" content="Mathematical football predictions: 1X2 win probabilities, correct score, over/under and average goals, computed with a Poisson statistical model." />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="site-header">
     <div class="container header-inner">
-      <a class="logo" href="#">Score<span>Predict</span></a>
+      <a class="logo" href="#">PreBet<span>Tips</span></a>
       <nav class="main-nav" aria-label="Main navigation">
         <button class="nav-btn active" data-view="predictions">Predictions</button>
         <button class="nav-btn" data-view="results">Results &amp; Accuracy</button>
@@ -66,6 +66,7 @@
           <button class="mode-btn m1x2 active" data-mode="1x2" role="tab">1 x 2</button>
           <button class="mode-btn mou" data-mode="ou" role="tab">Over/Under 2.5</button>
           <button class="mode-btn mstats" data-mode="stats" role="tab">Stats</button>
+          <button class="mode-btn msel" data-mode="selection" role="tab">Your Selection <span class="sel-count" id="selCount" hidden>0</span></button>
         </div>
       </div>
 
@@ -156,7 +157,7 @@
 
   <footer class="site-footer">
     <div class="container">
-      <p>ScorePredict &middot; Poisson-model football predictions &middot; Demo project. 18+ Please gamble responsibly.</p>
+      <p>PreBetTips &middot; Poisson-model football predictions &middot; Demo project. 18+ Please gamble responsibly.</p>
     </div>
   </footer>
 
