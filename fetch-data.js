@@ -237,7 +237,7 @@ function serialize(DATA) {
 
 /* ------------------------------- MAIN -------------------------------------*/
 async function main() {
-  if (!API_KEY || API_KEY === 'YOUR_API_KEY_HERE') {
+  if (!API_KEY || API_KEY === f43f844a2315db7a9c990206a97cdb8c) {
     console.error('ERROR: Set your API key in fetch-data.js (HARDCODED_API_KEY) or in API_FOOTBALL_KEY env variable.');
     process.exit(1);
   }
