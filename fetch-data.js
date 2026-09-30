@@ -100,7 +100,10 @@ const COUNTRIES = [
  *   API_FOOTBALL_RAPID=1  and  API_FOOTBALL_KEY=<your RapidAPI key>
  * and the correct RapidAPI host header is sent automatically.
  */
-const API_KEY = process.env.API_FOOTBALL_KEY;
+// Paste your API key inside the quotes below:
+const HARDCODED_API_KEY = 'YOUR_API_KEY_HERE';
+
+const API_KEY = process.env.API_FOOTBALL_KEY || HARDCODED_API_KEY;
 const USE_RAPID = process.env.API_FOOTBALL_RAPID === '1';
 const BASE = USE_RAPID
   ? 'https://api-football-v1.p.rapidapi.com/v3'
@@ -234,8 +237,8 @@ function serialize(DATA) {
 
 /* ------------------------------- MAIN -------------------------------------*/
 async function main() {
-  if (!API_KEY) {
-    console.error('ERROR: set API_FOOTBALL_KEY in your environment first.');
+  if (!API_KEY || API_KEY === 'YOUR_API_KEY_HERE') {
+    console.error('ERROR: Set your API key in fetch-data.js (HARDCODED_API_KEY) or in API_FOOTBALL_KEY env variable.');
     process.exit(1);
   }
   if (typeof fetch !== 'function') {
