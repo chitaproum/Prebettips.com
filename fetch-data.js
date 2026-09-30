@@ -101,7 +101,7 @@ const COUNTRIES = [
  * and the correct RapidAPI host header is sent automatically.
  */
 // Paste your API key inside the quotes below:
-const HARDCODED_API_KEY = 'YOUR_API_KEY_HERE';
+const HARDCODED_API_KEY = f43f844a2315db7a9c990206a97cdb8c ;
 
 const API_KEY = process.env.API_FOOTBALL_KEY || HARDCODED_API_KEY;
 const USE_RAPID = process.env.API_FOOTBALL_RAPID === '1';
