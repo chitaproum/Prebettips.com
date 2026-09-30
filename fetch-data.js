@@ -40,7 +40,7 @@ const path = require('path');
  * should match an entry in POPULAR_LEAGUES below when you want a sidebar count.
  */
 const CONFIG = {
-  season: 2025,                 // API-Football season (start year of the campaign)
+  season: 2024,                 // API-Football season (start year of the campaign)
   upcomingPerLeague: 8,         // how many upcoming fixtures to pull per league
   finishedPerLeague: 8,         // how many finished fixtures to pull per league
   minRating: 0.2,               // clamp att/def so a team is never 0
