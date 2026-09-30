@@ -28,10 +28,7 @@
  * leagues refreshed once or twice a day stays well within the quota.
  */
 
-cd forebet-clone
-export API_FOOTBALL_KEY= f43f844a2315db7a9c990206a97cdb8c    // # from dashboard.api-football.com
-node fetch-data.js                       // # writes data.js
-node fetch-data.js --dry                  // # preview without writing
+
 
 'use strict';
 const fs = require('fs');
