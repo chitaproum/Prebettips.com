@@ -67,34 +67,72 @@
     };
   }
 
-  /* Random baseline: same output shape as predict(), but values are made up
-     by a seeded RNG (stable per fixture) instead of the Poisson model. Lets
-     you compare a real statistical engine against pure chance. Uses strHash /
-     mulberry32 defined further below (function declarations are hoisted). */
-  function predictRandom(home, away){
-    if(!D.teams[home] || !D.teams[away]) return null;
-    var rnd = mulberry32(strHash("RND|"+home+"|"+away));
-    var a=0.2+rnd(), b=0.2+rnd(), c=0.2+rnd(), s=a+b+c;
-    var p1=Math.round(a/s*100), pX=Math.round(b/s*100), p2=100-p1-pX;
-    if(p2<0){ pX+=p2; p2=0; }
+  /* ---------- KPI engine (the "Random" / alternative data source) ----------
+     Instead of a seeded RNG, this engine builds its prediction entirely from
+     the Key Performance Indicators shown in the stats tables (venue-specific
+     average goals for/against, plus a form momentum from PPG and win%). It is
+     a transparent, KPI-driven alternative to the pure att/def Poisson engine.
+
+       Attack KPI   = avg goals FOR  (aGF)   -> how many a team tends to score
+       Defense KPI  = avg goals AGAINST (aGA) -> how many it tends to concede
+       Form KPI     = points-per-game (PPG) + win% -> recent momentum tilt
+
+     Expected goals blend each side's attacking KPI with the opponent's
+     defensive KPI, then the form KPI tilts the result; a Poisson score grid
+     over those expected goals yields 1/X/2, score, Over/Under and BTTS. */
+  function predictKpi(home, away){
+    var hForm = computeForm(home, HOME);   // Arsenal (HOME) venue KPIs
+    var aForm = computeForm(away, 'away'); // Everton (AWAY) venue KPIs
+    if(!hForm || !aForm) return null;
+    var hOv = overallForm(home), aOv = overallForm(away);
+
+    // --- Attack / Defense KPIs (straight from the displayed aGF / aGA) ---
+    var homeAttack = hForm.agf, homeDefense = hForm.aga;
+    var awayAttack = aForm.agf, awayDefense = aForm.aga;
+
+    // Expected goals: team's attacking KPI blended with opponent's leakiness
+    var lh = (homeAttack + awayDefense) / 2;
+    var la = (awayAttack + homeDefense) / 2;
+
+    // --- Form KPI (PPG + win%) applies a small momentum tilt (+/- ~18%) ---
+    var hMom = ((hOv.ppg / 3) + (hOv.wp / 100)) / 2;   // 0..1
+    var aMom = ((aOv.ppg / 3) + (aOv.wp / 100)) / 2;   // 0..1
+    var tilt = hMom - aMom;                            // -1..1
+    lh *= (1 + 0.18 * tilt);
+    la *= (1 - 0.18 * tilt);
+    lh = Math.max(0.15, lh); la = Math.max(0.15, la);
+
+    // --- Poisson score grid over the KPI-derived expected goals ---
+    var ph=[], pa=[], i, j;
+    for(i=0;i<=MAX_GOALS;i++){ ph.push(poisson(i,lh)); pa.push(poisson(i,la)); }
+    var p1=0,pX=0,p2=0,pOver=0,pBtts=0,best={p:-1,h:0,a:0};
+    for(i=0;i<=MAX_GOALS;i++){
+      for(j=0;j<=MAX_GOALS;j++){
+        var p = ph[i]*pa[j];
+        if(i>j) p1+=p; else if(i===j) pX+=p; else p2+=p;
+        if(i+j>=3) pOver+=p;
+        if(i>=1 && j>=1) pBtts+=p;
+        if(p>best.p){ best={p:p,h:i,a:j}; }
+      }
+    }
+    var tot=p1+pX+p2;
+    p1/=tot; pX/=tot; p2/=tot; pOver/=tot; pBtts/=tot;
     var tip = p1>=pX && p1>=p2 ? "1" : (p2>=pX ? "2" : "X");
-    var lh=0.4+rnd()*2.6, la=0.3+rnd()*2.4;
-    var hg=Math.min(Math.floor(rnd()*5),5), ag=Math.min(Math.floor(rnd()*5),5);
-    var overPct=15+Math.round(rnd()*80);
+    var overPct = Math.round(pOver*100);
     return {
       lh:lh, la:la,
-      p1:p1, pX:pX, p2:p2,
+      p1:Math.round(p1*100), pX:Math.round(pX*100), p2:Math.round(p2*100),
       tip:tip,
-      score:hg+":"+ag,
+      score:best.h+":"+best.a,
       goals:(lh+la),
-      over:overPct>=50,
+      over:pOver>=0.5,
       overPct:overPct, underPct:100-overPct,
-      btts:20+Math.round(rnd()*60)
+      btts:Math.round(pBtts*100)
     };
   }
   // Prediction using whichever engine is currently selected
   function activePredict(home, away){
-    return engine==="random" ? predictRandom(home,away) : predict(home,away);
+    return engine==="random" ? predictKpi(home,away) : predict(home,away);
   }
 
   /* ---------- Helpers ---------- */
