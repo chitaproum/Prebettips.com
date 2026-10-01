@@ -6,32 +6,54 @@
  * ./data.js in the exact shape window.DATA expects, so the static front-end
  * keeps working unchanged.
  *
+ * What it derives:
+ *   - teams{att,def,league}  from each league's STANDINGS (goals for / against
+ *                            per game, normalised against the league average)
+ *   - fixtures[]             upcoming (not-started) matches
+ *   - history[]              recently finished matches (with final scores)
+ *   - leagueAvgGoals         computed from the standings totals
+ *   - homeAdvantage          computed from finished matches (home vs away goals)
+ *
  * Requirements: Node.js 18+ (built-in fetch). No npm install needed.
  *
  * Usage:
  *   export API_FOOTBALL_KEY=your_key_here      # from https://dashboard.api-football.com
  *   node fetch-data.js                          # writes data.js
  *   node fetch-data.js --dry                     # print to stdout, don't write
+ *
+ * SECURITY: keep your API key on the server / in this build step only.
+ * NEVER put the key in data.js or anything shipped to the browser.
+ * The free plan allows ~100 requests/day; this script uses about
+ * 3 requests per league (standings + upcoming + finished), so a handful of
+ * leagues refreshed once or twice a day stays well within the quota.
  */
 
 'use strict';
 const fs = require('fs');
 const path = require('path');
 
-/* ----------------------------- CONFIG ------------------------------------- */
+/* ----------------------------- CONFIG -------------------------------------
+ * Edit these to control which leagues/season are pulled. League IDs come from
+ * API-Football (/leagues). `name` is what shows in the app UI + sidebar, so it
+ * should match an entry in POPULAR_LEAGUES below when you want a sidebar count.
+ */
 const CONFIG = {
-  season: 2024,                 // Free plan supported season (2022-2024)
-  upcomingPerLeague: 8,         // max upcoming fixtures to include per league
-  finishedPerLeague: 8,         // max finished fixtures to include per league
+  season: 2025,                 // API-Football season (start year of the campaign)
+  upcomingPerLeague: 8,         // how many upcoming fixtures to pull per league
+  finishedPerLeague: 8,         // how many finished fixtures to pull per league
   minRating: 0.2,               // clamp att/def so a team is never 0
   leagues: [
     { id: 39,  name: 'Premier League' },
     { id: 140, name: 'La Liga' },
     { id: 135, name: 'Serie A' },
+    // { id: 78,  name: 'Bundesliga' },
+    // { id: 61,  name: 'Ligue 1' },
   ],
 };
 
-/* Optional: shorten API team names to the compact labels the app uses. */
+/* Optional: shorten API team names to the compact labels the app/ABBR map use.
+ * Add entries as needed; unmapped names are used verbatim. Fixtures and teams
+ * always use the SAME (mapped) name, so predict() can look them up. */
 const NAME_OVERRIDES = {
   'Manchester City': 'Man City',
   'Manchester United': 'Man United',
@@ -47,7 +69,7 @@ const NAME_OVERRIDES = {
 };
 function mapName(n) { return NAME_OVERRIDES[n] || n; }
 
-/* Static sidebar / country lists */
+/* Static sidebar / country lists (unchanged UI data). */
 const POPULAR_LEAGUES = [
   { name: 'UEFA Champions League', icon: '\u26bd' },
   { name: 'UEFA Europa League',    icon: '\ud83c\udfc6' },
@@ -72,10 +94,13 @@ const COUNTRIES = [
   'Turkey','USA',
 ];
 
-/* ----------------------------- API CLIENT --------------------------------- */
-const HARDCODED_API_KEY = ''; // Optional fallback key if not using env vars
-
-const API_KEY = process.env.API_FOOTBALL_KEY || HARDCODED_API_KEY;
+/* ----------------------------- API CLIENT ---------------------------------
+ * Direct API-Sports host by default. If you subscribed through RapidAPI,
+ * set API_FOOTBALL_HOST=v3.football.api-sports.io is NOT used — instead set
+ *   API_FOOTBALL_RAPID=1  and  API_FOOTBALL_KEY=<your RapidAPI key>
+ * and the correct RapidAPI host header is sent automatically.
+ */
+const API_KEY = process.env.API_FOOTBALL_KEY;
 const USE_RAPID = process.env.API_FOOTBALL_RAPID === '1';
 const BASE = USE_RAPID
   ? 'https://api-football-v1.p.rapidapi.com/v3'
@@ -89,6 +114,7 @@ function authHeaders() {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// GET a v3 endpoint; returns the `response` array. Retries once on 429/5xx.
 async function apiGet(endpoint, params) {
   const url = new URL(BASE + endpoint);
   Object.keys(params || {}).forEach((k) => url.searchParams.set(k, params[k]));
@@ -102,13 +128,14 @@ async function apiGet(endpoint, params) {
     if (json.errors && Object.keys(json.errors).length) {
       throw new Error('API error on ' + endpoint + ': ' + JSON.stringify(json.errors));
     }
-    await sleep(250);
+    await sleep(250); // be gentle with the per-minute limit
     return json.response || [];
   }
   throw new Error('API repeatedly failed on ' + endpoint);
 }
 
-/* ----------------------------- FETCHERS ----------------------------------- */
+/* ----------------------------- FETCHERS -----------------------------------*/
+// Standings -> per-team {played, gf, ga}. One request per league.
 async function fetchStandings(league) {
   const resp = await apiGet('/standings', { league: league.id, season: CONFIG.season });
   const table = resp[0] && resp[0].league && resp[0].league.standings && resp[0].league.standings[0];
@@ -123,22 +150,13 @@ async function fetchStandings(league) {
 
 function fmtDateTime(iso) { return String(iso).replace('T', ' ').slice(0, 16); }
 function fmtDate(iso) { return String(iso).slice(0, 10); }
-function toYYYYMMDD(d) { return d.toISOString().slice(0, 10); }
 
-// Upcoming fixtures using date range (Free plan compatible)
+// Upcoming (not-started) fixtures for a league.
 async function fetchUpcoming(league) {
-  const today = new Date();
-  const future = new Date();
-  future.setDate(today.getDate() + 180); // 6-month window for past/test seasons
-
   const resp = await apiGet('/fixtures', {
-    league: league.id,
-    season: CONFIG.season,
-    from: toYYYYMMDD(today),
-    to: toYYYYMMDD(future),
+    league: league.id, season: CONFIG.season, next: CONFIG.upcomingPerLeague,
   });
-
-  return resp.slice(0, CONFIG.upcomingPerLeague).map((f) => ({
+  return resp.map((f) => ({
     date: fmtDateTime(f.fixture.date),
     league: league.name,
     home: mapName(f.teams.home.name),
@@ -146,22 +164,13 @@ async function fetchUpcoming(league) {
   }));
 }
 
-// Recently finished fixtures using date range (Free plan compatible)
+// Recently finished fixtures for a league (with final scores).
 async function fetchFinished(league) {
-  const today = new Date();
-  const past = new Date();
-  past.setDate(today.getDate() - 365); // 1-year past window for historical season data
-
   const resp = await apiGet('/fixtures', {
-    league: league.id,
-    season: CONFIG.season,
-    from: toYYYYMMDD(past),
-    to: toYYYYMMDD(today),
+    league: league.id, season: CONFIG.season, last: CONFIG.finishedPerLeague,
   });
-
   return resp
     .filter((f) => f.goals.home != null && f.goals.away != null)
-    .slice(-CONFIG.finishedPerLeague)
     .map((f) => ({
       date: fmtDate(f.fixture.date),
       league: league.name,
@@ -172,11 +181,16 @@ async function fetchFinished(league) {
     }));
 }
 
-/* --------------------------- RATING MATH ---------------------------------- */
+/* --------------------------- RATING MATH ----------------------------------
+ * att = (team goals-for per game) / (league average goals per team per game)
+ * def = (team goals-against per game) / (same league average)
+ * 1.0 == league average, exactly matching how predict() uses att/def.
+ */
 function buildTeams(perLeagueStats) {
   const teams = {};
   let totalGoals = 0, totalPlayed = 0;
 
+  // First pass: global average across all fetched leagues (app has one global).
   perLeagueStats.forEach(({ rows }) => {
     rows.forEach((r) => { totalGoals += r.gf; totalPlayed += r.played; });
   });
@@ -197,6 +211,7 @@ function buildTeams(perLeagueStats) {
   return { teams, leagueAvgGoals };
 }
 
+// Home advantage = (avg home goals) / (avg away goals) in finished matches.
 function computeHomeAdvantage(history) {
   let hg = 0, ag = 0;
   history.forEach((m) => { hg += m.fh; ag += m.fa; });
@@ -220,7 +235,7 @@ function serialize(DATA) {
 /* ------------------------------- MAIN -------------------------------------*/
 async function main() {
   if (!API_KEY) {
-    console.error('ERROR: Set API_FOOTBALL_KEY in GitHub Secrets or environment.');
+    console.error('ERROR: set API_FOOTBALL_KEY in your environment first.');
     process.exit(1);
   }
   if (typeof fetch !== 'function') {
@@ -244,6 +259,7 @@ async function main() {
   const { teams, leagueAvgGoals } = buildTeams(perLeagueStats);
   const homeAdvantage = computeHomeAdvantage(history);
 
+  // Keep only fixtures/history whose teams we actually rated (safety).
   const known = (n) => Object.prototype.hasOwnProperty.call(teams, n);
   fixtures = fixtures.filter((f) => known(f.home) && known(f.away));
   history = history.filter((m) => known(m.home) && known(m.away));

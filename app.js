@@ -869,6 +869,38 @@
     buildSidebar();
     updateSelBadges();
     renderPredictions();
+    // Hamburger menu toggle (mobile)
+    var menuToggle=document.getElementById("menuToggle");
+    var mainNav=document.querySelector(".main-nav");
+    if(menuToggle && mainNav){
+      menuToggle.addEventListener("click", function(){
+        var open=mainNav.classList.toggle("open");
+        menuToggle.setAttribute("aria-expanded", open?"true":"false");
+      });
+      // close nav when a nav-btn is clicked
+      mainNav.querySelectorAll(".nav-btn").forEach(function(b){
+        b.addEventListener("click", function(){
+          mainNav.classList.remove("open");
+          menuToggle.setAttribute("aria-expanded","false");
+        });
+      });
+      // close nav when clicking outside
+      document.addEventListener("click", function(e){
+        if(!mainNav.contains(e.target) && e.target!==menuToggle){
+          mainNav.classList.remove("open");
+          menuToggle.setAttribute("aria-expanded","false");
+        }
+      });
+    }
+    // Sidebar toggle (mobile)
+    var sideToggle=document.getElementById("sideToggle");
+    if(sideToggle){
+      sideToggle.addEventListener("click", function(){
+        var sb=document.getElementById("sidebar");
+        sb.classList.toggle("open");
+        sideToggle.classList.toggle("open");
+      });
+    }
     ["leagueFilter","tipFilter","probFilter"].forEach(function(id){
       document.getElementById(id).addEventListener("change", renderPredictions);
     });

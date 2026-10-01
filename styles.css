@@ -10,13 +10,27 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Aria
 /* Header */
 .site-header{background:linear-gradient(90deg,#12324a,#0e1621);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
 .header-inner{display:flex;align-items:center;gap:20px;height:60px}
-.logo{font-size:22px;font-weight:800;color:var(--text);text-decoration:none;letter-spacing:.5px}
+.logo{font-size:22px;font-weight:800;color:var(--text);text-decoration:none;letter-spacing:.5px;white-space:nowrap}
 .logo span{color:var(--accent)}
 .main-nav{display:flex;gap:6px;flex:1}
-.nav-btn{background:transparent;border:0;color:var(--muted);font-size:14px;font-weight:600;padding:8px 12px;border-radius:8px;cursor:pointer}
+.nav-btn{background:transparent;border:0;color:var(--muted);font-size:14px;font-weight:600;padding:8px 12px;border-radius:8px;cursor:pointer;white-space:nowrap}
 .nav-btn:hover{color:var(--text);background:var(--surface2)}
 .nav-btn.active{color:#08120b;background:var(--accent)}
 .header-search input{background:var(--surface);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px 12px;font-size:14px;width:170px}
+/* Mobile hamburger toggle */
+.menu-toggle{display:none;background:transparent;border:0;color:var(--text);font-size:24px;cursor:pointer;padding:8px;line-height:1}
+/* Sidebar mobile toggle */
+.side-toggle{display:none;width:100%;background:var(--surface2);border:0;border-bottom:1px solid var(--line);color:var(--text);font-weight:700;font-size:13px;padding:11px 14px;cursor:pointer;text-align:left;letter-spacing:.3px}
+.side-toggle:hover{background:var(--line)}
+.side-caret{float:right;color:var(--muted);font-size:11px;transition:transform .15s}
+.side-toggle.open .side-caret{transform:rotate(180deg)}
+@media(max-width:900px){
+  .side-toggle{display:block}
+  .sidebar .side-group,.sidebar .country-list,.sidebar .ad-sidebar-mid,
+  .sidebar .ad-mpu,.sidebar .visitors{display:none}
+  .sidebar.open .side-group,.sidebar.open .country-list,.sidebar.open .ad-sidebar-mid,
+  .sidebar.open .ad-mpu,.sidebar.open .visitors{display:block}
+}
 
 /* Layout: sidebar + content */
 .layout{display:flex;gap:20px;align-items:flex-start;margin-top:18px}
@@ -53,7 +67,7 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Aria
 .engine-seg .eng-btn.active{background:var(--accent2);border-color:var(--accent2);color:#20160a}
 .engine-seg .eng-btn[data-engine="random"].active{background:#c0687f;border-color:#c0687f;color:#fff}
 .mode-switch{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.mode-btn{border:0;cursor:pointer;color:#fff;font-weight:700;font-size:13px;padding:9px 16px;border-radius:8px;opacity:.55;transition:opacity .15s,transform .05s;line-height:1}
+.mode-btn{border:0;cursor:pointer;color:#fff;font-weight:700;font-size:13px;padding:9px 16px;border-radius:8px;opacity:.55;transition:opacity .15s,transform .05s;line-height:1;white-space:nowrap}
 .mode-btn:hover{opacity:.85}
 .mode-btn:active{transform:translateY(1px)}
 .mode-btn.active{opacity:1;box-shadow:0 2px 8px rgba(0,0,0,.35)}
@@ -80,10 +94,10 @@ td.col-prob .pp+.pp{margin-left:6px}
 .sel-remove:hover{background:#c0392b}
 
 /* Table */
-.table-wrap{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow-x:auto}
+.table-wrap{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow-x:auto;-webkit-overflow-scrolling:touch}
 .pred-table{width:100%;border-collapse:collapse;font-size:14px;min-width:760px}
 .pred-table thead th{background:var(--surface2);color:var(--muted);text-align:center;padding:11px 8px;font-size:12px;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--line);white-space:nowrap}
-.pred-table th.col-match,.pred-table td.col-match{text-align:left;min-width:220px}
+.pred-table th.col-match,.pred-table td.col-match{text-align:left;min-width:180px}
 .pred-table th.col-league,.pred-table td.col-league{text-align:left}
 .pred-table tbody td{padding:10px 8px;text-align:center;border-bottom:1px solid var(--line)}
 .pred-table tbody tr:hover{background:var(--surface2)}
@@ -112,7 +126,7 @@ tr.stats-row:hover .exp-caret{color:#fff}
 tr.stats-row.open .exp-caret{transform:rotate(90deg)}
 tr.stats-row.open{background:var(--surface2)}
 tr.detail-row>td{background:#0b1017;padding:0;border-bottom:1px solid var(--line)}
-.form-panel{padding:12px 14px;overflow-x:auto}
+.form-panel{padding:12px 14px;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .form-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--accent2);margin:0 0 6px}
 .form-panel .form-table+.form-title{margin-top:16px}
 .form-table{width:100%;border-collapse:collapse;font-size:11.5px;table-layout:fixed}
@@ -244,19 +258,201 @@ tr.ad-row>td{background:var(--surface2);padding:0;border-bottom:1px solid var(--
 .ad-anchor[hidden]{display:none}
 body.has-anchor-ad{padding-bottom:64px}
 
+/* ============================================================================
+   RESPONSIVE — tablet, phone, very small phones
+   ============================================================================ */
+
+/* ---- Tablet (portrait) ≤ 900px ---- */
 @media(max-width:900px){
   .layout{flex-direction:column}
-  .sidebar{width:100%;flex:1 1 auto;position:static}
-  .country-list{max-height:200px}
+  .sidebar{width:100%;flex:1 1 auto;position:static;border-radius:var(--radius)}
+  .country-list{max-height:180px}
   .results-info{grid-template-columns:repeat(2,1fr)}
   .aff-grid{grid-template-columns:repeat(2,1fr)}
+  .ad-mpu{min-height:150px}
+  .visitors{margin:10px}
 }
+
+/* ---- Small tablet / large phone ≤ 720px ---- */
 @media(max-width:720px){
+  /* Header: hamburger menu, stacked layout */
+  .menu-toggle{display:block}
+  .main-nav{display:none;flex-direction:column;position:absolute;top:60px;left:0;right:0;
+    background:linear-gradient(180deg,#12324a,#0e1621);border-bottom:1px solid var(--line);
+    padding:8px 16px;z-index:30;box-shadow:0 8px 20px rgba(0,0,0,.4)}
+  .main-nav.open{display:flex}
+  .main-nav .nav-btn{text-align:left;padding:10px 12px;width:100%;border-radius:0}
+  .header-inner{flex-wrap:nowrap}
   .header-search{display:none}
-  .cards{grid-template-columns:repeat(2,1fr)}
-  .results-info{grid-template-columns:1fr}
-  .aff-grid{grid-template-columns:1fr}
-  .header-inner{gap:10px}
   .logo{font-size:18px}
+
+  /* Sidebar: compact, collapsible */
+  .sidebar{border-radius:0}
+  .side-item{padding:8px 10px;font-size:12px}
+  .side-search{padding:8px 10px}
+  .country-list{max-height:140px}
+
+  /* Toolbar: tighter */
+  .toolbar{gap:10px;margin:14px 0 10px}
+  .filters{gap:8px}
+  .filters select{min-width:110px;font-size:13px;padding:6px 8px}
+  .filters label{font-size:11px}
+  .mode-btn{padding:7px 10px;font-size:12px}
+  .engine-seg .eng-btn{padding:6px 10px;font-size:12px}
+
+  /* Cards */
+  .cards{grid-template-columns:repeat(2,1fr);gap:10px}
+  .stat-card{padding:12px}
+  .stat-num{font-size:22px}
+  .stat-lbl{font-size:11px}
+
+  /* Results info grid: single column */
+  .results-info{grid-template-columns:1fr}
+
+  /* Affiliate cards: single column */
+  .aff-grid{grid-template-columns:1fr}
+
+  /* Ad slots: shrink on smaller screens */
+  .ad-leaderboard,.ad-inline{min-height:60px}
+  .ad-footer{min-height:60px;margin:18px 0 0}
+  .ad-mpu{min-height:120px}
   .ad-native .ad-desc{display:none}
+  .ad-native .ad-thumb{width:36px;height:36px;font-size:16px}
+  .ad-native{gap:8px;padding:10px 12px}
+  .ad-native .ad-title{font-size:12px}
+
+  /* Anchor ad: shorter */
+  .ad-anchor{min-height:50px}
+  body.has-anchor-ad{padding-bottom:54px}
+
+  /* Prose: tighter padding */
+  .prose{padding:18px;margin:14px 0}
+  .prose h1{font-size:20px}
+
+  /* Visitors widget: tighter */
+  .visitors{padding:10px 12px}
+  .visitors .vc-head{font-size:13px;margin-bottom:8px}
+  .visitors .vc-list li{font-size:12px;line-height:1.7}
+}
+
+/* ---- Phone ≤ 520px ---- */
+@media(max-width:520px){
+  .container{padding:0 10px}
+  .logo{font-size:16px;letter-spacing:0}
+
+  /* Sidebar: hide country search to save space */
+  .side-search{display:none}
+  .country-list{max-height:100px}
+  .side-item{font-size:11px;padding:7px 8px}
+  .side-title{font-size:10px;padding:8px 10px}
+  .visitors .vc-k{min-width:60px}
+  .visitors .vc-list li{font-size:11px;letter-spacing:0}
+
+  /* Toolbar: stack filters + mode buttons */
+  .toolbar{flex-direction:column;align-items:stretch;gap:8px}
+  .filters{gap:6px}
+  .filters select{min-width:0;flex:1}
+  .filters label{flex:1;min-width:0}
+  .mode-switch{justify-content:center}
+  .mode-btn{padding:7px 8px;font-size:11px;flex:1;max-width:120px;text-align:center}
+  .mode-btn.msel{max-width:none}
+  .engine-toggle{flex-direction:row;align-items:center;gap:6px}
+  .engine-label{font-size:11px}
+
+  /* Table: more compact rows */
+  .pred-table{font-size:12px;min-width:600px}
+  .pred-table thead th{padding:8px 5px;font-size:10px;letter-spacing:.2px}
+  .pred-table tbody td{padding:8px 5px;font-size:12px}
+  .pred-table th.col-match,.pred-table td.col-match{min-width:140px}
+  .match-cell .teams{font-size:12px}
+  .league-cell{font-size:11px}
+  .prob{min-width:40px;font-size:12px}
+  .prob .bar{height:3px;margin-top:3px}
+  .tip{font-size:11px;padding:3px 7px}
+  .score{font-size:12px}
+  input.pick-cb{width:14px;height:14px}
+  .pred-table th.col-pick,.pred-table td.col-pick{width:36px}
+  td.col-prob .pp{min-width:28px;font-size:11px}
+  .sel-tools td{padding:8px 10px}
+  .sel-info{font-size:12px}
+  .sel-clear,.sel-pdf{font-size:11px;padding:5px 10px}
+  .sel-remove{width:22px;height:22px;font-size:12px}
+
+  /* Cards: single column */
+  .cards{grid-template-columns:1fr 1fr;gap:8px}
+  .stat-card{padding:10px}
+  .stat-num{font-size:18px}
+  .stat-lbl{font-size:10px}
+
+  /* Detail row (stats) — smaller fonts */
+  .form-panel{padding:8px 10px}
+  .form-title{font-size:10px;margin:0 0 4px}
+  .form-table{font-size:10px}
+  .form-table th{font-size:9px;padding:4px 2px}
+  .form-table td{padding:5px 2px;font-size:10px}
+  .ft-venue{font-size:8px;padding:1px 3px}
+  .p-badge{font-size:9px;padding:0 4px}
+  .ft-pos{font-size:9px;padding:0 4px}
+  .rs-module{font-size:10px}
+  .rs-head{padding:6px 8px}
+  .rs-title{font-size:9px}
+  .rs-row{padding:5px 8px;gap:6px}
+  .rs-date{font-size:9px;flex:0 0 46px}
+  .rs-foot{font-size:9px;padding:5px 8px}
+  .results-info{grid-template-columns:1fr;gap:8px;padding:0 10px 10px}
+
+  /* Prose */
+  .prose{padding:14px}
+  .prose h1{font-size:18px}
+  .prose li{margin:5px 0;font-size:13px}
+
+  /* Footer */
+  .site-footer{font-size:11px;padding:14px 0}
+
+  /* Ad slots */
+  .ad-leaderboard,.ad-inline,.ad-footer{min-height:50px}
+  .ad-slot::before{font-size:8px}
+  .ad-slot .ad-body{font-size:10px;padding:8px}
+  .ad-slot .ad-size{font-size:9px}
+  .ad-mpu{min-height:100px;margin:8px}
+  .ad-anchor{min-height:44px}
+  .ad-anchor .ad-close{width:18px;height:18px;font-size:11px;top:4px;right:6px}
+  body.has-anchor-ad{padding-bottom:48px}
+
+  /* Affiliate section */
+  .aff-card{padding:10px;gap:6px}
+  .aff-card .aff-name{font-size:13px}
+  .aff-card .aff-offer{font-size:11px}
+  .aff-card .aff-cta{font-size:11px;padding:7px 10px}
+  .affiliate .aff-disc{font-size:9px}
+}
+
+/* ---- Very small phone ≤ 360px ---- */
+@media(max-width:360px){
+  .container{padding:0 6px}
+  .logo{font-size:14px}
+  .logo span{font-size:14px}
+  .pred-table{font-size:11px;min-width:540px}
+  .pred-table thead th{padding:6px 3px;font-size:9px}
+  .pred-table tbody td{padding:6px 3px;font-size:11px}
+  .pred-table th.col-match,.pred-table td.col-match{min-width:120px}
+  .match-cell .teams{font-size:11px}
+  .prob{min-width:34px;font-size:11px}
+  .tip{font-size:10px;padding:2px 5px;min-width:20px}
+  .pred-table th.col-pick,.pred-table td.col-pick{width:30px}
+  input.pick-cb{width:13px;height:13px}
+  .mode-btn{padding:6px 6px;font-size:10px}
+  .sel-count{min-width:15px;height:15px;font-size:9px}
+  .cards{grid-template-columns:1fr 1fr;gap:6px}
+  .stat-num{font-size:16px}
+  .stat-lbl{font-size:9px}
+  .form-table{font-size:9px}
+  .form-table th{font-size:8px;padding:3px 1px}
+  .form-table td{padding:4px 1px;font-size:9px}
+  .rs-module{font-size:9px}
+  .ad-mpu{min-height:80px;margin:6px}
+  .visitors{margin:6px;padding:8px 10px}
+  .visitors .vc-head{font-size:11px}
+  .visitors .vc-list li{font-size:10px;line-height:1.6}
+  body.has-anchor-ad{padding-bottom:40px}
 }

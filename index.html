@@ -10,6 +10,7 @@
 <body>
   <header class="site-header">
     <div class="container header-inner">
+      <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">&#9776;</button>
       <a class="logo" href="#">PreBet<span>Tips</span></a>
       <nav class="main-nav" aria-label="Main navigation">
         <button class="nav-btn active" data-view="predictions">Predictions</button>
@@ -23,7 +24,8 @@
   </header>
 
   <main class="container layout">
-    <aside id="sidebar" class="sidebar" aria-label="Leagues and countries"><!-- built by app.js --></aside>
+    <aside id="sidebar" class="sidebar" aria-label="Leagues and countries">
+      <button class="side-toggle" id="sideToggle" aria-label="Toggle leagues menu">Leagues &amp; Countries <span class="side-caret">&#9662;</span></button></aside>
     <div class="content">
     <!-- Ad: top leaderboard banner (728x90) -->
     <div class="ad-slot ad-leaderboard" aria-label="Advertisement">
