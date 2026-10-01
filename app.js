@@ -67,65 +67,111 @@
     };
   }
 
-  /* ---------- KPI engine (the "Random" / alternative data source) ----------
-     Instead of a seeded RNG, this engine builds its prediction entirely from
-     the Key Performance Indicators shown in the stats tables (venue-specific
-     average goals for/against, plus a form momentum from PPG and win%). It is
-     a transparent, KPI-driven alternative to the pure att/def Poisson engine.
+  /* ---------- KPI engine (the alternative "KPI" data source) ----------
+     Mirrors the KPI-Based Match Prediction methodology: it extracts and
+     *weights* the relevant parameters from the stats tables and turns them
+     into a KPI Confidence Index for 1X2 and Over/Under, instead of a seeded
+     RNG. Parameters & weights (home vs away strength score, each 0..1):
 
-       Attack KPI   = avg goals FOR  (aGF)   -> how many a team tends to score
-       Defense KPI  = avg goals AGAINST (aGA) -> how many it tends to concede
-       Form KPI     = points-per-game (PPG) + win% -> recent momentum tilt
+       Overall Win Rate (W%) ................ weight 0.15
+       Venue Form (W% at venue) ............. weight 0.15
+       Recent 6-match form (W%) ............. weight 0.20
+       Venue-specific recent form (W%) ...... weight 0.15
+       Head-to-Head dominance (win share) ... weight 0.20
+       Net scoring KPI (aGF - aGA) .......... weight 0.15
 
-     Expected goals blend each side's attacking KPI with the opponent's
-     defensive KPI, then the form KPI tilts the result; a Poisson score grid
-     over those expected goals yields 1/X/2, score, Over/Under and BTTS. */
+     The two strength scores (plus a home-advantage bump) are converted into
+     1 / X / 2 confidence; a separate Over/Under confidence blends the Poisson
+     over-probability with each team's historical Over-2.5 rates and the
+     projected total goals. Score & BTTS come from a Poisson grid over the
+     KPI-derived expected goals. */
+  function clamp01(x){ return x<0?0:x>1?1:x; }
+  function recentWinPct(team, count, venue, seed){
+    var r = teamResults(team, count, venue, seed);
+    if(!r.length) return 0.5;
+    var w=0; r.forEach(function(m){ if(m.res==='W') w++; });
+    return w/r.length;
+  }
+  function h2hWinShare(home, away){
+    var rows = h2hResults(home, away, 4);
+    var hw=0, aw=0;
+    rows.forEach(function(m){
+      var hg = m.home===home ? m.ft[0] : m.ft[1];
+      var ag = m.home===home ? m.ft[1] : m.ft[0];
+      if(hg>ag) hw++; else if(ag>hg) aw++;
+    });
+    var dec = hw+aw;
+    // win share for the home side across decisive H2H games (0.5 if none)
+    return dec ? hw/dec : 0.5;
+  }
   function predictKpi(home, away){
-    var hForm = computeForm(home, HOME);   // Arsenal (HOME) venue KPIs
-    var aForm = computeForm(away, 'away'); // Everton (AWAY) venue KPIs
-    if(!hForm || !aForm) return null;
+    var hV = computeForm(home, HOME);    // home side, HOME venue KPIs
+    var aV = computeForm(away, 'away');  // away side, AWAY venue KPIs
+    if(!hV || !aV) return null;
     var hOv = overallForm(home), aOv = overallForm(away);
 
-    // --- Attack / Defense KPIs (straight from the displayed aGF / aGA) ---
-    var homeAttack = hForm.agf, homeDefense = hForm.aga;
-    var awayAttack = aForm.agf, awayDefense = aForm.aga;
+    // ---- Normalised KPI inputs (0..1) ----
+    var hOverallW = hOv.wp/100,              aOverallW = aOv.wp/100;        // overall W%
+    var hVenueW   = hV.wp/100,               aVenueW   = aV.wp/100;         // venue W%
+    var hRecent   = recentWinPct(home,6,'any','L6'), aRecent = recentWinPct(away,6,'any','L6');
+    var hVenRec   = recentWinPct(home,4,'home','HM'), aVenRec = recentWinPct(away,4,'away','AW');
+    var hH2H      = h2hWinShare(home, away), aH2H = 1 - hH2H;
+    // Net scoring KPI (aGF - aGA) squashed to 0..1 around a +/-2 goal range
+    var hNet = clamp01((hV.agf - hV.aga)/4 + 0.5);
+    var aNet = clamp01((aV.agf - aV.aga)/4 + 0.5);
 
-    // Expected goals: team's attacking KPI blended with opponent's leakiness
-    var lh = (homeAttack + awayDefense) / 2;
-    var la = (awayAttack + homeDefense) / 2;
+    // ---- Weighted strength scores ----
+    var W = {ovr:0.15, ven:0.15, rec:0.20, vrec:0.15, h2h:0.20, net:0.15};
+    var sh = W.ovr*hOverallW + W.ven*hVenueW + W.rec*hRecent + W.vrec*hVenRec + W.h2h*hH2H + W.net*hNet;
+    var sa = W.ovr*aOverallW + W.ven*aVenueW + W.rec*aRecent + W.vrec*aVenRec + W.h2h*aH2H + W.net*aNet;
+    sh += 0.06;  // home-advantage bump on the KPI score
 
-    // --- Form KPI (PPG + win%) applies a small momentum tilt (+/- ~18%) ---
-    var hMom = ((hOv.ppg / 3) + (hOv.wp / 100)) / 2;   // 0..1
-    var aMom = ((aOv.ppg / 3) + (aOv.wp / 100)) / 2;   // 0..1
-    var tilt = hMom - aMom;                            // -1..1
-    lh *= (1 + 0.18 * tilt);
-    la *= (1 - 0.18 * tilt);
+    // ---- KPI Confidence Index for 1 / X / 2 ----
+    var tS = sh + sa || 1;
+    var hShare = sh/tS, aShare = sa/tS;
+    var closeness = 1 - Math.abs(hShare - aShare);        // 0..1 (1 = evenly matched)
+    var pX = 0.08 + 0.26*closeness;                       // draw: 8%..34%
+    var rem = 1 - pX;
+    var p1 = rem*hShare, p2 = rem*aShare;
+
+    // ---- KPI-derived expected goals (attack vs opponent defence) ----
+    var lh = (hV.agf + aV.aga) / 2;
+    var la = (aV.agf + hV.aga) / 2;
+    // momentum tilt from the form KPIs (PPG + win%)
+    var hMom = ((hOv.ppg/3) + hOverallW)/2, aMom = ((aOv.ppg/3) + aOverallW)/2;
+    var tilt = hMom - aMom;
+    lh *= (1 + 0.15*tilt); la *= (1 - 0.15*tilt);
     lh = Math.max(0.15, lh); la = Math.max(0.15, la);
 
-    // --- Poisson score grid over the KPI-derived expected goals ---
+    // ---- Poisson grid for score, BTTS, and a baseline over-probability ----
     var ph=[], pa=[], i, j;
     for(i=0;i<=MAX_GOALS;i++){ ph.push(poisson(i,lh)); pa.push(poisson(i,la)); }
-    var p1=0,pX=0,p2=0,pOver=0,pBtts=0,best={p:-1,h:0,a:0};
+    var pOverP=0, pBtts=0, best={p:-1,h:0,a:0};
     for(i=0;i<=MAX_GOALS;i++){
       for(j=0;j<=MAX_GOALS;j++){
         var p = ph[i]*pa[j];
-        if(i>j) p1+=p; else if(i===j) pX+=p; else p2+=p;
-        if(i+j>=3) pOver+=p;
+        if(i+j>=3) pOverP+=p;
         if(i>=1 && j>=1) pBtts+=p;
         if(p>best.p){ best={p:p,h:i,a:j}; }
       }
     }
-    var tot=p1+pX+p2;
-    p1/=tot; pX/=tot; p2/=tot; pOver/=tot; pBtts/=tot;
+
+    // ---- Over/Under 2.5 Confidence Index ----
+    // blend: Poisson over-prob + historical over-2.5 rates + projected total
+    var histOver = ((hV.ovgTotal + hV.ovgLast8 + aV.ovgTotal + aV.ovgLast8)/4)/100;
+    var expTotal = lh + la;
+    var expFactor = clamp01((expTotal - 2.5)/2 + 0.5);    // how far total sits above 2.5
+    var overConf = 0.45*pOverP + 0.35*histOver + 0.20*expFactor;
+    var overPct = Math.round(clamp01(overConf)*100);
+
     var tip = p1>=pX && p1>=p2 ? "1" : (p2>=pX ? "2" : "X");
-    var overPct = Math.round(pOver*100);
     return {
       lh:lh, la:la,
       p1:Math.round(p1*100), pX:Math.round(pX*100), p2:Math.round(p2*100),
       tip:tip,
       score:best.h+":"+best.a,
       goals:(lh+la),
-      over:pOver>=0.5,
+      over:overPct>=50,
       overPct:overPct, underPct:100-overPct,
       btts:Math.round(pBtts*100)
     };
