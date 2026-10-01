@@ -337,8 +337,11 @@ body.has-anchor-ad{padding-bottom:64px}
 
 /* ---- Phone ≤ 520px ---- */
 @media(max-width:520px){
-  .container{padding:0 10px}
+  .container{padding:0 8px}
   .logo{font-size:16px;letter-spacing:0}
+
+  /* Header: very compact */
+  .header-inner{height:50px;gap:10px}
 
   /* Sidebar: hide country search to save space */
   .side-search{display:none}
@@ -348,76 +351,83 @@ body.has-anchor-ad{padding-bottom:64px}
   .visitors .vc-k{min-width:60px}
   .visitors .vc-list li{font-size:11px;letter-spacing:0}
 
-  /* Toolbar: stack filters + mode buttons */
-  .toolbar{flex-direction:column;align-items:stretch;gap:8px}
-  .filters{gap:6px}
-  .filters select{min-width:0;flex:1}
-  .filters label{flex:1;min-width:0}
-  .mode-switch{justify-content:center}
-  .mode-btn{padding:7px 8px;font-size:11px;flex:1;max-width:120px;text-align:center}
-  .mode-btn.msel{max-width:none}
-  .engine-toggle{flex-direction:row;align-items:center;gap:6px}
-  .engine-label{font-size:11px}
+  /* Toolbar: stack filters + mode buttons into separate rows */
+  .toolbar{flex-direction:column;align-items:stretch;gap:8px;margin:10px 0 8px}
+  .filters{gap:4px}
+  .filters select{min-width:0;width:100%;font-size:12px;padding:5px 6px}
+  .filters label{flex:1;min-width:0;font-size:10px;gap:2px}
+  .filters select option{font-size:12px}
 
-  /* Table: more compact rows */
-  .pred-table{font-size:12px;min-width:600px}
-  .pred-table thead th{padding:8px 5px;font-size:10px;letter-spacing:.2px}
-  .pred-table tbody td{padding:8px 5px;font-size:12px}
-  .pred-table th.col-match,.pred-table td.col-match{min-width:140px}
+  /* Engine toggle: row layout, compact */
+  .engine-toggle{flex-direction:row;align-items:center;gap:6px}
+  .engine-label{font-size:10px}
+  .engine-seg .eng-btn{padding:5px 8px;font-size:11px}
+
+  /* Mode switch: 2×2 grid so all buttons fit without overflow */
+  .mode-switch{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;width:100%}
+  .mode-btn{padding:8px 6px;font-size:11px;text-align:center;justify-content:center;border-radius:6px}
+  .mode-btn.msel{grid-column:1/-1;justify-content:center}
+  .sel-count{min-width:16px;height:16px;font-size:10px}
+
+  /* Table: compact for phone — allow horizontal scroll for data */
+  .pred-table{font-size:12px;min-width:580px}
+  .pred-table thead th{padding:6px 4px;font-size:10px;letter-spacing:.1px}
+  .pred-table tbody td{padding:6px 4px;font-size:12px}
+  .pred-table th.col-match,.pred-table td.col-match{min-width:120px}
   .match-cell .teams{font-size:12px}
   .league-cell{font-size:11px}
-  .prob{min-width:40px;font-size:12px}
+  .prob{min-width:38px;font-size:12px}
   .prob .bar{height:3px;margin-top:3px}
-  .tip{font-size:11px;padding:3px 7px}
+  .tip{font-size:11px;padding:3px 6px;min-width:22px}
   .score{font-size:12px}
   input.pick-cb{width:14px;height:14px}
-  .pred-table th.col-pick,.pred-table td.col-pick{width:36px}
-  td.col-prob .pp{min-width:28px;font-size:11px}
-  .sel-tools td{padding:8px 10px}
-  .sel-info{font-size:12px}
-  .sel-clear,.sel-pdf{font-size:11px;padding:5px 10px}
+  .pred-table th.col-pick,.pred-table td.col-pick{width:32px}
+  td.col-prob .pp{min-width:26px;font-size:10px}
+  .sel-tools td{padding:6px 8px}
+  .sel-info{font-size:11px}
+  .sel-clear,.sel-pdf{font-size:10px;padding:4px 8px}
   .sel-remove{width:22px;height:22px;font-size:12px}
 
-  /* Cards: single column */
+  /* Cards: 2×2 */
   .cards{grid-template-columns:1fr 1fr;gap:8px}
   .stat-card{padding:10px}
   .stat-num{font-size:18px}
   .stat-lbl{font-size:10px}
 
   /* Detail row (stats) — smaller fonts */
-  .form-panel{padding:8px 10px}
-  .form-title{font-size:10px;margin:0 0 4px}
-  .form-table{font-size:10px}
-  .form-table th{font-size:9px;padding:4px 2px}
-  .form-table td{padding:5px 2px;font-size:10px}
-  .ft-venue{font-size:8px;padding:1px 3px}
-  .p-badge{font-size:9px;padding:0 4px}
-  .ft-pos{font-size:9px;padding:0 4px}
-  .rs-module{font-size:10px}
-  .rs-head{padding:6px 8px}
-  .rs-title{font-size:9px}
-  .rs-row{padding:5px 8px;gap:6px}
-  .rs-date{font-size:9px;flex:0 0 46px}
-  .rs-foot{font-size:9px;padding:5px 8px}
-  .results-info{grid-template-columns:1fr;gap:8px;padding:0 10px 10px}
+  .form-panel{padding:6px 8px}
+  .form-title{font-size:9px;margin:0 0 3px}
+  .form-table{font-size:9px}
+  .form-table th{font-size:8px;padding:3px 1px}
+  .form-table td{padding:4px 1px;font-size:9px}
+  .ft-venue{font-size:7px;padding:0 2px}
+  .p-badge{font-size:8px;padding:0 3px}
+  .ft-pos{font-size:8px;padding:0 3px}
+  .rs-module{font-size:9px}
+  .rs-head{padding:5px 7px}
+  .rs-title{font-size:8px}
+  .rs-row{padding:4px 7px;gap:4px}
+  .rs-date{font-size:8px;flex:0 0 40px}
+  .rs-foot{font-size:8px;padding:4px 7px}
+  .results-info{grid-template-columns:1fr;gap:6px;padding:0 8px 8px}
 
   /* Prose */
-  .prose{padding:14px}
+  .prose{padding:12px}
   .prose h1{font-size:18px}
   .prose li{margin:5px 0;font-size:13px}
 
   /* Footer */
   .site-footer{font-size:11px;padding:14px 0}
 
-  /* Ad slots */
-  .ad-leaderboard,.ad-inline,.ad-footer{min-height:50px}
-  .ad-slot::before{font-size:8px}
-  .ad-slot .ad-body{font-size:10px;padding:8px}
-  .ad-slot .ad-size{font-size:9px}
-  .ad-mpu{min-height:100px;margin:8px}
-  .ad-anchor{min-height:44px}
-  .ad-anchor .ad-close{width:18px;height:18px;font-size:11px;top:4px;right:6px}
-  body.has-anchor-ad{padding-bottom:48px}
+  /* Ad slots: very compact on phone */
+  .ad-leaderboard,.ad-inline,.ad-footer{min-height:44px}
+  .ad-slot::before{font-size:7px}
+  .ad-slot .ad-body{font-size:9px;padding:6px}
+  .ad-slot .ad-size{font-size:8px}
+  .ad-mpu{min-height:80px;margin:6px}
+  .ad-anchor{min-height:40px}
+  .ad-anchor .ad-close{width:16px;height:16px;font-size:10px;top:2px;right:4px}
+  body.has-anchor-ad{padding-bottom:44px}
 
   /* Affiliate section */
   .aff-card{padding:10px;gap:6px}
@@ -432,27 +442,51 @@ body.has-anchor-ad{padding-bottom:64px}
   .container{padding:0 6px}
   .logo{font-size:14px}
   .logo span{font-size:14px}
-  .pred-table{font-size:11px;min-width:540px}
-  .pred-table thead th{padding:6px 3px;font-size:9px}
-  .pred-table tbody td{padding:6px 3px;font-size:11px}
-  .pred-table th.col-match,.pred-table td.col-match{min-width:120px}
+
+  /* Header even tighter */
+  .header-inner{height:46px;gap:8px}
+  .menu-toggle{font-size:20px;padding:6px}
+
+  /* Toolbar: ultra-compact */
+  .toolbar{gap:6px;margin:8px 0 6px}
+  .filters{gap:3px}
+  .filters select{font-size:11px;padding:4px 4px}
+  .filters label{font-size:9px}
+
+  /* Mode switch: stack 2 per row on very narrow screens */
+  .mode-switch{grid-template-columns:1fr 1fr;gap:4px}
+  .mode-btn{padding:6px 4px;font-size:10px}
+  .mode-btn.msel{grid-column:1/-1}
+  .sel-count{min-width:14px;height:14px;font-size:9px}
+  .engine-seg .eng-btn{padding:4px 6px;font-size:10px}
+  .engine-label{font-size:9px}
+
+  /* Table: absolute minimum width */
+  .pred-table{font-size:11px;min-width:480px}
+  .pred-table thead th{padding:5px 2px;font-size:9px}
+  .pred-table tbody td{padding:5px 2px;font-size:11px}
+  .pred-table th.col-match,.pred-table td.col-match{min-width:100px}
   .match-cell .teams{font-size:11px}
-  .prob{min-width:34px;font-size:11px}
-  .tip{font-size:10px;padding:2px 5px;min-width:20px}
-  .pred-table th.col-pick,.pred-table td.col-pick{width:30px}
-  input.pick-cb{width:13px;height:13px}
-  .mode-btn{padding:6px 6px;font-size:10px}
-  .sel-count{min-width:15px;height:15px;font-size:9px}
-  .cards{grid-template-columns:1fr 1fr;gap:6px}
+  .prob{min-width:30px;font-size:11px}
+  .tip{font-size:10px;padding:2px 4px;min-width:18px}
+  .pred-table th.col-pick,.pred-table td.col-pick{width:26px}
+  input.pick-cb{width:12px;height:12px}
+  td.col-prob .pp{min-width:22px;font-size:9px}
+
+  /* Cards */
+  .cards{grid-template-columns:1fr 1fr;gap:4px}
+  .stat-card{padding:8px}
   .stat-num{font-size:16px}
   .stat-lbl{font-size:9px}
-  .form-table{font-size:9px}
-  .form-table th{font-size:8px;padding:3px 1px}
-  .form-table td{padding:4px 1px;font-size:9px}
-  .rs-module{font-size:9px}
-  .ad-mpu{min-height:80px;margin:6px}
-  .visitors{margin:6px;padding:8px 10px}
-  .visitors .vc-head{font-size:11px}
-  .visitors .vc-list li{font-size:10px;line-height:1.6}
-  body.has-anchor-ad{padding-bottom:40px}
+
+  /* Form tables */
+  .form-table{font-size:8px}
+  .form-table th{font-size:7px;padding:2px 1px}
+  .form-table td{padding:3px 1px;font-size:8px}
+  .rs-module{font-size:8px}
+  .ad-mpu{min-height:60px;margin:4px}
+  .visitors{margin:4px;padding:8px 8px}
+  .visitors .vc-head{font-size:10px}
+  .visitors .vc-list li{font-size:9px;line-height:1.6}
+  body.has-anchor-ad{padding-bottom:36px}
 }
