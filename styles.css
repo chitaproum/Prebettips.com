@@ -4,8 +4,11 @@
   --home:#2ecc71; --draw:#f1c40f; --away:#e74c3c; --radius:10px;
 }
 *{box-sizing:border-box}
+html,body{overflow-x:hidden;max-width:100%}
 body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
-.container{max-width:1120px;margin:0 auto;padding:0 16px}
+/* Nothing (images, embeds, pre) may push the page wider than the screen */
+img,video,iframe,embed,object,canvas,svg{max-width:100%;height:auto}
+.container{width:100%;max-width:1120px;margin:0 auto;padding:0 16px}
 
 /* Header */
 .site-header{background:linear-gradient(90deg,#12324a,#0e1621);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
@@ -34,7 +37,8 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Aria
 
 /* Layout: sidebar + content */
 .layout{display:flex;gap:20px;align-items:flex-start;margin-top:18px}
-.content{flex:1;min-width:0}
+.content{flex:1;min-width:0;max-width:100%}
+.view{max-width:100%}
 .sidebar{width:292px;flex:0 0 292px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;font-size:14px;position:sticky;top:76px}
 .side-group{border-bottom:1px solid var(--line)}
 .side-title{padding:11px 14px;font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);background:var(--surface2);font-weight:700}
