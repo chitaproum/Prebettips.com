@@ -4,9 +4,10 @@
   --home:#2ecc71; --draw:#f1c40f; --away:#e74c3c; --radius:10px;
 }
 *{box-sizing:border-box}
-html,body{overflow-x:hidden;max-width:100%}
-body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
-/* Nothing (images, embeds, pre) may push the page wider than the screen */
+/* Horizontal-overflow guard. overflow-x lives on BODY only (not html) so the
+   sticky header keeps working — overflow on html can break position:sticky. */
+html{max-width:100%}
+body{margin:0;overflow-x:hidden;max-width:100%;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
 img,video,iframe,embed,object,canvas,svg{max-width:100%;height:auto}
 .container{width:100%;max-width:1120px;margin:0 auto;padding:0 16px}
 
@@ -20,9 +21,7 @@ img,video,iframe,embed,object,canvas,svg{max-width:100%;height:auto}
 .nav-btn:hover{color:var(--text);background:var(--surface2)}
 .nav-btn.active{color:#08120b;background:var(--accent)}
 .header-search input{background:var(--surface);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px 12px;font-size:14px;width:170px}
-/* Mobile hamburger toggle */
 .menu-toggle{display:none;background:transparent;border:0;color:var(--text);font-size:24px;cursor:pointer;padding:8px;line-height:1}
-/* Sidebar mobile toggle */
 .side-toggle{display:none;width:100%;background:var(--surface2);border:0;border-bottom:1px solid var(--line);color:var(--text);font-weight:700;font-size:13px;padding:11px 14px;cursor:pointer;text-align:left;letter-spacing:.3px}
 .side-toggle:hover{background:var(--line)}
 .side-caret{float:right;color:var(--muted);font-size:11px;transition:transform .15s}
@@ -60,7 +59,6 @@ img,video,iframe,embed,object,canvas,svg{max-width:100%;height:auto}
 .filters{display:flex;flex-wrap:wrap;gap:14px}
 .filters label{display:flex;flex-direction:column;font-size:12px;color:var(--muted);gap:4px;font-weight:600}
 .filters select{background:var(--surface);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:7px 10px;font-size:14px;min-width:140px}
-/* Poisson / Random data toggle */
 .engine-toggle{display:flex;flex-direction:column;gap:4px;justify-content:flex-end}
 .engine-label{font-size:12px;color:var(--muted);font-weight:600}
 .engine-seg{display:flex}
@@ -80,10 +78,8 @@ img,video,iframe,embed,object,canvas,svg{max-width:100%;height:auto}
 .mode-btn.mstats{background:#2b62b3}
 .mode-btn.msel{background:#e67e22;display:inline-flex;align-items:center;gap:6px}
 .sel-count{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:rgba(0,0,0,.28);color:#fff;font-size:11px;font-weight:800;line-height:1}
-/* Pick checkbox column (1 x 2 / Over-Under tables) */
 .pred-table th.col-pick,.pred-table td.col-pick{width:44px;text-align:center;white-space:nowrap}
 input.pick-cb{width:16px;height:16px;cursor:pointer;accent-color:#e67e22}
-/* Your Selection view */
 .sel-tools td{background:#12213a;padding:10px 12px}
 .sel-info{color:var(--muted);font-weight:700;font-size:13px}
 .sel-clear{float:right;border:0;cursor:pointer;background:#c0392b;color:#fff;font-weight:700;font-size:12px;padding:6px 12px;border-radius:6px}
@@ -96,7 +92,6 @@ td.col-prob .pp.hi{color:var(--text)}
 td.col-prob .pp+.pp{margin-left:6px}
 .sel-remove{border:0;cursor:pointer;background:#2a3b57;color:#fff;font-weight:800;font-size:14px;line-height:1;width:26px;height:26px;border-radius:6px}
 .sel-remove:hover{background:#c0392b}
-
 /* Table */
 .table-wrap{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow-x:auto;-webkit-overflow-scrolling:touch}
 .pred-table{width:100%;border-collapse:collapse;font-size:14px;min-width:760px}
@@ -109,7 +104,7 @@ td.col-prob .pp+.pp{margin-left:6px}
 .match-cell .teams{font-weight:600}
 .match-cell .time{font-size:12px;color:var(--muted)}
 .league-cell{color:var(--muted);font-size:13px;white-space:nowrap}
-.prob{position:relative;font-weight:700;min-width:52px}
+.prob{position:relative;font-weight:700;min-width:52px;display:inline-block}
 .prob .bar{display:block;height:4px;border-radius:3px;margin-top:4px;background:var(--line)}
 .prob.best-1{color:var(--home)}.prob.best-1 .bar{background:var(--home)}
 .prob.best-X{color:var(--draw)}.prob.best-X .bar{background:var(--draw)}
@@ -119,12 +114,12 @@ td.col-prob .pp+.pp{margin-left:6px}
 .tip.tX{background:rgba(241,196,15,.15);color:var(--draw)}
 .tip.t2{background:rgba(231,76,60,.15);color:var(--away)}
 .score{font-weight:700;font-variant-numeric:tabular-nums}
-.ou{font-size:12px;font-weight:700}
-.ou.over{color:var(--accent)}.ou.under{color:var(--muted)}
+.ou{font-size:12px;font-weight:700;display:inline-block;padding:3px 8px;border-radius:6px}
+.ou.over{color:var(--accent);background:rgba(46,204,113,.12)}.ou.under{color:var(--muted);background:rgba(142,161,181,.12)}
 .empty{padding:24px;text-align:center;color:var(--muted)}
 
 /* Stats expandable form panel */
-.exp-caret{display:inline-block;color:var(--accent);font-weight:700;margin-right:2px;transition:transform .15s}
+.exp-caret{display:inline-block;color:var(--accent);font-weight:700;margin-right:4px;transition:transform .15s}
 tr.stats-row{cursor:pointer}
 tr.stats-row:hover .exp-caret{color:#fff}
 tr.stats-row.open .exp-caret{transform:rotate(90deg)}
@@ -146,13 +141,12 @@ tr.detail-row>td{background:#0b1017;padding:0;border-bottom:1px solid var(--line
 .form-table td.ppg{font-weight:800;color:#fff}
 .form-table th.ovg-group{color:#4aa3ff;border-left:1px solid var(--line);text-align:center;white-space:nowrap;font-size:10px}
 .form-table th.ovg{color:var(--muted);border-left:1px solid var(--line);vertical-align:middle;white-space:nowrap}
-/* column widths (table-layout:fixed) so all columns fit and headers don't merge */
 col.cg-team{width:16%}
 col.cg-num{width:5.07%}
 col.cg-ovg{width:9%}
 .form-table td.ovg{color:#4aa3ff;font-weight:700;border-left:1px solid var(--line)}
 
-/* Results info (H2H + recent form, shown under the stats table) */
+/* Results info (H2H + recent form) */
 .results-info{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:0 14px 14px}
 .rs-module{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:11.5px;display:flex;flex-direction:column}
 .rs-head{display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--surface2);border-bottom:1px solid var(--line)}
@@ -194,303 +188,76 @@ col.cg-ovg{width:9%}
 /* Footer */
 .site-footer{border-top:1px solid var(--line);margin-top:40px;padding:20px 0;color:var(--muted);font-size:13px;text-align:center}
 
-/* ---------- Visitors dashboard widget (sidebar) ---------- */
-.visitors{margin:12px;background:linear-gradient(160deg,#12324a,#0e1621);border:1px solid var(--line);
-  border-radius:12px;padding:14px 16px;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.3)}
-.visitors .vc-head{display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px;letter-spacing:1px;
-  text-transform:uppercase;margin-bottom:12px}
+/* Visitors widget */
+.visitors{margin:12px;background:linear-gradient(160deg,#12324a,#0e1621);border:1px solid var(--line);border-radius:12px;padding:14px 16px;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.3)}
+.visitors .vc-head{display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px}
 .visitors .vc-icon{flex:0 0 auto;color:var(--accent);font-size:16px;line-height:1}
 .visitors .vc-list{list-style:none;margin:0;padding:0}
-.visitors .vc-list li{display:flex;align-items:baseline;gap:8px;font-size:13px;line-height:1.9;
-  text-transform:uppercase;letter-spacing:.3px}
+.visitors .vc-list li{display:flex;align-items:baseline;gap:8px;font-size:13px;line-height:1.9;text-transform:uppercase;letter-spacing:.3px}
 .visitors .vc-k{color:var(--muted);font-weight:600;min-width:86px}
 .visitors .vc-v{color:#fff;font-weight:700;font-variant-numeric:tabular-nums}
 .visitors .vc-list li.online .vc-v{color:var(--accent)}
+/* Ad slots */
+.ad-slot{display:flex;align-items:center;justify-content:center;background:repeating-linear-gradient(45deg,#131d29,#131d29 10px,#16212e 10px,#16212e 20px);border:1px dashed var(--line);border-radius:10px;color:var(--muted);text-align:center;overflow:hidden}
+.ad-slot .ad-body{display:flex;flex-direction:column;gap:3px;font-weight:700;font-size:13px;letter-spacing:.3px;padding:6px}
+.ad-slot .ad-size{font-size:10px;font-weight:600;color:#5f748c;letter-spacing:.5px;text-transform:uppercase}
+.ad-leaderboard{height:90px;margin:4px 0 18px}
+.ad-inline{height:90px;margin:18px 0}
+.ad-footer{height:90px;margin:26px 0 0}
+.ad-sidebar-mid{height:250px;margin:12px}
+.ad-mpu{height:250px;margin:12px}
+.ad-anchor{position:fixed;left:0;right:0;bottom:0;height:54px;border-radius:0;border-left:0;border-right:0;border-bottom:0;z-index:30;margin:0}
+.ad-anchor .ad-size{display:inline;margin-left:6px}
+.ad-anchor .ad-body{flex-direction:row;align-items:center;gap:6px}
+.ad-close{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:var(--surface2);border:1px solid var(--line);color:var(--text);width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:15px;line-height:1}
+.ad-close:hover{background:var(--line)}
+body.anchor-hidden .ad-anchor{display:none}
+body{padding-bottom:62px}
 
-/* ---------- Ad slots / monetization placeholders ---------- */
-.ad-slot{position:relative;display:flex;align-items:center;justify-content:center;text-align:center;
-  background:repeating-linear-gradient(45deg,var(--surface),var(--surface) 10px,var(--surface2) 10px,var(--surface2) 20px);
-  border:1px dashed var(--line);border-radius:var(--radius);color:var(--muted);overflow:hidden}
-.ad-slot::before{content:"Advertisement";position:absolute;top:6px;left:8px;font-size:9px;letter-spacing:.5px;
-  text-transform:uppercase;color:var(--muted);opacity:.75}
-.ad-slot .ad-body{font-size:12px;font-weight:600;color:var(--muted);padding:10px}
-.ad-slot .ad-size{display:block;font-size:10px;opacity:.6;margin-top:2px;font-weight:400}
-/* leaderboard (top / in-content) */
-.ad-leaderboard{min-height:90px;margin:0 0 18px}
-.ad-inline{min-height:90px;margin:18px 0}
-/* sidebar MPU */
-.ad-mpu{min-height:250px;margin:12px;width:auto}
-/* in-sidebar banner between nav groups */
-.ad-sidebar-mid{min-height:100px;margin:0;border-radius:0;border-left:0;border-right:0}
-/* footer banner */
-.ad-footer{min-height:90px;margin:26px 0 0}
-/* in-feed sponsored row inside the predictions table */
-tr.ad-row>td{background:var(--surface2);padding:0;border-bottom:1px solid var(--line)}
-.ad-native{display:flex;align-items:center;gap:12px;padding:12px 14px}
-.ad-native .ad-badge{flex:0 0 auto;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
-  color:var(--accent2);border:1px solid var(--line);border-radius:6px;padding:2px 6px;background:var(--surface)}
-.ad-native .ad-thumb{flex:0 0 46px;height:46px;border-radius:8px;background:linear-gradient(135deg,#1ab4c8,#2b62b3);
-  display:flex;align-items:center;justify-content:center;font-size:20px}
-.ad-native .ad-text{flex:1;text-align:left;min-width:0}
-.ad-native .ad-title{font-weight:700;color:var(--text);font-size:13px}
-.ad-native .ad-desc{font-size:11.5px;color:var(--muted)}
-.ad-native .ad-cta{flex:0 0 auto;background:var(--accent);color:#08120b;font-weight:700;font-size:12px;
-  padding:7px 14px;border-radius:8px;text-decoration:none;white-space:nowrap}
-/* affiliate bookmaker offers (primary monetization for tipster sites) */
-.affiliate{margin:22px 0 0}
-.affiliate h2{font-size:14px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin:0 0 10px;font-weight:700}
-.aff-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.aff-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;
-  flex-direction:column;gap:8px;position:relative}
-.aff-card .aff-rank{position:absolute;top:10px;right:10px;font-size:10px;font-weight:800;color:var(--accent2)}
-.aff-card .aff-name{font-weight:800;color:var(--text);font-size:15px}
-.aff-card .aff-offer{font-size:12.5px;color:var(--muted);flex:1}
-.aff-card .aff-stars{color:var(--accent2);font-size:12px;letter-spacing:1px}
-.aff-card .aff-cta{background:var(--accent);color:#08120b;font-weight:700;font-size:13px;text-align:center;
-  padding:9px 12px;border-radius:8px;text-decoration:none}
-.aff-card .aff-cta:hover{filter:brightness(1.08)}
-.affiliate .aff-disc{font-size:10.5px;color:var(--muted);margin:10px 0 0;opacity:.8}
-/* sticky bottom anchor ad */
-.ad-anchor{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;align-items:center;justify-content:center;
-  gap:10px;min-height:60px;background:var(--surface);border-top:1px solid var(--line);
-  box-shadow:0 -4px 16px rgba(0,0,0,.35)}
-.ad-anchor .ad-body{color:var(--muted);font-size:12px;font-weight:600}
-.ad-anchor .ad-close{position:absolute;top:6px;right:10px;background:var(--surface2);border:1px solid var(--line);
-  color:var(--muted);width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:13px;line-height:1;
-  display:flex;align-items:center;justify-content:center}
-.ad-anchor .ad-close:hover{color:var(--text)}
-.ad-anchor[hidden]{display:none}
-body.has-anchor-ad{padding-bottom:64px}
+/* Affiliate offers */
+.affiliate{margin:26px 0 0}
+.affiliate>h2{font-size:14px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:0 0 12px}
+.aff-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.aff-card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 16px 18px;display:flex;flex-direction:column;gap:7px}
+.aff-rank{position:absolute;top:12px;right:12px;background:var(--accent2);color:#20160a;font-weight:800;font-size:12px;padding:2px 8px;border-radius:9px}
+.aff-name{font-size:18px;font-weight:800;color:var(--text)}
+.aff-stars{color:var(--accent2);font-size:14px;letter-spacing:2px}
+.aff-offer{color:var(--muted);font-size:13px;flex:1}
+.aff-cta{align-self:flex-start;margin-top:4px;background:var(--accent);color:#08120b;font-weight:800;font-size:13px;text-decoration:none;padding:9px 18px;border-radius:8px}
+.aff-cta:hover{filter:brightness(1.08)}
+.aff-disc{color:#5f748c;font-size:11px;margin:12px 0 0;text-align:center}
 
-/* ============================================================================
-   RESPONSIVE — tablet, phone, very small phones
-   ============================================================================ */
-
-/* ---- Tablet (portrait) ≤ 900px ---- */
+/* ===== Responsive ===== */
 @media(max-width:900px){
+  .sidebar{width:100%;flex:1 1 100%;position:static;top:auto}
   .layout{flex-direction:column}
-  .sidebar{width:100%;flex:1 1 auto;position:static;border-radius:var(--radius)}
-  .country-list{max-height:180px}
-  .results-info{grid-template-columns:repeat(2,1fr)}
-  .aff-grid{grid-template-columns:repeat(2,1fr)}
-  .ad-mpu{min-height:150px}
-  .visitors{margin:10px}
-}
-
-/* ---- Small tablet / large phone ≤ 720px ---- */
-@media(max-width:720px){
-  /* Header: hamburger menu, stacked layout */
-  .menu-toggle{display:block}
-  .main-nav{display:none;flex-direction:column;position:absolute;top:60px;left:0;right:0;
-    background:linear-gradient(180deg,#12324a,#0e1621);border-bottom:1px solid var(--line);
-    padding:8px 16px;z-index:30;box-shadow:0 8px 20px rgba(0,0,0,.4)}
-  .main-nav.open{display:flex}
-  .main-nav .nav-btn{text-align:left;padding:10px 12px;width:100%;border-radius:0}
-  .header-inner{flex-wrap:nowrap}
   .header-search{display:none}
-  .logo{font-size:18px}
-
-  /* Sidebar: compact, collapsible */
-  .sidebar{border-radius:0}
-  .side-item{padding:8px 10px;font-size:12px}
-  .side-search{padding:8px 10px}
-  .country-list{max-height:140px}
-
-  /* Toolbar: tighter */
-  .toolbar{gap:10px;margin:14px 0 10px}
-  .filters{gap:8px}
-  .filters select{min-width:110px;font-size:13px;padding:6px 8px}
-  .filters label{font-size:11px}
-  .mode-btn{padding:7px 10px;font-size:12px}
-  .engine-seg .eng-btn{padding:6px 10px;font-size:12px}
-
-  /* Cards */
-  .cards{grid-template-columns:repeat(2,1fr);gap:10px}
-  .stat-card{padding:12px}
-  .stat-num{font-size:22px}
-  .stat-lbl{font-size:11px}
-
-  /* Results info grid: single column */
   .results-info{grid-template-columns:1fr}
-
-  /* Affiliate cards: single column */
+}
+@media(max-width:720px){
+  .main-nav{position:absolute;top:60px;left:0;right:0;flex-direction:column;gap:0;background:var(--surface);border-bottom:1px solid var(--line);padding:6px;display:none;z-index:19}
+  .main-nav.open{display:flex}
+  .nav-btn{text-align:left;border-radius:6px}
+  .menu-toggle{display:block}
+  .logo{flex:1}
+  .cards{grid-template-columns:repeat(2,1fr)}
   .aff-grid{grid-template-columns:1fr}
-
-  /* Ad slots: shrink on smaller screens */
-  .ad-leaderboard,.ad-inline{min-height:60px}
-  .ad-footer{min-height:60px;margin:18px 0 0}
-  .ad-mpu{min-height:120px}
-  .ad-native .ad-desc{display:none}
-  .ad-native .ad-thumb{width:36px;height:36px;font-size:16px}
-  .ad-native{gap:8px;padding:10px 12px}
-  .ad-native .ad-title{font-size:12px}
-
-  /* Anchor ad: shorter */
-  .ad-anchor{min-height:50px}
-  body.has-anchor-ad{padding-bottom:54px}
-
-  /* Prose: tighter padding */
-  .prose{padding:18px;margin:14px 0}
-  .prose h1{font-size:20px}
-
-  /* Visitors widget: tighter */
-  .visitors{padding:10px 12px}
-  .visitors .vc-head{font-size:13px;margin-bottom:8px}
-  .visitors .vc-list li{font-size:12px;line-height:1.7}
+  .toolbar{flex-direction:column;align-items:stretch}
 }
-
-/* ---- Phone ≤ 520px ---- */
 @media(max-width:520px){
-  .container{padding:0 8px}
-  .logo{font-size:16px;letter-spacing:0}
-
-  /* Header: very compact */
-  .header-inner{height:50px;gap:10px}
-
-  /* Sidebar: hide country search to save space */
-  .side-search{display:none}
-  .country-list{max-height:100px}
-  .side-item{font-size:11px;padding:7px 8px}
-  .side-title{font-size:10px;padding:8px 10px}
-  .visitors .vc-k{min-width:60px}
-  .visitors .vc-list li{font-size:11px;letter-spacing:0}
-
-  /* Toolbar: stack filters + mode buttons into separate rows */
-  .toolbar{flex-direction:column;align-items:stretch;gap:8px;margin:10px 0 8px}
-  .filters{gap:4px}
-  .filters select{min-width:0;width:100%;font-size:12px;padding:5px 6px}
-  .filters label{flex:1;min-width:0;font-size:10px;gap:2px}
-  .filters select option{font-size:12px}
-
-  /* Engine toggle: row layout, compact */
-  .engine-toggle{flex-direction:row;align-items:center;gap:6px}
-  .engine-label{font-size:10px}
-  .engine-seg .eng-btn{padding:5px 8px;font-size:11px}
-
-  /* Mode switch: 2×2 grid so all buttons fit without overflow */
-  .mode-switch{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;width:100%}
-  .mode-btn{padding:8px 6px;font-size:11px;text-align:center;justify-content:center;border-radius:6px}
-  .mode-btn.msel{grid-column:1/-1;justify-content:center}
-  .sel-count{min-width:16px;height:16px;font-size:10px}
-
-  /* Table: compact for phone — allow horizontal scroll for data */
-  .pred-table{font-size:12px;min-width:580px}
-  .pred-table thead th{padding:6px 4px;font-size:10px;letter-spacing:.1px}
-  .pred-table tbody td{padding:6px 4px;font-size:12px}
-  .pred-table th.col-match,.pred-table td.col-match{min-width:120px}
-  .match-cell .teams{font-size:12px}
-  .league-cell{font-size:11px}
-  .prob{min-width:38px;font-size:12px}
-  .prob .bar{height:3px;margin-top:3px}
-  .tip{font-size:11px;padding:3px 6px;min-width:22px}
-  .score{font-size:12px}
-  input.pick-cb{width:14px;height:14px}
-  .pred-table th.col-pick,.pred-table td.col-pick{width:32px}
-  td.col-prob .pp{min-width:26px;font-size:10px}
-  .sel-tools td{padding:6px 8px}
-  .sel-info{font-size:11px}
-  .sel-clear,.sel-pdf{font-size:10px;padding:4px 8px}
-  .sel-remove{width:22px;height:22px;font-size:12px}
-
-  /* Cards: 2×2 */
-  .cards{grid-template-columns:1fr 1fr;gap:8px}
-  .stat-card{padding:10px}
-  .stat-num{font-size:18px}
-  .stat-lbl{font-size:10px}
-
-  /* Detail row (stats) — smaller fonts */
-  .form-panel{padding:6px 8px}
-  .form-title{font-size:9px;margin:0 0 3px}
-  .form-table{font-size:9px}
-  .form-table th{font-size:8px;padding:3px 1px}
-  .form-table td{padding:4px 1px;font-size:9px}
-  .ft-venue{font-size:7px;padding:0 2px}
-  .p-badge{font-size:8px;padding:0 3px}
-  .ft-pos{font-size:8px;padding:0 3px}
-  .rs-module{font-size:9px}
-  .rs-head{padding:5px 7px}
-  .rs-title{font-size:8px}
-  .rs-row{padding:4px 7px;gap:4px}
-  .rs-date{font-size:8px;flex:0 0 40px}
-  .rs-foot{font-size:8px;padding:4px 7px}
-  .results-info{grid-template-columns:1fr;gap:6px;padding:0 8px 8px}
-
-  /* Prose */
-  .prose{padding:12px}
-  .prose h1{font-size:18px}
-  .prose li{margin:5px 0;font-size:13px}
-
-  /* Footer */
-  .site-footer{font-size:11px;padding:14px 0}
-
-  /* Ad slots: very compact on phone */
-  .ad-leaderboard,.ad-inline,.ad-footer{min-height:44px}
-  .ad-slot::before{font-size:7px}
-  .ad-slot .ad-body{font-size:9px;padding:6px}
-  .ad-slot .ad-size{font-size:8px}
-  .ad-mpu{min-height:80px;margin:6px}
-  .ad-anchor{min-height:40px}
-  .ad-anchor .ad-close{width:16px;height:16px;font-size:10px;top:2px;right:4px}
-  body.has-anchor-ad{padding-bottom:44px}
-
-  /* Affiliate section */
-  .aff-card{padding:10px;gap:6px}
-  .aff-card .aff-name{font-size:13px}
-  .aff-card .aff-offer{font-size:11px}
-  .aff-card .aff-cta{font-size:11px;padding:7px 10px}
-  .affiliate .aff-disc{font-size:9px}
+  .container{padding:0 10px}
+  .filters{flex-direction:column}
+  .filters label{width:100%}
+  .filters select{width:100%}
+  .engine-toggle{width:100%}
+  .engine-seg .eng-btn{flex:1}
+  .mode-switch{justify-content:space-between}
+  .mode-btn{flex:1;text-align:center;padding:9px 8px;white-space:normal;line-height:1.15}
+  .cards{grid-template-columns:1fr}
+  .ad-leaderboard,.ad-inline,.ad-footer{height:60px}
+  .ad-slot .ad-size{display:none}
 }
-
-/* ---- Very small phone ≤ 360px ---- */
 @media(max-width:360px){
-  .container{padding:0 6px}
-  .logo{font-size:14px}
-  .logo span{font-size:14px}
-
-  /* Header even tighter */
-  .header-inner{height:46px;gap:8px}
-  .menu-toggle{font-size:20px;padding:6px}
-
-  /* Toolbar: ultra-compact */
-  .toolbar{gap:6px;margin:8px 0 6px}
-  .filters{gap:3px}
-  .filters select{font-size:11px;padding:4px 4px}
-  .filters label{font-size:9px}
-
-  /* Mode switch: stack 2 per row on very narrow screens */
-  .mode-switch{grid-template-columns:1fr 1fr;gap:4px}
-  .mode-btn{padding:6px 4px;font-size:10px}
-  .mode-btn.msel{grid-column:1/-1}
-  .sel-count{min-width:14px;height:14px;font-size:9px}
-  .engine-seg .eng-btn{padding:4px 6px;font-size:10px}
-  .engine-label{font-size:9px}
-
-  /* Table: absolute minimum width */
-  .pred-table{font-size:11px;min-width:480px}
-  .pred-table thead th{padding:5px 2px;font-size:9px}
-  .pred-table tbody td{padding:5px 2px;font-size:11px}
-  .pred-table th.col-match,.pred-table td.col-match{min-width:100px}
-  .match-cell .teams{font-size:11px}
-  .prob{min-width:30px;font-size:11px}
-  .tip{font-size:10px;padding:2px 4px;min-width:18px}
-  .pred-table th.col-pick,.pred-table td.col-pick{width:26px}
-  input.pick-cb{width:12px;height:12px}
-  td.col-prob .pp{min-width:22px;font-size:9px}
-
-  /* Cards */
-  .cards{grid-template-columns:1fr 1fr;gap:4px}
-  .stat-card{padding:8px}
-  .stat-num{font-size:16px}
-  .stat-lbl{font-size:9px}
-
-  /* Form tables */
-  .form-table{font-size:8px}
-  .form-table th{font-size:7px;padding:2px 1px}
-  .form-table td{padding:3px 1px;font-size:8px}
-  .rs-module{font-size:8px}
-  .ad-mpu{min-height:60px;margin:4px}
-  .visitors{margin:4px;padding:8px 8px}
-  .visitors .vc-head{font-size:10px}
-  .visitors .vc-list li{font-size:9px;line-height:1.6}
-  body.has-anchor-ad{padding-bottom:36px}
+  .logo{font-size:19px}
+  .stat-num{font-size:24px}
 }

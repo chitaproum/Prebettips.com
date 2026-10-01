@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PreBetTips — Football Predictions &amp; Betting Tips</title>
-  <meta name="description" content="Mathematical football predictions: 1X2 win probabilities, correct score, over/under and average goals, computed with a Poisson statistical model." />
+  <meta name="description" content="Mathematical football predictions: 1X2 win probabilities, correct score, over/under and average goals, computed with a Poisson statistical model and a KPI framework." />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -60,7 +60,7 @@
             <span class="engine-label">Data</span>
             <div class="engine-seg">
               <button type="button" class="eng-btn active" data-engine="poisson" aria-pressed="true">Poisson</button>
-              <button type="button" class="eng-btn" data-engine="random" aria-pressed="false" title="KPI engine: prediction built from the teams' stats (avg goals for/against, PPG, win%)">KPI</button>
+              <button type="button" class="eng-btn" data-engine="random" aria-pressed="false" title="KPI engine: prediction built from the teams' stats (avg goals for/against, PPG, win%, head-to-head)">KPI</button>
             </div>
           </div>
         </div>
@@ -144,6 +144,7 @@
           <li><strong>Score matrix.</strong> A Poisson distribution turns each λ into the probability of 0,1,2… goals. Multiplying home×away probabilities gives a full score grid (0–0, 1–0 …).</li>
           <li><strong>Outcomes.</strong> Summing the grid gives 1 / X / 2 probabilities, the most likely correct score, expected total goals and the Over/Under 2.5 split.</li>
         </ol>
+        <p><strong>KPI engine.</strong> Switch the <em>Data</em> toggle to <strong>KPI</strong> for an alternative, stats-weighted prediction. It builds a KPI Confidence Index from win rate, venue form, recent form, head-to-head dominance and average goals — see the README for the exact weights.</p>
         <p class="muted">This is a demonstration app using sample fixtures and ratings. Predictions are for entertainment and study only — no gambling advice is implied.</p>
       </article>
     </section>
@@ -159,7 +160,7 @@
 
   <footer class="site-footer">
     <div class="container">
-      <p>PreBetTips &middot; Poisson-model football predictions &middot; Demo project. 18+ Please gamble responsibly.</p>
+      <p>PreBetTips &middot; Poisson-model &amp; KPI football predictions &middot; Demo project. 18+ Please gamble responsibly.</p>
     </div>
   </footer>
 

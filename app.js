@@ -1,1030 +1,619 @@
-/* PreBetTips — Poisson football prediction engine + UI (no inline handlers) */
+/* PreBetTips - front-end logic (demo).
+   Two prediction engines:
+   (1) Poisson model  : expected goals from att/def ratings -> score grid.
+   (2) KPI framework  : stats-weighted confidence index (PDF-style method).
+   Sample data only - not betting advice. No inline event handlers are used;
+   everything is wired with addEventListener. */
 (function () {
-  "use strict";
-  var D = window.DATA;
-  var MAX_GOALS = 8; // score grid size
-  var dateFilter = "all"; // all | today | tomorrow | weekend | yesterday
-  var mode = "1x2";       // 1x2 | ou | stats | selection
-  var engine = "poisson";  // poisson | random  (prediction data source)
+  'use strict';
+  var DATA = window.DATA || {};
+  var TEAMS = DATA.teams || {};
+  var FIXTURES = DATA.fixtures || [];
+  var HISTORY = DATA.history || [];
+  var LEAGUE_AVG = DATA.leagueAvgGoals || 2.7;
+  var HOME_ADV = DATA.homeAdvantage || 1.15;
 
-  /* ---------- "Your Selection" coupon ---------- */
-  // User-ticked picks from the 1 x 2 / Over-Under columns, capped at SEL_MAX,
-  // persisted in localStorage so the coupon survives a reload.
-  var SEL_MAX = 20;
-  var SEL_KEY = "sp_selection_v1";
-  function loadSelection(){
-    try{ var s=JSON.parse(localStorage.getItem(SEL_KEY));
-      return Array.isArray(s)?s.slice(0,SEL_MAX):[]; }catch(e){ return []; }
+  /* ---------- tiny DOM helpers ---------- */
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function $all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
-  function saveSelection(){
-    try{ localStorage.setItem(SEL_KEY, JSON.stringify(selection)); }catch(e){}
-  }
-  var selection = loadSelection();
-  function isSelected(home,away,m){
-    return selection.some(function(s){
-      return s.home===home && s.away===away && s.mode===m; });
-  }
+  function pct(x) { return Math.round(x * 100); }
+  function clamp(x, lo, hi) { return Math.max(lo, Math.min(hi, x)); }
 
-  /* ---------- Math ---------- */
-  function factorial(n){ var f=1; for(var i=2;i<=n;i++) f*=i; return f; }
-  function poisson(k, lambda){ return Math.pow(lambda,k)*Math.exp(-lambda)/factorial(k); }
+  /* ---------- Poisson engine ---------- */
+  function factorial(n) { var f = 1; for (var i = 2; i <= n; i++) f *= i; return f; }
+  function poissonPmf(k, lambda) { return Math.pow(lambda, k) * Math.exp(-lambda) / factorial(k); }
 
-  // Compute a full prediction for one fixture
-  function predict(home, away){
-    var h = D.teams[home], a = D.teams[away];
-    if(!h||!a) return null;
-    var base = D.leagueAvgGoals/2;                 // avg goals per side
-    var lh = h.att * a.def * base * D.homeAdvantage;
+  function lambdas(home, away) {
+    var h = TEAMS[home] || { att: 1, def: 1 };
+    var a = TEAMS[away] || { att: 1, def: 1 };
+    var base = LEAGUE_AVG / 2;
+    var lh = h.att * a.def * base * HOME_ADV;
     var la = a.att * h.def * base;
+    return { lh: clamp(lh, 0.15, 6), la: clamp(la, 0.15, 6) };
+  }
 
-    // Probability of each goal count for home / away
-    var ph=[], pa=[], i, j;
-    for(i=0;i<=MAX_GOALS;i++){ ph.push(poisson(i,lh)); pa.push(poisson(i,la)); }
-
-    var p1=0,pX=0,p2=0,pOver=0,pBtts=0,best={p:-1,h:0,a:0};
-    for(i=0;i<=MAX_GOALS;i++){
-      for(j=0;j<=MAX_GOALS;j++){
-        var p = ph[i]*pa[j];
-        if(i>j) p1+=p; else if(i===j) pX+=p; else p2+=p;
-        if(i+j>=3) pOver+=p;
-        if(i>=1 && j>=1) pBtts+=p;
-        if(p>best.p){ best={p:p,h:i,a:j}; }
+  function predictPoisson(home, away) {
+    var L = lambdas(home, away), N = 7;
+    var pH = 0, pD = 0, pA = 0, pOver = 0, best = 0, bh = 0, ba = 0;
+    for (var i = 0; i <= N; i++) {
+      for (var j = 0; j <= N; j++) {
+        var p = poissonPmf(i, L.lh) * poissonPmf(j, L.la);
+        if (i > j) pH += p; else if (i === j) pD += p; else pA += p;
+        if (i + j > 2) pOver += p;
+        if (p > best) { best = p; bh = i; ba = j; }
       }
     }
-    var tot=p1+pX+p2;                              // normalise (grid is truncated)
-    p1/=tot; pX/=tot; p2/=tot; pOver/=tot; pBtts/=tot;
-    var tip = p1>=pX && p1>=p2 ? "1" : (p2>=pX ? "2" : "X");
-    var overPct = Math.round(pOver*100);
+    var s = pH + pD + pA;
+    pH /= s; pD /= s; pA /= s;
     return {
-      lh:lh, la:la,
-      p1:Math.round(p1*100), pX:Math.round(pX*100), p2:Math.round(p2*100),
-      tip:tip,
-      score:best.h+":"+best.a,
-      goals:(lh+la),
-      over:pOver>=0.5,
-      overPct:overPct, underPct:100-overPct,
-      btts:Math.round(pBtts*100)
+      pHome: pH, pDraw: pD, pAway: pA,
+      scoreH: bh, scoreA: ba,
+      expH: L.lh, expA: L.la, expTotal: L.lh + L.la,
+      pOver: clamp(pOver, 0.02, 0.98)
     };
   }
-
-  /* ---------- KPI engine (the alternative "KPI" data source) ----------
-     Mirrors the KPI-Based Match Prediction methodology: it extracts and
-     *weights* the relevant parameters from the stats tables and turns them
-     into a KPI Confidence Index for 1X2 and Over/Under, instead of a seeded
-     RNG. Parameters & weights (home vs away strength score, each 0..1):
-
-       Overall Win Rate (W%) ................ weight 0.15
-       Venue Form (W% at venue) ............. weight 0.15
-       Recent 6-match form (W%) ............. weight 0.20
-       Venue-specific recent form (W%) ...... weight 0.15
-       Head-to-Head dominance (win share) ... weight 0.20
-       Net scoring KPI (aGF - aGA) .......... weight 0.15
-
-     The two strength scores (plus a home-advantage bump) are converted into
-     1 / X / 2 confidence; a separate Over/Under confidence blends the Poisson
-     over-probability with each team's historical Over-2.5 rates and the
-     projected total goals. Score & BTTS come from a Poisson grid over the
-     KPI-derived expected goals. */
-  function clamp01(x){ return x<0?0:x>1?1:x; }
-  function recentWinPct(team, count, venue, seed){
-    var r = teamResults(team, count, venue, seed);
-    if(!r.length) return 0.5;
-    var w=0; r.forEach(function(m){ if(m.res==='W') w++; });
-    return w/r.length;
-  }
-  function h2hWinShare(home, away){
-    var rows = h2hResults(home, away, 4);
-    var hw=0, aw=0;
-    rows.forEach(function(m){
-      var hg = m.home===home ? m.ft[0] : m.ft[1];
-      var ag = m.home===home ? m.ft[1] : m.ft[0];
-      if(hg>ag) hw++; else if(ag>hg) aw++;
+  /* ---------- KPI stats (computed from HISTORY) ---------- */
+  var _statsCache = null;
+  function buildStats() {
+    if (_statsCache) return _statsCache;
+    var map = {};
+    function ensure(t) {
+      if (!map[t]) map[t] = {
+        games: [], gf: 0, ga: 0, w: 0, d: 0, l: 0,
+        hGames: [], hw: 0, hd: 0, hl: 0,
+        aGames: [], aw: 0, ad: 0, al: 0
+      };
+      return map[t];
+    }
+    // chronological order (oldest first) so "recent" = tail
+    var hist = HISTORY.slice().sort(function (x, y) { return x.date < y.date ? -1 : 1; });
+    hist.forEach(function (m) {
+      var H = ensure(m.home), A = ensure(m.away);
+      var res = m.fh > m.fa ? 'H' : (m.fh < m.fa ? 'A' : 'D');
+      H.gf += m.fh; H.ga += m.fa; A.gf += m.fa; A.ga += m.fh;
+      var hRec = { res: res === 'H' ? 'W' : (res === 'A' ? 'L' : 'D'), gf: m.fh, ga: m.fa, date: m.date, opp: m.away, venue: 'H' };
+      var aRec = { res: res === 'A' ? 'W' : (res === 'H' ? 'L' : 'D'), gf: m.fa, ga: m.fh, date: m.date, opp: m.home, venue: 'A' };
+      H.games.push(hRec); A.games.push(aRec);
+      H.hGames.push(hRec); A.aGames.push(aRec);
+      if (res === 'H') { H.w++; H.hw++; A.l++; A.al++; }
+      else if (res === 'A') { A.w++; A.aw++; H.l++; H.hl++; }
+      else { H.d++; H.hd++; A.d++; A.ad++; }
     });
-    var dec = hw+aw;
-    // win share for the home side across decisive H2H games (0.5 if none)
-    return dec ? hw/dec : 0.5;
+    _statsCache = map;
+    return map;
   }
-  function predictKpi(home, away){
-    var hV = computeForm(home, HOME);    // home side, HOME venue KPIs
-    var aV = computeForm(away, 'away');  // away side, AWAY venue KPIs
-    if(!hV || !aV) return null;
-    var hOv = overallForm(home), aOv = overallForm(away);
-
-    // ---- Normalised KPI inputs (0..1) ----
-    var hOverallW = hOv.wp/100,              aOverallW = aOv.wp/100;        // overall W%
-    var hVenueW   = hV.wp/100,               aVenueW   = aV.wp/100;         // venue W%
-    var hRecent   = recentWinPct(home,6,'any','L6'), aRecent = recentWinPct(away,6,'any','L6');
-    var hVenRec   = recentWinPct(home,4,'home','HM'), aVenRec = recentWinPct(away,4,'away','AW');
-    var hH2H      = h2hWinShare(home, away), aH2H = 1 - hH2H;
-    // Net scoring KPI (aGF - aGA) squashed to 0..1 around a +/-2 goal range
-    var hNet = clamp01((hV.agf - hV.aga)/4 + 0.5);
-    var aNet = clamp01((aV.agf - aV.aga)/4 + 0.5);
-
-    // ---- Weighted strength scores ----
-    var W = {ovr:0.15, ven:0.15, rec:0.20, vrec:0.15, h2h:0.20, net:0.15};
-    var sh = W.ovr*hOverallW + W.ven*hVenueW + W.rec*hRecent + W.vrec*hVenRec + W.h2h*hH2H + W.net*hNet;
-    var sa = W.ovr*aOverallW + W.ven*aVenueW + W.rec*aRecent + W.vrec*aVenRec + W.h2h*aH2H + W.net*aNet;
-    sh += 0.06;  // home-advantage bump on the KPI score
-
-    // ---- KPI Confidence Index for 1 / X / 2 ----
-    var tS = sh + sa || 1;
-    var hShare = sh/tS, aShare = sa/tS;
-    var closeness = 1 - Math.abs(hShare - aShare);        // 0..1 (1 = evenly matched)
-    var pX = 0.08 + 0.26*closeness;                       // draw: 8%..34%
-    var rem = 1 - pX;
-    var p1 = rem*hShare, p2 = rem*aShare;
-
-    // ---- KPI-derived expected goals (attack vs opponent defence) ----
-    var lh = (hV.agf + aV.aga) / 2;
-    var la = (aV.agf + hV.aga) / 2;
-    // momentum tilt from the form KPIs (PPG + win%)
-    var hMom = ((hOv.ppg/3) + hOverallW)/2, aMom = ((aOv.ppg/3) + aOverallW)/2;
-    var tilt = hMom - aMom;
-    lh *= (1 + 0.15*tilt); la *= (1 - 0.15*tilt);
-    lh = Math.max(0.15, lh); la = Math.max(0.15, la);
-
-    // ---- Poisson grid for score, BTTS, and a baseline over-probability ----
-    var ph=[], pa=[], i, j;
-    for(i=0;i<=MAX_GOALS;i++){ ph.push(poisson(i,lh)); pa.push(poisson(i,la)); }
-    var pOverP=0, pBtts=0, best={p:-1,h:0,a:0};
-    for(i=0;i<=MAX_GOALS;i++){
-      for(j=0;j<=MAX_GOALS;j++){
-        var p = ph[i]*pa[j];
-        if(i+j>=3) pOverP+=p;
-        if(i>=1 && j>=1) pBtts+=p;
-        if(p>best.p){ best={p:p,h:i,a:j}; }
-      }
-    }
-
-    // ---- Over/Under 2.5 Confidence Index ----
-    // blend: Poisson over-prob + historical over-2.5 rates + projected total
-    var histOver = ((hV.ovgTotal + hV.ovgLast8 + aV.ovgTotal + aV.ovgLast8)/4)/100;
-    var expTotal = lh + la;
-    var expFactor = clamp01((expTotal - 2.5)/2 + 0.5);    // how far total sits above 2.5
-    var overConf = 0.45*pOverP + 0.35*histOver + 0.20*expFactor;
-    var overPct = Math.round(clamp01(overConf)*100);
-
-    var tip = p1>=pX && p1>=p2 ? "1" : (p2>=pX ? "2" : "X");
+  function teamStat(t) {
+    var m = buildStats()[t];
+    if (!m) return null;
+    var n = m.games.length || 1;
     return {
-      lh:lh, la:la,
-      p1:Math.round(p1*100), pX:Math.round(pX*100), p2:Math.round(p2*100),
-      tip:tip,
-      score:best.h+":"+best.a,
-      goals:(lh+la),
-      over:overPct>=50,
-      overPct:overPct, underPct:100-overPct,
-      btts:Math.round(pBtts*100)
+      n: m.games.length,
+      winRate: m.w / n,
+      ppg: (m.w * 3 + m.d) / n,
+      aGF: m.gf / n, aGA: m.ga / n,
+      net: (m.gf - m.ga) / n,
+      overRate: m.games.filter(function (g) { return g.gf + g.ga > 2.5; }).length / n,
+      recent6: m.games.slice(-6),
+      raw: m
     };
   }
-  // Prediction using whichever engine is currently selected
-  function activePredict(home, away){
-    return engine==="random" ? predictKpi(home,away) : predict(home,away);
+  function venuePPG(t, venue) {
+    var m = buildStats()[t]; if (!m) return null;
+    var g = venue === 'H' ? m.hGames : m.aGames;
+    if (!g.length) return null;
+    var pts = g.reduce(function (s, x) { return s + (x.res === 'W' ? 3 : x.res === 'D' ? 1 : 0); }, 0);
+    return { ppg: pts / g.length, winRate: g.filter(function (x) { return x.res === 'W'; }).length / g.length, n: g.length };
+  }
+  function h2h(home, away) {
+    var rows = HISTORY.filter(function (m) {
+      return (m.home === home && m.away === away) || (m.home === away && m.away === home);
+    }).sort(function (x, y) { return x.date < y.date ? 1 : -1; });
+    var hp = 0, ap = 0;
+    rows.forEach(function (m) {
+      var hs = m.home === home ? m.fh : m.fa, as = m.home === home ? m.fa : m.fh;
+      if (hs > as) hp += 3; else if (hs < as) ap += 3; else { hp++; ap++; }
+    });
+    return { rows: rows, hp: hp, ap: ap, n: rows.length };
   }
 
-  /* ---------- Helpers ---------- */
-  function esc(s){ return String(s).replace(/[&<>"']/g,function(c){
-    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
-  // 3-letter uppercase team abbreviations for compact match-history rows
-  var ABBR = {
-    "Man City":"MCI","Arsenal":"ARS","Liverpool":"LIV","Tottenham":"TOT",
-    "Chelsea":"CHE","Man United":"MUN","Brighton":"BHA","Everton":"EVE",
-    "Burnley":"BUR","Sheffield Utd":"SHU","Real Madrid":"RMA","Barcelona":"BAR",
-    "Atletico":"ATM","Girona":"GIR","Sevilla":"SEV","Getafe":"GET",
-    "Cadiz":"CAD","Almeria":"ALM","Inter":"INT","Juventus":"JUV",
-    "Milan":"MIL","Napoli":"NAP","Roma":"ROM","Lazio":"LAZ",
-    "Salernitana":"SAL","Empoli":"EMP"
+  /* ---------- KPI engine (PDF-style weighted confidence index) ---------- */
+  function predictKpi(home, away) {
+    var model = predictPoisson(home, away); // reused for score & expected goals
+    var hs = teamStat(home), as = teamStat(away);
+    var hv = venuePPG(home, 'H'), av = venuePPG(away, 'A');
+    var hh = h2h(home, away);
+    // normalised components in [0,1], higher favours that side
+    function norm(x, lo, hi) { return clamp((x - lo) / (hi - lo), 0, 1); }
+    var hWin = hs ? hs.winRate : 0.45, aWin = as ? as.winRate : 0.40;
+    var hVen = hv ? hv.winRate : hWin, aVen = av ? av.winRate : aWin;
+    var hRec = hs ? norm(hs.ppg, 0, 3) : 0.5, aRec = as ? norm(as.ppg, 0, 3) : 0.45;
+    var hVR = hv ? norm(hv.ppg, 0, 3) : hRec, aVR = av ? norm(av.ppg, 0, 3) : aRec;
+    var h2hTot = hh.hp + hh.ap;
+    var hH2H = h2hTot ? hh.hp / h2hTot : 0.52, aH2H = h2hTot ? hh.ap / h2hTot : 0.48;
+    var hNet = norm(hs ? hs.net : 0, -2, 2), aNet = norm(as ? as.net : 0, -2, 2);
+    // weights: overallW .15 | venueW .15 | recent6 .20 | venue-recent .15 | H2H .20 | net .15
+    var hConf = 0.15 * hWin + 0.15 * hVen + 0.20 * hRec + 0.15 * hVR + 0.20 * hH2H + 0.15 * hNet;
+    var aConf = 0.15 * aWin + 0.15 * aVen + 0.20 * aRec + 0.15 * aVR + 0.20 * aH2H + 0.15 * aNet;
+    hConf += 0.06; // home advantage bump
+    var closeness = 1 - clamp(Math.abs(hConf - aConf) / 0.5, 0, 1);
+    var pDraw = clamp(0.08 + (0.34 - 0.08) * closeness, 0.08, 0.34);
+    var rem = 1 - pDraw, tot = hConf + aConf || 1;
+    var pHome = rem * (hConf / tot), pAway = rem * (aConf / tot);
+    var sum = pHome + pDraw + pAway || 1;
+    pHome /= sum; pAway /= sum;
+    var pDraw2 = pDraw / sum;
+    // Over/Under KPI confidence: .45 Poisson + .35 historical over-rate + .20 expected-goals factor
+    var histOver = ((hs ? hs.overRate : 0.5) + (as ? as.overRate : 0.5)) / 2;
+    var expFactor = clamp(model.expTotal / 4, 0, 1);
+    var pOver = clamp(0.45 * model.pOver + 0.35 * histOver + 0.20 * expFactor, 0.02, 0.98);
+    return {
+      pHome: pHome, pDraw: pDraw2, pAway: pAway,
+      scoreH: model.scoreH, scoreA: model.scoreA,
+      expH: model.expH, expA: model.expA, expTotal: model.expTotal,
+      pOver: pOver,
+      _kpi: { hConf: hConf, aConf: aConf, hH2H: hH2H, aH2H: aH2H, h2hN: hh.n }
+    };
+  }
+
+  function predict(home, away) {
+    return state.engine === 'random' ? predictKpi(home, away) : predictPoisson(home, away);
+  }
+  /* ---------- state ---------- */
+  var state = {
+    mode: '1x2',        // 1x2 | ou | stats | selection
+    engine: 'poisson',  // poisson | random(KPI)
+    league: 'all',
+    tip: 'all',
+    minProb: 0,
+    search: '',
+    selection: {}       // key -> true
   };
-  function abbr(name){
-    if(ABBR[name]) return ABBR[name];
-    var w=(name||"").replace(/[^A-Za-z ]/g,"").split(/\s+/).filter(Boolean);
-    var s = w.length>1 ? w.map(function(x){return x.charAt(0);}).join("") : (w[0]||name);
-    return s.substring(0,3).toUpperCase();
-  }
-  function fmtDate(s){
-    var d=new Date(s.replace(" ","T"));
-    if(isNaN(d)) return esc(s);
-    var day=d.toLocaleDateString(undefined,{day:"2-digit",month:"short"});
-    var t=d.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit",hour12:false});
-    return {day:day,time:t};
+  function fxKey(f) { return f.home + '|' + f.away + '|' + f.date; }
+
+  /* ---------- table headers per mode ---------- */
+  var HEADS = {
+    '1x2': '<tr><th class="col-pick">Pick</th><th>Date</th><th class="col-league">League</th>'
+      + '<th class="col-match">Match</th><th>1</th><th>X</th><th>2</th><th>Tip</th><th>Score</th></tr>',
+    'ou': '<tr><th class="col-pick">Pick</th><th>Date</th><th class="col-league">League</th>'
+      + '<th class="col-match">Match</th><th>Exp. goals</th><th>Over 2.5</th><th>Under 2.5</th><th>Tip</th></tr>',
+    'stats': '<tr><th class="col-match">Match</th><th>1</th><th>X</th><th>2</th><th>Exp. goals</th><th>Over 2.5</th><th>Score</th></tr>',
+    'selection': '<tr><th>Date</th><th class="col-league">League</th><th class="col-match">Match</th>'
+      + '<th class="col-prob">Probabilities</th><th>Tip</th><th>Score</th><th></th></tr>'
+  };
+
+  function adRowHtml(cols) {
+    return '<tr class="ad-row"><td colspan="' + cols + '" style="padding:0">'
+      + '<div class="ad-slot ad-inline" style="margin:0;border-radius:0;border-left:0;border-right:0" aria-label="Advertisement">'
+      + '<span class="ad-body">Your banner here<span class="ad-size">Leaderboard 728×90</span></span></div></td></tr>';
   }
 
-  /* ---------- Date bucketing ---------- */
-  function dayOf(f){ return f.date.slice(0,10); }
-  // Anchor "today" to the earliest fixture date so the demo always has data.
-  var allDays = D.fixtures.map(dayOf).sort();
-  var baseToday = allDays[0];
-  function addDays(iso, n){ var d=new Date(iso+"T00:00"); d.setDate(d.getDate()+n);
-    return d.toISOString().slice(0,10); }
-  var baseTomorrow = addDays(baseToday,1);
-  var baseYesterday = addDays(baseToday,-1);
-  function isWeekend(iso){ var g=new Date(iso+"T00:00").getDay(); return g===0||g===6; }
-  function inBucket(f, bucket){
-    var d=dayOf(f);
-    if(bucket==="all") return true;
-    if(bucket==="today") return d===baseToday;
-    if(bucket==="tomorrow") return d===baseTomorrow;
-    if(bucket==="yesterday") return d===baseYesterday;
-    if(bucket==="weekend") return isWeekend(d);
+  function fmtDate(d) {
+    var parts = String(d).split(' ');
+    var dd = parts[0] ? parts[0].slice(5) : '';
+    return '<span class="teams">' + esc(dd) + '</span>'
+      + (parts[1] ? '<br><span class="time">' + esc(parts[1]) + '</span>' : '');
+  }
+  function matchCell(f) {
+    return '<div class="match-cell"><span class="teams">' + esc(f.home) + ' v ' + esc(f.away) + '</span></div>';
+  }
+  function bestKey(p) {
+    if (p.pHome >= p.pDraw && p.pHome >= p.pAway) return '1';
+    if (p.pAway >= p.pHome && p.pAway >= p.pDraw) return '2';
+    return 'X';
+  }
+  function probCell(val, key, best) {
+    return '<span class="prob ' + (key === best ? 'best-' + best : '') + '">' + pct(val) + '%'
+      + '<span class="bar" style="width:' + Math.max(6, pct(val)) + '%"></span></span>';
+  }
+  function tipBadge(key) {
+    var cls = key === '1' ? 't1' : key === '2' ? 't2' : 'tX';
+    return '<span class="tip ' + cls + '">' + key + '</span>';
+  }
+
+  /* ---------- row builders per mode ---------- */
+  function row1x2(f, p) {
+    var best = bestKey(p), k = fxKey(f), checked = state.selection[k] ? ' checked' : '';
+    return '<tr>'
+      + '<td class="col-pick"><input type="checkbox" class="pick-cb" data-key="' + esc(k) + '"' + checked + ' aria-label="Add to selection"></td>'
+      + '<td>' + fmtDate(f.date) + '</td>'
+      + '<td class="col-league"><span class="league-cell">' + esc(f.league) + '</span></td>'
+      + '<td class="col-match">' + matchCell(f) + '</td>'
+      + '<td>' + probCell(p.pHome, '1', best) + '</td>'
+      + '<td>' + probCell(p.pDraw, 'X', best) + '</td>'
+      + '<td>' + probCell(p.pAway, '2', best) + '</td>'
+      + '<td>' + tipBadge(best) + '</td>'
+      + '<td><span class="score">' + p.scoreH + '-' + p.scoreA + '</span></td>'
+      + '</tr>';
+  }
+  function rowOu(f, p) {
+    var over = p.pOver, under = 1 - over, k = fxKey(f), checked = state.selection[k] ? ' checked' : '';
+    var tip = over >= 0.5 ? 'over' : 'under';
+    return '<tr>'
+      + '<td class="col-pick"><input type="checkbox" class="pick-cb" data-key="' + esc(k) + '"' + checked + ' aria-label="Add to selection"></td>'
+      + '<td>' + fmtDate(f.date) + '</td>'
+      + '<td class="col-league"><span class="league-cell">' + esc(f.league) + '</span></td>'
+      + '<td class="col-match">' + matchCell(f) + '</td>'
+      + '<td><span class="score">' + p.expTotal.toFixed(2) + '</span></td>'
+      + '<td><span class="ou over">' + pct(over) + '%</span></td>'
+      + '<td><span class="ou under">' + pct(under) + '%</span></td>'
+      + '<td><span class="ou ' + tip + '">' + (tip === 'over' ? 'Over 2.5' : 'Under 2.5') + '</span></td>'
+      + '</tr>';
+  }
+  function rowStats(f, p, idx) {
+    var best = bestKey(p);
+    return '<tr class="stats-row" data-idx="' + idx + '">'
+      + '<td class="col-match"><span class="exp-caret">&#9656;</span>' + esc(f.home) + ' v ' + esc(f.away) + '</td>'
+      + '<td>' + probCell(p.pHome, '1', best) + '</td>'
+      + '<td>' + probCell(p.pDraw, 'X', best) + '</td>'
+      + '<td>' + probCell(p.pAway, '2', best) + '</td>'
+      + '<td><span class="score">' + p.expTotal.toFixed(2) + '</span></td>'
+      + '<td><span class="ou over">' + pct(p.pOver) + '%</span></td>'
+      + '<td><span class="score">' + p.scoreH + '-' + p.scoreA + '</span></td>'
+      + '</tr>';
+  }
+  /* ---------- Stats detail panel (recent form + H2H) ---------- */
+  function formRowsHtml(team) {
+    var st = teamStat(team);
+    if (!st || !st.recent6.length) {
+      return '<tr><td class="ft-team">' + esc(team) + '</td><td colspan="6" style="color:var(--muted)">No recent matches in sample</td></tr>';
+    }
+    var g = st.recent6;
+    var cells = g.map(function (x) {
+      var cls = x.res === 'W' ? 'ppg' : x.res === 'L' ? 'aga' : '';
+      return '<td class="' + cls + '">' + x.res + '</td>';
+    }).join('');
+    while (g.length < 6) { cells += '<td style="color:var(--muted)">–</td>'; g = g.concat([0]); }
+    return '<tr><td class="ft-team">' + esc(team) + '</td>'
+      + '<td class="agf">' + st.aGF.toFixed(2) + '</td>'
+      + '<td class="aga">' + st.aGA.toFixed(2) + '</td>'
+      + '<td class="ppg">' + st.ppg.toFixed(2) + '</td>'
+      + '<td class="ovg">' + pct(st.overRate) + '%</td></tr>';
+  }
+  function detailPanel(f) {
+    var hh = h2h(f.home, f.away);
+    var formTbl = '<p class="form-title">Season form (sample)</p>'
+      + '<table class="form-table"><thead><tr>'
+      + '<th class="ft-team">Team</th><th>Avg GF</th><th>Avg GA</th><th>PPG</th><th class="ovg">Over 2.5</th>'
+      + '</tr></thead><tbody>' + formRowsHtml(f.home) + formRowsHtml(f.away) + '</tbody></table>';
+    var h2hRows = hh.rows.length
+      ? hh.rows.map(function (m) {
+        var hw = m.fh > m.fa, aw = m.fh < m.fa;
+        return '<div class="rs-row"><span class="rs-date">' + esc(m.date.slice(5)) + '</span>'
+          + '<span class="rs-teams"><span class="rs-tn ' + (hw ? 'win' : '') + '">' + esc(m.home) + '</span>'
+          + '<span class="rs-sc">' + m.fh + '–' + m.fa + '</span>'
+          + '<span class="rs-tn ' + (aw ? 'win' : '') + '">' + esc(m.away) + '</span></span>'
+          + '<span class="rs-lg">' + esc(m.league) + '</span></div>';
+      }).join('')
+      : '<div class="rs-row"><span class="rs-tn" style="text-align:center;flex:1">No head-to-head in sample</span></div>';
+    var h2hMod = '<div class="rs-module"><div class="rs-head"><span class="rs-tag">H2H</span>'
+      + '<span class="rs-title">Head to head</span></div><div class="rs-rows">' + h2hRows + '</div></div>';
+    return '<div class="form-panel">' + formTbl + '</div><div class="results-info">' + h2hMod + '</div>';
+  }
+  function toggleDetail(tr) {
+    var idx = tr.getAttribute('data-idx');
+    var next = tr.nextElementSibling;
+    if (next && next.classList.contains('detail-row')) {
+      next.parentNode.removeChild(next); tr.classList.remove('open'); return;
+    }
+    $all('tr.detail-row').forEach(function (d) { d.parentNode.removeChild(d); });
+    $all('tr.stats-row.open').forEach(function (d) { d.classList.remove('open'); });
+    var f = _rendered[idx];
+    if (!f) return;
+    var dr = document.createElement('tr');
+    dr.className = 'detail-row';
+    dr.innerHTML = '<td colspan="7">' + detailPanel(f) + '</td>';
+    tr.parentNode.insertBefore(dr, tr.nextElementSibling);
+    tr.classList.add('open');
+  }
+  /* ---------- filtering + render ---------- */
+  var _rendered = [];
+  function passesFilters(f, p) {
+    if (state.league !== 'all' && f.league !== state.league) return false;
+    if (state.search) {
+      var q = state.search.toLowerCase();
+      if ((f.home + ' ' + f.away).toLowerCase().indexOf(q) === -1) return false;
+    }
+    var best = bestKey(p);
+    if (state.tip !== 'all') {
+      if (state.tip === 'over') { if (p.pOver < 0.5) return false; }
+      else if (state.tip === 'under') { if (p.pOver >= 0.5) return false; }
+      else if (state.tip !== best) return false;
+    }
+    if (state.minProb > 0) {
+      var topProb = Math.max(p.pHome, p.pDraw, p.pAway) * 100;
+      if (state.tip === 'over') topProb = p.pOver * 100;
+      else if (state.tip === 'under') topProb = (1 - p.pOver) * 100;
+      if (topProb < state.minProb) return false;
+    }
     return true;
   }
 
-  /* ---------- Render predictions ---------- */
-  var rows = [];
-  function buildRows(){
-    rows = D.fixtures.map(function(f){
-      return {f:f, p:activePredict(f.home, f.away)};
-    }).filter(function(r){ return r.p; });
-  }
-  buildRows();
-
-  /* ---------- Team form (season W/D/L, goals, PPG) ----------
-     Derived from each team att/def ratings so it stays consistent and
-     editable. To use REAL figures instead, add a `form` object on a team in
-     data.js, e.g. teams['Man City'].form = {home:{p,w,d,l,gf,ga}, away:{...}}
-     and it will be used verbatim. */
-  function computeForm(name, venue){
-    var r = rawForm(name, venue);
-    return r ? finalizeForm(r) : null;
-  }
-  // Raw season figures {p,w,d,l,gf,ga} for a venue (home|away)
-  function rawForm(name, venue){
-    var t = D.teams[name]; if(!t) return null;
-    if(t.form && t.form[venue]){ return t.form[venue]; }
-    var base = D.leagueAvgGoals/2;
-    var gfPer, gaPer, P;
-    if(venue===HOME){
-      gfPer = t.att * base * D.homeAdvantage; // scored vs an average side, at home
-      gaPer = t.def * base;
-      P = 11;
-    } else {
-      gfPer = t.att * base * 0.92;            // slight away penalty
-      gaPer = t.def * base * 1.06;
-      P = 12;
-    }
-    var i,j,pw=0,pd=0,pl=0;
-    for(i=0;i<=MAX_GOALS;i++) for(j=0;j<=MAX_GOALS;j++){
-      var pr = poisson(i,gfPer)*poisson(j,gaPer);
-      if(i>j) pw+=pr; else if(i===j) pd+=pr; else pl+=pr;
-    }
-    var w=Math.round(pw*P), d=Math.round(pd*P);
-    if(w+d>P) d=P-w; var l=P-w-d; if(l<0){ l=0; }
-    var gf=Math.round(gfPer*P), ga=Math.round(gaPer*P);
-    return {p:P,w:w,d:d,l:l,gf:gf,ga:ga};
-  }
-  // Combined home+away (overall) season form
-  function overallForm(name){
-    var h=rawForm(name,'home'), a=rawForm(name,'away');
-    if(!h||!a) return null;
-    return finalizeForm({p:h.p+a.p,w:h.w+a.w,d:h.d+a.d,l:h.l+a.l,gf:h.gf+a.gf,ga:h.ga+a.ga});
-  }
-  function finalizeForm(r){
-    var P=r.p||1, pts=3*r.w+r.d;
-    // Over 2.5 goals rate from average total goals per game (Poisson)
-    var lam=(r.gf+r.ga)/P;
-    var pUnder=Math.exp(-lam)*(1+lam+lam*lam/2); // P(0)+P(1)+P(2)
-    var pOver=1-pUnder;
-    var l8=Math.round(pOver*8);                  // over-2.5 games out of last 8
-    return {
-      p:r.p, w:r.w, d:r.d, l:r.l, gf:r.gf, ga:r.ga,
-      wp:Math.round(r.w/P*100), dp:Math.round(r.d/P*100), lp:Math.round(r.l/P*100),
-      agf:(r.gf/P), aga:(r.ga/P), agfga:((r.gf+r.ga)/P), ppg:(pts/P),
-      ovgTotal:Math.round(pOver*100), ovgLast8:Math.round(l8/8*100)
-    };
-  }
-
-  var HOME = 'home';
-
-  /* League standings: rank each league's teams by points (home+away form),
-     then goal difference. Cached per league. */
-  var _standings = {};
-  function leaguePosition(name){
-    var t=D.teams[name]; if(!t) return null;
-    var lg=t.league;
-    if(!_standings[lg]){
-      var arr=[];
-      Object.keys(D.teams).forEach(function(tn){
-        if(D.teams[tn].league!==lg) return;
-        var fh=computeForm(tn,'home'), fa=computeForm(tn,'away');
-        arr.push({name:tn,
-          pts:(3*fh.w+fh.d)+(3*fa.w+fa.d),
-          gd:(fh.gf+fa.gf)-(fh.ga+fa.ga)});
-      });
-      arr.sort(function(a,b){ return b.pts-a.pts || b.gd-a.gd; });
-      _standings[lg]={};
-      arr.forEach(function(x,i){ _standings[lg][x.name]=i+1; });
-    }
-    return _standings[lg][name];
-  }
-
-  /* ---------- Recent results (deterministic, derived from ratings) ----------
-     Real match history isn't available in this static demo, so recent results
-     are simulated deterministically from each team's att/def ratings using a
-     seeded RNG. Same fixture => same results every render. To show REAL data,
-     replace generateResults() with figures from your API. */
-  function strHash(s){ var h=2166136261>>>0; for(var i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
-  function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
-  function samplePoisson(lambda, rnd){ var L=Math.exp(-lambda),k=0,p=1; do{ k++; p*=rnd(); }while(p>L); return k-1; }
-  function leagueTag(lg){
-    var m={"Premier League":"PL","La Liga":"LL","Serie A":"SA"};
-    if(m[lg]) return m[lg];
-    return (lg||"").split(/\s+/).map(function(w){return w.charAt(0);}).join("").toUpperCase().slice(0,3);
-  }
-  function fmtDMY(d){
-    var dd=String(d.getDate()).padStart(2,"0"), mm=String(d.getMonth()+1).padStart(2,"0");
-    return dd+"/"+mm+"/"+d.getFullYear();
-  }
-  function leagueTeams(lg){ return Object.keys(D.teams).filter(function(n){ return D.teams[n].league===lg; }); }
-  // Simulate one match; returns {ft:[h,a], ht:[h,a]}
-  function simMatch(homeName, awayName, rnd){
-    var h=D.teams[homeName], a=D.teams[awayName];
-    var base=D.leagueAvgGoals/2;
-    var lh=(h?h.att:1)*(a?a.def:1)*base*D.homeAdvantage;
-    var la=(a?a.att:1)*(h?h.def:1)*base;
-    var hg=Math.min(samplePoisson(lh,rnd),6), ag=Math.min(samplePoisson(la,rnd),6);
-    var hh=0,ah=0,i;
-    for(i=0;i<hg;i++) if(rnd()<0.45) hh++;
-    for(i=0;i<ag;i++) if(rnd()<0.45) ah++;
-    return {ft:[hg,ag],ht:[hh,ah]};
-  }
-  // Build a list of matches for `team`; venue: 'any'|'home'|'away'
-  function teamResults(team, count, venue, seedKey){
-    var t=D.teams[team]; if(!t) return [];
-    var pool=leagueTeams(t.league).filter(function(n){ return n!==team; });
-    var rnd=mulberry32(strHash(team+"|"+venue+"|"+seedKey));
-    var day=new Date(2026,8,27); // base date (month is 0-indexed => Sep)
-    var out=[],i;
-    for(i=0;i<count;i++){
-      day=new Date(day.getTime()-(3+Math.floor(rnd()*8))*86400000);
-      var opp=pool[Math.floor(rnd()*pool.length)]||team;
-      var atHome = venue==='home' ? true : venue==='away' ? false : rnd()<0.5;
-      var hn=atHome?team:opp, an=atHome?opp:team;
-      var m=simMatch(hn,an,rnd);
-      var mine=atHome?m.ft[0]:m.ft[1], theirs=atHome?m.ft[1]:m.ft[0];
-      var res=mine>theirs?'W':mine<theirs?'L':'D';
-      out.push({date:new Date(day),home:hn,away:an,ft:m.ft,ht:m.ht,
-                league:t.league,res:res});
-    }
-    return out;
-  }
-  // Head-to-head between two teams
-  function h2hResults(home, away, count){
-    var rnd=mulberry32(strHash("H2H|"+home+"|"+away));
-    var day=new Date(2026,8,20), out=[], i;
-    var lg=(D.teams[home]||{}).league||(D.teams[away]||{}).league;
-    for(i=0;i<count;i++){
-      day=new Date(day.getTime()-(120+Math.floor(rnd()*260))*86400000);
-      var homeIsFirst = i%2===0;
-      var hn=homeIsFirst?home:away, an=homeIsFirst?away:home;
-      var m=simMatch(hn,an,rnd);
-      out.push({date:new Date(day),home:hn,away:an,ft:m.ft,ht:m.ht,league:lg});
-    }
-    return out;
-  }
-
-  function pct(n,tot){ return tot?Math.round(n/tot*100):0; }
-  function resultRowHtml(m, showLg){
-    var hWin=m.ft[0]>m.ft[1], aWin=m.ft[1]>m.ft[0];
-    var lg=showLg?"<span class='rs-lg'>"+esc(leagueTag(m.league))+"</span>":"";
-    return "<div class='rs-row'>"+
-      "<span class='rs-date'>"+fmtDMY(m.date)+"</span>"+
-      "<span class='rs-teams'>"+
-        "<span class='rs-tn"+(hWin?" win":"")+"' title='"+esc(m.home)+"'>"+esc(abbr(m.home))+"</span>"+
-        "<span class='rs-sc'>"+m.ft[0]+"-"+m.ft[1]+" <em>("+m.ht[0]+"-"+m.ht[1]+")</em></span>"+
-        "<span class='rs-tn"+(aWin?" win":"")+"' title='"+esc(m.away)+"'>"+esc(abbr(m.away))+"</span>"+
-      "</span>"+lg+"</div>";
-  }
-  function resultModuleHtml(title, tag, rows, footer, showLg){
-    var body=rows.map(function(m){ return resultRowHtml(m,showLg); }).join("");
-    var tagHtml = tag ? "<span class='rs-tag'>"+esc(tag)+"</span>" : "";
-    return "<div class='rs-module'>"+
-      "<div class='rs-head'>"+tagHtml+"<span class='rs-title'>"+esc(title)+"</span><span class='rs-all'>All</span></div>"+
-      "<div class='rs-rows'>"+body+"</div>"+
-      "<div class='rs-foot'>"+footer+"</div></div>";
-  }
-  function wdlFooter(rows, team){
-    var w=0,d=0,l=0;
-    rows.forEach(function(m){
-      var atHome=m.home===team, mine=atHome?m.ft[0]:m.ft[1], th=atHome?m.ft[1]:m.ft[0];
-      if(mine>th) w++; else if(mine<th) l++; else d++;
+  function renderPredictions() {
+    var head = $('#predHead'), body = $('#predBody'), empty = $('#emptyMsg');
+    if (state.mode === 'selection') { renderSelection(head, body, empty); return; }
+    head.innerHTML = HEADS[state.mode];
+    _rendered = [];
+    var rows = [], cols = state.mode === 'ou' ? 8 : (state.mode === 'stats' ? 7 : 9);
+    FIXTURES.forEach(function (f) {
+      var p = predict(f.home, f.away);
+      if (!passesFilters(f, p)) return;
+      var idx = _rendered.length;
+      _rendered.push(f);
+      if (state.mode === '1x2') rows.push(row1x2(f, p));
+      else if (state.mode === 'ou') rows.push(rowOu(f, p));
+      else rows.push(rowStats(f, p, idx));
+      if (idx === 3) rows.push(adRowHtml(cols)); // inline ad after 4th row
     });
-    var t=rows.length;
-    return "<span class='rs-w'>Win "+w+" ("+pct(w,t)+"%)</span>"+
-           "<span class='rs-d'>Draw "+d+" ("+pct(d,t)+"%)</span>"+
-           "<span class='rs-l'>Lost "+l+" ("+pct(l,t)+"%)</span>";
-  }
-  function h2hFooter(rows, home, away){
-    var hw=0,dr=0,aw=0;
-    rows.forEach(function(m){
-      var homeGoals=m.home===home?m.ft[0]:m.ft[1];
-      var awayGoals=m.home===home?m.ft[1]:m.ft[0];
-      if(homeGoals>awayGoals) hw++; else if(homeGoals<awayGoals) aw++; else dr++;
-    });
-    var t=rows.length;
-    return "<span class='rs-w'>"+esc(abbr(home))+" "+hw+" ("+pct(hw,t)+"%)</span>"+
-           "<span class='rs-d'>Draw "+dr+" ("+pct(dr,t)+"%)</span>"+
-           "<span class='rs-l'>"+esc(abbr(away))+" "+aw+" ("+pct(aw,t)+"%)</span>";
-  }
-  function resultsPanelHtml(f){
-    var home=f.home, away=f.away;
-    var hTag=abbr(home);
-    var aTag=abbr(away);
-    var h2h=h2hResults(home,away,4);
-    var hLast=teamResults(home,6,'any','L6'),  aLast=teamResults(away,6,'any','L6');
-    var hHome=teamResults(home,4,'home','HM'), aAway=teamResults(away,4,'away','AW');
-    return "<div class='results-info'>"+
-      resultModuleHtml("HEAD TO HEAD","",h2h,h2hFooter(h2h,home,away),true)+
-      resultModuleHtml("LAST 6 MATCHES",hTag,hLast,wdlFooter(hLast,home),false)+
-      resultModuleHtml("LAST 6 MATCHES",aTag,aLast,wdlFooter(aLast,away),false)+
-      resultModuleHtml("HOME MATCHES",hTag,hHome,wdlFooter(hHome,home),true)+
-      resultModuleHtml("AWAY MATCHES",aTag,aAway,wdlFooter(aAway,away),true)+
-    "</div>";
-  }
-
-  var FORM_COLS = ['P','W','D','L','GF','GA','W%','D%','L%','aGF','aGA','aG+A','PPG'];
-  function formRowHtml(label, venueLbl, f){
-    if(!f) return '';
-    var pos = leaguePosition(label);
-    var posBadge = pos ? "<span class='ft-pos' title='League position'>"+pos+'</span>' : '';
-    var venue = venueLbl ? " <span class='ft-venue'>"+venueLbl+'</span>' : '';
-    return '<tr>'+
-      "<td class='ft-team'>"+posBadge+esc(label)+venue+'</td>'+
-      "<td><span class='p-badge'>"+f.p+'</span></td>'+
-      '<td>'+f.w+'</td><td>'+f.d+'</td><td>'+f.l+'</td>'+
-      '<td>'+f.gf+'</td><td>'+f.ga+'</td>'+
-      '<td>'+f.wp+'</td><td>'+f.dp+'</td><td>'+f.lp+'</td>'+
-      "<td class='agf'>"+f.agf.toFixed(2)+'</td>'+
-      "<td class='aga'>"+f.aga.toFixed(2)+'</td>'+
-      "<td class='agfga'>"+f.agfga.toFixed(2)+'</td>'+
-      "<td class='ppg'>"+f.ppg.toFixed(2)+'</td>'+
-      "<td class='ovg'>"+f.ovgTotal+'%</td>'+
-      "<td class='ovg'>"+f.ovgLast8+'%</td>'+
-    '</tr>';
-  }
-  // One statistics table (colgroup + 2-row header + given team rows)
-  function formTableHtml(title, bodyRows){
-    var cg="<colgroup><col class='cg-team'>";
-    FORM_COLS.forEach(function(){ cg+="<col class='cg-num'>"; });
-    cg+="<col class='cg-ovg'><col class='cg-ovg'></colgroup>";
-    var head="<tr><th class='ft-team' rowspan='2'>Team</th>";
-    FORM_COLS.forEach(function(c){ head+="<th rowspan='2'>"+c+'</th>'; });
-    head+="<th class='ovg-group' colspan='2'>Over 2.5</th></tr>";
-    head+="<tr><th class='ovg'>Total</th><th class='ovg'>Last 8</th></tr>";
-    return "<div class='form-title'>"+esc(title)+"</div>"+
-      "<table class='form-table'>"+cg+"<thead>"+head+'</thead><tbody>'+bodyRows+'</tbody></table>';
-  }
-  function detailRowHtml(f, colspan){
-    var oh=overallForm(f.home), oa=overallForm(f.away);       // combined home+away
-    var fh=computeForm(f.home,'home'), fa=computeForm(f.away,'away'); // venue-specific
-    var overallTbl=formTableHtml("Overall Statistic",
-      formRowHtml(f.home,'',oh)+formRowHtml(f.away,'',oa));
-    var venueTbl=formTableHtml("Home / Away Statistic",
-      formRowHtml(f.home,'HOME',fh)+formRowHtml(f.away,'AWAY',fa));
-    return "<tr class='detail-row'><td colspan='"+colspan+"'>"+
-      "<div class='form-panel'>"+overallTbl+venueTbl+"</div>"+
-      resultsPanelHtml(f)+'</td></tr>';
-  }
-
-  function bar(v){ return '<span class="bar" style="width:'+v+'%"></span>'; }
-
-  // In-feed native sponsored row (spans all table columns)
-  function adRowHtml(cols){
-    return "<tr class='ad-row'><td colspan='"+(cols||8)+"'>"+
-      "<div class='ad-native'>"+
-        "<span class='ad-badge'>Ad</span>"+
-        "<span class='ad-thumb'>\u26bd</span>"+
-        "<span class='ad-text'>"+
-          "<span class='ad-title'>Bet $10, Get $30 in Free Bets</span>"+
-          "<span class='ad-desc'>New customers only \u00b7 18+ \u00b7 T&amp;Cs apply \u00b7 Sponsored placeholder</span>"+
-        "</span>"+
-        "<a class='ad-cta' href='#' rel='nofollow sponsored noopener'>Claim</a>"+
-      "</div></td></tr>";
-  }
-
-  var COMMON_HEAD = "<th>Date</th><th class='col-league'>League</th><th class='col-match'>Match</th>";
-  var HEADS = {
-    "1x2":  COMMON_HEAD+"<th title='Home win'>1</th><th title='Draw'>X</th><th title='Away win'>2</th><th>Tip</th><th title='Most likely score'>Score</th>",
-    "ou":   COMMON_HEAD+"<th title='Chance of 3+ goals'>Over %</th><th title='Chance of 0-2 goals'>Under %</th><th title='Predicted total goals'>Exp. goals</th><th>Tip</th><th title='Both teams to score'>BTTS</th>",
-    "stats":COMMON_HEAD+"<th title='Expected goals, home'>xG H</th><th title='Expected goals, away'>xG A</th><th title='Predicted total goals'>Exp. goals</th><th title='Most likely score'>Score</th><th title='Both teams to score'>BTTS</th>"
-  };
-
-  function renderPredictions(){
-    if(mode==="selection"){ renderSelection(); return; }
-    var league = document.getElementById("leagueFilter").value;
-    var tip = document.getElementById("tipFilter").value;
-    var minP = parseInt(document.getElementById("probFilter").value,10);
-    var q = (document.getElementById("searchBox").value||"").toLowerCase();
-    var body = document.getElementById("predBody");
-    var pickable = (mode==="1x2" || mode==="ou");
-    var headHtml = HEADS[mode];
-    if(pickable){ headHtml += "<th class='col-pick' title='Add to Your Selection'>Pick</th>"; }
-    document.getElementById("predHead").innerHTML = "<tr>"+headHtml+"</tr>";
-    var html = "";
-    var shown = 0;
-
-    rows.forEach(function(r){
-      var f=r.f, p=r.p;
-      if(league!=="all" && f.league!==league) return;
-      if(!inBucket(f, dateFilter)) return;
-      if(q && (f.home+" "+f.away).toLowerCase().indexOf(q)<0) return;
-      var best = p.tip; // 1/X/2
-      var maxProb = Math.max(p.p1,p.pX,p.p2);
-      if(minP && maxProb<minP) return;
-      if(tip==="1"&&best!=="1") return;
-      if(tip==="X"&&best!=="X") return;
-      if(tip==="2"&&best!=="2") return;
-      if(tip==="over"&&!p.over) return;
-      if(tip==="under"&&p.over) return;
-
-      var dt = fmtDate(f.date);
-      shown++;
-      var caret = (mode==="stats") ? "<span class='exp-caret'>\u203a</span> " : "";
-      var lead =
-        "<td>"+dt.day+"<br><span class='time'>"+dt.time+"</span></td>"+
-        "<td class='col-league'><span class='league-cell'>"+esc(f.league)+"</span></td>"+
-        "<td class='col-match'><div class='match-cell'><span class='teams'>"+caret+esc(f.home)+" v "+esc(f.away)+"</span></div></td>";
-      var cells;
-      if(mode==="1x2"){
-        cells =
-          "<td class='prob "+(best==="1"?"best-1":"")+"'>"+p.p1+"%"+bar(p.p1)+"</td>"+
-          "<td class='prob "+(best==="X"?"best-X":"")+"'>"+p.pX+"%"+bar(p.pX)+"</td>"+
-          "<td class='prob "+(best==="2"?"best-2":"")+"'>"+p.p2+"%"+bar(p.p2)+"</td>"+
-          "<td><span class='tip t"+best+"'>"+best+"</span></td>"+
-          "<td class='score'>"+p.score+"</td>";
-      } else if(mode==="ou"){
-        cells =
-          "<td class='prob "+(p.over?"best-1":"")+"'>"+p.overPct+"%"+bar(p.overPct)+"</td>"+
-          "<td class='prob "+(!p.over?"best-X":"")+"'>"+p.underPct+"%"+bar(p.underPct)+"</td>"+
-          "<td class='score'>"+p.goals.toFixed(2)+"</td>"+
-          "<td><span class='ou "+(p.over?"over":"under")+"'>"+(p.over?"Over 2.5":"Under 2.5")+"</span></td>"+
-          "<td>"+p.btts+"%</td>";
-      } else { // stats
-        cells =
-          "<td class='score'>"+p.lh.toFixed(2)+"</td>"+
-          "<td class='score'>"+p.la.toFixed(2)+"</td>"+
-          "<td class='score'>"+p.goals.toFixed(2)+"</td>"+
-          "<td class='score'>"+p.score+"</td>"+
-          "<td>"+p.btts+"%</td>";
-      }
-      if(mode==="stats"){
-        html += "<tr class='stats-row' data-home=\""+esc(f.home)+"\" data-away=\""+esc(f.away)+"\">"+lead+cells+"</tr>";
-      } else {
-        if(pickable){
-          var pickTip = (mode==="1x2") ? best : (p.over?"Over 2.5":"Under 2.5");
-          var checked = isSelected(f.home,f.away,mode) ? " checked" : "";
-          cells += "<td class='col-pick'><input type='checkbox' class='pick-cb'"+checked+
-            " data-home=\""+esc(f.home)+"\" data-away=\""+esc(f.away)+"\""+
-            " data-mode=\""+mode+"\" data-tip=\""+esc(pickTip)+"\""+
-            " data-league=\""+esc(f.league)+"\" data-date=\""+esc(f.date)+"\""+
-            " aria-label='Add to Your Selection'></td>";
-        }
-        html += "<tr>"+lead+cells+"</tr>";
-      }
-      // Ad: in-feed native sponsored row after the 3rd match
-      if(shown===3){ html += adRowHtml(pickable?9:8); }
-    });
-
-    body.innerHTML = html;
-    document.getElementById("emptyMsg").hidden = shown>0;
-
-    if(mode==="stats"){
-      body.querySelectorAll("tr.stats-row").forEach(function(tr){
-        tr.addEventListener("click", function(){ toggleDetail(tr); });
-      });
-    }
-    if(pickable){
-      body.querySelectorAll("input.pick-cb").forEach(function(cb){
-        cb.addEventListener("change", function(){ onPickToggle(cb); });
-      });
-    }
-  }
-
-  /* Add/remove a pick when its checkbox is toggled; enforce the 20-item cap. */
-  function onPickToggle(cb){
-    var home=cb.getAttribute("data-home"), away=cb.getAttribute("data-away"),
-        m=cb.getAttribute("data-mode");
-    if(cb.checked){
-      if(selection.length>=SEL_MAX){
-        cb.checked=false;
-        window.alert("You can add up to "+SEL_MAX+" predictions to Your Selection.");
-        return;
-      }
-      selection.push({home:home, away:away, mode:m,
-        tip:cb.getAttribute("data-tip"),
-        league:cb.getAttribute("data-league"),
-        date:cb.getAttribute("data-date")});
-    } else {
-      selection = selection.filter(function(s){
-        return !(s.home===home && s.away===away && s.mode===m); });
-    }
-    saveSelection();
+    body.innerHTML = rows.join('');
+    empty.hidden = rows.length > 0;
+    bindRowEvents();
     updateSelBadges();
   }
 
-  /* Keep the top button + sidebar counters in sync with the coupon size. */
-  function updateSelBadges(){
-    var n=selection.length;
-    var top=document.getElementById("selCount");
-    if(top){ top.textContent=n; top.hidden = (n===0); }
-    var side=document.getElementById("sideSelCount");
-    if(side){ side.textContent=n; }
-  }
-
-  function setMode(m){
-    mode=m;
-    document.querySelectorAll(".mode-btn").forEach(function(x){
-      x.classList.toggle("active", x.getAttribute("data-mode")===m);
-    });
-  }
-
-  /* ---------- "Your Selection" view ---------- */
-  function selTipHtml(s){
-    if(s.mode==="ou"){
-      var over=(s.tip||"").toLowerCase().indexOf("over")>=0;
-      return "<span class='ou "+(over?"over":"under")+"'>"+esc(s.tip)+"</span>";
-    }
-    return "<span class='tip t"+esc(s.tip)+"'>"+esc(s.tip)+"</span>";
-  }
-  // Probability cell: 1 x 2 shows three values, Over/Under shows two.
-  function selProbHtml(s){
-    var p=activePredict(s.home,s.away);
-    if(!p) return "<span class='muted'>\u2013</span>";
-    if(s.mode==="ou"){
-      return "<span class='pp "+(p.over?"hi":"")+"'>"+p.overPct+"%</span>"+
-             "<span class='pp "+(!p.over?"hi":"")+"'>"+p.underPct+"%</span>";
-    }
-    var best=p.tip;
-    return "<span class='pp "+(best==='1'?'hi':'')+"'>"+p.p1+"%</span>"+
-           "<span class='pp "+(best==='X'?'hi':'')+"'>"+p.pX+"%</span>"+
-           "<span class='pp "+(best==='2'?'hi':'')+"'>"+p.p2+"%</span>";
-  }
-  function selDateStr(s){
-    var d=fmtDate(s.date);
-    return d && d.day ? d.day+" "+d.time : esc(String(s.date));
-  }
-  // Open a clean print window so the browser can "Save as PDF".
-  function downloadSelectionPdf(){
-    if(!selection.length){ window.alert("Your Selection is empty."); return; }
-    var w=window.open("","_blank");
-    if(!w){ window.alert("Please allow pop-ups to download the PDF."); return; }
-    var body="";
-    selection.forEach(function(s){
-      var p=activePredict(s.home,s.away);
-      var prob = p ? (s.mode==="ou"
-        ? (p.overPct+"% / "+p.underPct+"%")
-        : (p.p1+"% / "+p.pX+"% / "+p.p2+"%")) : "\u2013";
-      var market = s.mode==="ou" ? "Over/Under 2.5" : "1 x 2";
-      body+="<tr><td>"+esc(selDateStr(s))+"</td><td>"+esc(s.home)+" v "+esc(s.away)+"</td>"+
-        "<td>"+esc(s.league)+"</td><td>"+esc(prob)+"</td><td>"+esc(market)+"</td>"+
-        "<td>"+esc(s.tip)+"</td></tr>";
-    });
-    var stamp=new Date().toLocaleString();
-    var doc="<!DOCTYPE html><html><head><meta charset='utf-8'>"+
-      "<title>PreBetTips \u2014 Your Selection</title><style>"+
-      "body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:28px}"+
-      "h1{font-size:20px;margin:0 0 2px}p.sub{color:#666;font-size:12px;margin:0 0 16px}"+
-      "table{border-collapse:collapse;width:100%;font-size:12px}"+
-      "th,td{border:1px solid #ccc;padding:7px 9px;text-align:left}"+
-      "th{background:#0b1b34;color:#fff}tbody tr:nth-child(even){background:#f4f6f9}"+
-      "footer{margin-top:16px;color:#888;font-size:11px}"+
-      "</style></head><body>"+
-      "<h1>PreBetTips \u2014 Your Selection</h1>"+
-      "<p class='sub'>"+selection.length+" prediction(s) \u00b7 generated "+esc(stamp)+"</p>"+
-      "<table><thead><tr><th>Date</th><th>Match</th><th>League</th>"+
-      "<th>Probability (%)</th><th>Market</th><th>Pick</th></tr></thead>"+
-      "<tbody>"+body+"</tbody></table>"+
-      "<footer>Demo project \u00b7 18+ \u00b7 Please gamble responsibly.</footer>"+
-      "</body></html>";
-    w.document.open(); w.document.write(doc); w.document.close(); w.focus();
-    setTimeout(function(){ try{ w.print(); }catch(e){} }, 400);
-  }
-  function renderSelection(){
-    document.getElementById("predHead").innerHTML =
-      "<tr><th>Date</th><th class='col-match'>Match</th><th class='col-league'>League</th>"+
-      "<th class='col-prob'>Probability (%)</th><th>Market</th><th>Pick</th>"+
-      "<th class='col-pick'>Remove</th></tr>";
-    var body=document.getElementById("predBody");
-    var em=document.getElementById("emptyMsg");
-    if(!selection.length){
-      body.innerHTML="";
-      em.hidden=false;
-      em.textContent="Your Selection is empty. Tick the checkbox on any 1 x 2 or "+
-        "Over/Under 2.5 prediction to add it here (up to "+SEL_MAX+").";
-      return;
-    }
-    em.hidden=true;
-    var html="<tr class='sel-tools'><td colspan='7'>"+
-      "<span class='sel-info'>"+selection.length+" / "+SEL_MAX+" selected</span>"+
-      "<button type='button' class='sel-pdf' id='selPdf'>Download PDF</button>"+
-      "<button type='button' class='sel-clear' id='selClear'>Clear all</button></td></tr>";
-    selection.forEach(function(s,i){
-      var market = s.mode==="ou" ? "Over/Under 2.5" : "1 x 2";
-      html+="<tr>"+
-        "<td>"+selDateStr(s)+"</td>"+
-        "<td class='col-match'><div class='match-cell'><span class='teams'>"+esc(s.home)+" v "+esc(s.away)+"</span></div></td>"+
-        "<td class='col-league'><span class='league-cell'>"+esc(s.league)+"</span></td>"+
-        "<td class='col-prob'>"+selProbHtml(s)+"</td>"+
-        "<td>"+esc(market)+"</td>"+
-        "<td>"+selTipHtml(s)+"</td>"+
-        "<td class='col-pick'><button type='button' class='sel-remove' data-idx='"+i+"' aria-label='Remove'>\u00d7</button></td>"+
-      "</tr>";
-    });
-    body.innerHTML=html;
-    body.querySelectorAll(".sel-remove").forEach(function(b){
-      b.addEventListener("click", function(){
-        selection.splice(parseInt(b.getAttribute("data-idx"),10),1);
-        saveSelection(); updateSelBadges(); renderSelection();
+  function bindRowEvents() {
+    $all('.pick-cb').forEach(function (cb) {
+      cb.addEventListener('change', function () {
+        var k = cb.getAttribute('data-key');
+        if (cb.checked) state.selection[k] = true; else delete state.selection[k];
+        updateSelBadges();
       });
     });
-    var clr=document.getElementById("selClear");
-    if(clr){ clr.addEventListener("click", function(){
-      selection=[]; saveSelection(); updateSelBadges(); renderSelection();
-    }); }
-    var pdf=document.getElementById("selPdf");
-    if(pdf){ pdf.addEventListener("click", downloadSelectionPdf); }
+    $all('tr.stats-row').forEach(function (tr) {
+      tr.addEventListener('click', function () { toggleDetail(tr); });
+    });
   }
 
-  function toggleDetail(tr){
-    var next = tr.nextElementSibling;
-    if(next && next.classList.contains("detail-row")){
-      next.parentNode.removeChild(next);
-      tr.classList.remove("open");
-      return;
+  /* ---------- Your Selection ---------- */
+  function selectedFixtures() {
+    return FIXTURES.filter(function (f) { return state.selection[fxKey(f)]; });
+  }
+  function updateSelBadges() {
+    var n = Object.keys(state.selection).length;
+    var badge = $('#selCount');
+    if (badge) { badge.textContent = n; badge.hidden = n === 0; }
+  }
+  function selProbHtml(p) {
+    var best = bestKey(p);
+    function one(v, k) {
+      return '<span class="pp ' + (k === best ? 'hi' : '') + '">' + k + ' ' + pct(v) + '%</span>';
     }
-    // close any other open detail first
-    var opened = tr.parentNode.querySelector("tr.detail-row");
-    if(opened){
-      var prev=opened.previousElementSibling;
-      if(prev) prev.classList.remove("open");
-      opened.parentNode.removeChild(opened);
+    return one(p.pHome, '1') + one(p.pDraw, 'X') + one(p.pAway, '2');
+  }
+  function selTipHtml(p) { return tipBadge(bestKey(p)); }
+
+  function renderSelection(head, body, empty) {
+    head.innerHTML = HEADS.selection;
+    var fx = selectedFixtures();
+    if (!fx.length) {
+      body.innerHTML = '<tr class="sel-tools"><td colspan="7">'
+        + '<span class="sel-info">No matches selected. Tick the “Pick” box on the 1X2 or Over/Under tab to build your slip.</span>'
+        + '</td></tr>';
+      empty.hidden = true; updateSelBadges(); return;
     }
-    var f = {home:tr.getAttribute("data-home"), away:tr.getAttribute("data-away")};
-    var colspan = tr.children.length;
-    tr.insertAdjacentHTML("afterend", detailRowHtml(f, colspan));
-    tr.classList.add("open");
-  }
-
-  /* ---------- Render results / accuracy ---------- */
-  function renderResults(){
-    var body=document.getElementById("resultsBody");
-    var html="", n=0, hit1x2=0, hitScore=0, hitOu=0;
-    D.history.forEach(function(g){
-      var p=activePredict(g.home,g.away); if(!p) return;
-      n++;
-      var actual = g.fh>g.fa?"1":(g.fh===g.fa?"X":"2");
-      var win = p.tip===actual;
-      if(win) hit1x2++;
-      if(p.score===(g.fh+":"+g.fa)) hitScore++;
-      var actualOver=(g.fh+g.fa)>=3;
-      if(actualOver===p.over) hitOu++;
-      html+="<tr>"+
-        "<td>"+esc(g.date)+"</td>"+
-        "<td class='col-league'><span class='league-cell'>"+esc(g.league)+"</span></td>"+
-        "<td class='col-match'>"+esc(g.home)+" v "+esc(g.away)+"</td>"+
-        "<td><span class='tip t"+p.tip+"'>"+p.tip+"</span></td>"+
-        "<td class='score'>"+p.score+"</td>"+
-        "<td class='score'>"+g.fh+":"+g.fa+"</td>"+
-        "<td><span class='verdict "+(win?"win":"miss")+"'>"+(win?"HIT":"MISS")+"</span></td>"+
-      "</tr>";
-    });
-    body.innerHTML=html;
-    document.getElementById("accOverall").textContent = n?Math.round(hit1x2/n*100)+"%":"–";
-    document.getElementById("accScore").textContent   = n?Math.round(hitScore/n*100)+"%":"–";
-    document.getElementById("accOu").textContent      = n?Math.round(hitOu/n*100)+"%":"–";
-    document.getElementById("settled").textContent    = n;
-  }
-
-  /* ---------- Sidebar ---------- */
-  function fixtureCountForLeague(name){
-    var n=0; D.fixtures.forEach(function(f){ if(f.league===name) n++; }); return n;
-  }
-  function bucketCount(bucket){
-    var n=0; D.fixtures.forEach(function(f){ if(inBucket(f,bucket)) n++; }); return n;
-  }
-
-  function buildSidebar(){
-    var el=document.getElementById("sidebar");
-    var html="";
-
-    /* FOOTBALL group */
-    var football=[
-      {key:"today",    lbl:"Predictions for TODAY",       cnt:bucketCount("today")},
-      {key:"live",     lbl:"LIVE predictions",            cnt:null},
-      {key:"tomorrow", lbl:"Predictions for TOMORROW",    cnt:bucketCount("tomorrow")},
-      {key:"weekend",  lbl:"Predictions for the WEEKEND", cnt:bucketCount("weekend")},
-      {key:"yesterday",lbl:"Predictions from YESTERDAY",  cnt:bucketCount("yesterday")},
-      {key:"all",      lbl:"ALL predictions",             cnt:D.fixtures.length},
-      {key:"top",      lbl:"TOP predictions",             cnt:null},
-      {key:"selection",lbl:"Your Selection",               cnt:selection.length},
-      {key:"fav",      lbl:"Favourites",                  cnt:null},
-      {key:"lists",    lbl:"Lists",                       cnt:null}
-    ];
-    html+='<div class="side-group"><div class="side-title">Football</div>';
-    football.forEach(function(it){
-      var cntId = it.key==="selection" ? " id=\"sideSelCount\"" : "";
-      var cnt = it.cnt!=null ? '<span class="cnt"'+cntId+'>'+it.cnt+'</span>' : '';
-      html+='<button class="side-item" data-kind="date" data-val="'+it.key+'">'+
-        '<span class="ico">\u26bd</span><span class="lbl">'+esc(it.lbl)+'</span>'+cnt+'</button>';
-    });
-    html+='</div>';
-
-    /* Ad: in-sidebar banner between FOOTBALL and POPULAR LEAGUES */
-    html+='<div class="ad-slot ad-sidebar-mid" aria-label="Advertisement">'+
-      '<span class="ad-body">Adv. banner<span class="ad-size">300\u00d7100</span></span></div>';
-
-    /* POPULAR LEAGUES */
-    html+='<div class="side-group"><div class="side-title">Popular Leagues</div>';
-    (D.popularLeagues||[]).forEach(function(lg){
-      var c=fixtureCountForLeague(lg.name);
-      var hasData = c>0;
-      var cnt = hasData ? '<span class="cnt">'+c+'</span>' : '<span class="caret">\u203a</span>';
-      html+='<button class="side-item" data-kind="league" data-val="'+esc(lg.name)+'" '+
-        (hasData?'':'title="No sample fixtures"')+'>'+
-        '<span class="ico">'+lg.icon+'</span><span class="lbl">'+esc(lg.name)+'</span>'+cnt+'</button>';
-    });
-    html+='</div>';
-
-    /* COUNTRIES */
-    html+='<div class="side-group"><div class="side-title">Countries</div>'+
-      '<div class="side-search"><span class="ico">\ud83d\udd0d</span>'+
-      '<input type="search" id="countrySearch" placeholder="Search" aria-label="Search country"></div>'+
-      '<div class="country-list" id="countryList"></div></div>';
-
-    /* Ad: sidebar MPU (300x250) */
-    html+='<div class="ad-slot ad-mpu" aria-label="Advertisement">'+
-      '<span class="ad-body">Your ad here<span class="ad-size">Medium Rectangle 300×250</span></span></div>';
-
-    /* Visitors dashboard widget */
-    html+='<div class="visitors" aria-label="Visitors">'+
-      '<div class="vc-head"><span class="vc-icon">\ud83d\udcc8</span>Visitors</div>'+
-      '<ul class="vc-list">'+
-        '<li class="online"><span class="vc-k">Online</span><span class="vc-v">111</span></li>'+
-        '<li><span class="vc-k">Today</span><span class="vc-v">1,200</span></li>'+
-        '<li><span class="vc-k">Yesterday</span><span class="vc-v">2,200</span></li>'+
-        '<li><span class="vc-k">All time</span><span class="vc-v">120,200</span></li>'+
-      '</ul></div>';
-
-    el.innerHTML=html;
-    renderCountries("");
-
-    // Wiring
-    el.querySelectorAll('.side-item[data-kind]').forEach(function(b){
-      var kind=b.getAttribute("data-kind");
-      if(kind==="date" || kind==="league"){
-        b.addEventListener("click", function(){ onSidebarClick(b); });
-      }
-    });
-    document.getElementById("countrySearch").addEventListener("input", function(e){
-      renderCountries(e.target.value);
-    });
-  }
-
-  function renderCountries(q){
-    q=(q||"").toLowerCase();
-    var list=document.getElementById("countryList");
-    var html="";
-    (D.countries||[]).forEach(function(name){
-      if(q && name.toLowerCase().indexOf(q)<0) return;
-      html+='<button class="side-item" data-kind="country" data-val="'+esc(name)+'">'+
-        '<span class="ico">\ud83c\udff3\ufe0f</span><span class="lbl">'+esc(name)+'</span>'+
-        '<span class="caret">\u203a</span></button>';
-    });
-    list.innerHTML = html || '<div class="empty" style="padding:14px">No match</div>';
-    // country items just search the table by name (best-effort demo)
-    list.querySelectorAll('.side-item[data-kind="country"]').forEach(function(b){
-      b.addEventListener("click", function(){ onSidebarClick(b); });
-    });
-  }
-
-  function setActive(btn){
-    document.querySelectorAll('.sidebar .side-item').forEach(function(x){ x.classList.remove("active"); });
-    if(btn) btn.classList.add("active");
-  }
-
-  function onSidebarClick(btn){
-    var kind=btn.getAttribute("data-kind");
-    var val=btn.getAttribute("data-val");
-    switchView("predictions");
-    setActive(btn);
-    if(kind==="date" && val==="selection"){
-      setMode("selection");
-      renderPredictions();
-      return;
-    }
-    if(mode==="selection"){ setMode("1x2"); }
-    if(kind==="date"){
-      // buttons without real data (live/top/fav/lists) fall back to "all"
-      dateFilter = ("today tomorrow weekend yesterday all".indexOf(val)>=0) ? val : "all";
-      document.getElementById("leagueFilter").value="all";
-    } else if(kind==="league"){
-      dateFilter="all";
-      var sel=document.getElementById("leagueFilter");
-      // only switch if this league exists in the fixture data
-      var exists=Array.prototype.some.call(sel.options,function(o){return o.value===val;});
-      sel.value = exists ? val : "all";
-    } else if(kind==="country"){
-      document.getElementById("searchBox").value=""; // no team-country map in demo
-    }
-    renderPredictions();
-  }
-
-  /* ---------- Wiring ---------- */
-  function initLeagueFilter(){
-    var sel=document.getElementById("leagueFilter");
-    var seen={};
-    D.fixtures.forEach(function(f){
-      if(!seen[f.league]){ seen[f.league]=1;
-        var o=document.createElement("option"); o.value=f.league; o.textContent=f.league; sel.appendChild(o);
-      }
-    });
-  }
-
-  function switchView(name){
-    ["predictions","results","how"].forEach(function(v){
-      document.getElementById("view-"+v).hidden = (v!==name);
-    });
-    document.querySelectorAll(".nav-btn").forEach(function(b){
-      b.classList.toggle("active", b.getAttribute("data-view")===name);
-    });
-    if(name==="results") renderResults();
-  }
-
-  document.addEventListener("DOMContentLoaded", function(){
-    initLeagueFilter();
-    buildSidebar();
-    updateSelBadges();
-    renderPredictions();
-    // Hamburger menu toggle (mobile)
-    var menuToggle=document.getElementById("menuToggle");
-    var mainNav=document.querySelector(".main-nav");
-    if(menuToggle && mainNav){
-      menuToggle.addEventListener("click", function(){
-        var open=mainNav.classList.toggle("open");
-        menuToggle.setAttribute("aria-expanded", open?"true":"false");
-      });
-      // close nav when a nav-btn is clicked
-      mainNav.querySelectorAll(".nav-btn").forEach(function(b){
-        b.addEventListener("click", function(){
-          mainNav.classList.remove("open");
-          menuToggle.setAttribute("aria-expanded","false");
-        });
-      });
-      // close nav when clicking outside
-      document.addEventListener("click", function(e){
-        if(!mainNav.contains(e.target) && e.target!==menuToggle){
-          mainNav.classList.remove("open");
-          menuToggle.setAttribute("aria-expanded","false");
-        }
-      });
-    }
-    // Sidebar toggle (mobile)
-    var sideToggle=document.getElementById("sideToggle");
-    if(sideToggle){
-      sideToggle.addEventListener("click", function(){
-        var sb=document.getElementById("sidebar");
-        sb.classList.toggle("open");
-        sideToggle.classList.toggle("open");
-      });
-    }
-    ["leagueFilter","tipFilter","probFilter"].forEach(function(id){
-      document.getElementById(id).addEventListener("change", renderPredictions);
-    });
-    document.getElementById("searchBox").addEventListener("input", renderPredictions);
-    document.querySelectorAll(".mode-btn").forEach(function(b){
-      b.addEventListener("click", function(){
-        mode = b.getAttribute("data-mode");
-        document.querySelectorAll(".mode-btn").forEach(function(x){
-          x.classList.toggle("active", x===b);
-        });
+    var tools = '<tr class="sel-tools"><td colspan="7">'
+      + '<span class="sel-info">' + fx.length + ' match' + (fx.length > 1 ? 'es' : '') + ' in your selection</span>'
+      + '<button type="button" class="sel-clear" id="selClear">Clear all</button>'
+      + '<button type="button" class="sel-pdf" id="selPdf">Download PDF</button>'
+      + '</td></tr>';
+    var rows = fx.map(function (f) {
+      var p = predict(f.home, f.away), k = fxKey(f);
+      return '<tr>'
+        + '<td>' + fmtDate(f.date) + '</td>'
+        + '<td class="col-league"><span class="league-cell">' + esc(f.league) + '</span></td>'
+        + '<td class="col-match">' + matchCell(f) + '</td>'
+        + '<td class="col-prob">' + selProbHtml(p) + '</td>'
+        + '<td>' + selTipHtml(p) + '</td>'
+        + '<td><span class="score">' + p.scoreH + '-' + p.scoreA + '</span></td>'
+        + '<td><button type="button" class="sel-remove" data-key="' + esc(k) + '" aria-label="Remove">×</button></td>'
+        + '</tr>';
+    }).join('');
+    body.innerHTML = tools + rows;
+    empty.hidden = true;
+    var clr = $('#selClear');
+    if (clr) clr.addEventListener('click', function () { state.selection = {}; renderPredictions(); });
+    var pdf = $('#selPdf');
+    if (pdf) pdf.addEventListener('click', downloadSelectionPdf);
+    $all('.sel-remove').forEach(function (b) {
+      b.addEventListener('click', function () {
+        delete state.selection[b.getAttribute('data-key')];
         renderPredictions();
       });
     });
-    document.querySelectorAll(".nav-btn").forEach(function(b){
-      b.addEventListener("click", function(){ switchView(b.getAttribute("data-view")); });
+    updateSelBadges();
+  }
+
+  function downloadSelectionPdf() {
+    var fx = selectedFixtures();
+    if (!fx.length) return;
+    var engName = state.engine === 'random' ? 'KPI' : 'Poisson';
+    var w = window.open('', '_blank');
+    if (!w) return;
+    var rows = fx.map(function (f) {
+      var p = predict(f.home, f.away);
+      return '<tr><td>' + esc(f.date) + '</td><td>' + esc(f.league) + '</td>'
+        + '<td>' + esc(f.home + ' v ' + f.away) + '</td>'
+        + '<td>1 ' + pct(p.pHome) + '% / X ' + pct(p.pDraw) + '% / 2 ' + pct(p.pAway) + '%</td>'
+        + '<td style="font-weight:700">' + bestKey(p) + '</td>'
+        + '<td>' + p.scoreH + '-' + p.scoreA + '</td>'
+        + '<td>Over ' + pct(p.pOver) + '%</td></tr>';
+    }).join('');
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>PreBetTips — My Selection</title>'
+      + '<style>body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:28px}'
+      + 'h1{font-size:20px;margin:0 0 2px}.sub{color:#666;font-size:12px;margin:0 0 16px}'
+      + 'table{width:100%;border-collapse:collapse;font-size:12px}'
+      + 'th,td{border:1px solid #ccc;padding:7px 8px;text-align:left}'
+      + 'th{background:#f0f3f7}.foot{margin-top:16px;color:#888;font-size:11px}</style></head><body>'
+      + '<h1>PreBetTips — My Selection</h1>'
+      + '<p class="sub">' + fx.length + ' match(es) · ' + engName + ' engine · generated ' + new Date().toLocaleString() + '</p>'
+      + '<table><thead><tr><th>Date</th><th>League</th><th>Match</th><th>1 X 2</th><th>Tip</th><th>Score</th><th>O/U</th></tr></thead>'
+      + '<tbody>' + rows + '</tbody></table>'
+      + '<p class="foot">Sample/demo predictions — not betting advice. 18+ Please gamble responsibly.</p>'
+      + '<script>window.onload=function(){window.print();}<\/script></body></html>';
+    w.document.open(); w.document.write(html); w.document.close();
+  }
+  /* ---------- mode + engine switches ---------- */
+  function setMode(mode) {
+    state.mode = mode;
+    $all('.mode-btn').forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-mode') === mode);
     });
-    // Sticky anchor ad: reserve space + wire the close button
-    var anchor=document.getElementById("anchorAd");
-    var anchorClose=document.getElementById("anchorAdClose");
-    if(anchor && anchorClose){
-      document.body.classList.add("has-anchor-ad");
-      anchorClose.addEventListener("click", function(){
-        anchor.hidden=true;
-        document.body.classList.remove("has-anchor-ad");
+    renderPredictions();
+  }
+  function setEngine(eng) {
+    state.engine = eng;
+    $all('.eng-btn').forEach(function (b) {
+      var on = b.getAttribute('data-engine') === eng;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    renderPredictions();
+  }
+
+  /* ---------- sidebar ---------- */
+  function leagueCounts() {
+    var c = {};
+    FIXTURES.forEach(function (f) { c[f.league] = (c[f.league] || 0) + 1; });
+    return c;
+  }
+  function buildSidebar() {
+    var side = $('#sidebar');
+    if (!side) return;
+    var counts = leagueCounts();
+    var pl = (DATA.popularLeagues || []).map(function (lg) {
+      var n = counts[lg.name] || 0;
+      return '<button class="side-item" data-league="' + esc(lg.name) + '">'
+        + '<span class="ico">' + lg.icon + '</span><span class="lbl">' + esc(lg.name) + '</span>'
+        + (n ? '<span class="cnt">' + n + '</span>' : '') + '</button>';
+    }).join('');
+    var allBtn = '<button class="side-item active" data-league="all"><span class="ico">★</span>'
+      + '<span class="lbl">All leagues</span><span class="cnt">' + FIXTURES.length + '</span></button>';
+    var countries = (DATA.countries || []).map(function (co) {
+      return '<button class="side-item" data-country="' + esc(co) + '"><span class="ico">⚽</span>'
+        + '<span class="lbl">' + esc(co) + '</span><span class="caret">›</span></button>';
+    }).join('');
+    side.insertAdjacentHTML('beforeend',
+      '<div class="side-group"><div class="side-title">Popular leagues</div>' + allBtn + pl + '</div>'
+      + '<div class="side-group"><div class="side-title">Countries</div>'
+      + '<div class="side-search"><span class="ico">⚲</span><input type="search" id="countrySearch" placeholder="Search country…" aria-label="Search country"></div>'
+      + '<div class="country-list">' + countries + '</div></div>'
+      + '<div class="ad-slot ad-mpu" aria-label="Advertisement"><span class="ad-body">Your ad here<span class="ad-size">MPU 300×250</span></span></div>'
+      + '<div class="visitors"><div class="vc-head"><span class="vc-icon">◉</span>Live traffic</div>'
+      + '<ul class="vc-list"><li class="online"><span class="vc-k">Online now</span><span class="vc-v">1,284</span></li>'
+      + '<li><span class="vc-k">Today</span><span class="vc-v">38,902</span></li>'
+      + '<li><span class="vc-k">This week</span><span class="vc-v">241,517</span></li></ul></div>');
+
+    // populate league filter dropdown
+    var sel = $('#leagueFilter');
+    if (sel) {
+      Object.keys(counts).forEach(function (lg) {
+        var o = document.createElement('option'); o.value = lg; o.textContent = lg; sel.appendChild(o);
       });
     }
-    document.querySelectorAll(".eng-btn").forEach(function(b){
-      b.addEventListener("click", function(){
-        var e=b.getAttribute("data-engine");
-        if(e===engine) return;
-        engine=e;
-        document.querySelectorAll(".eng-btn").forEach(function(x){
-          var on=(x===b);
-          x.classList.toggle("active", on);
-          x.setAttribute("aria-pressed", on?"true":"false");
-        });
-        buildRows();          // recompute predictions with the chosen source
-        renderPredictions();  // refresh the table (also closes open detail rows)
-        renderResults();      // keep the accuracy page in sync
+    side.addEventListener('click', function (e) {
+      var btn = e.target.closest('.side-item[data-league]');
+      if (!btn) return;
+      state.league = btn.getAttribute('data-league');
+      $all('.side-item[data-league]').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      if (sel) sel.value = state.league;
+      renderPredictions();
+    });
+    var cs = $('#countrySearch');
+    if (cs) cs.addEventListener('input', function () {
+      var q = cs.value.toLowerCase();
+      $all('.country-list .side-item').forEach(function (b) {
+        b.style.display = b.textContent.toLowerCase().indexOf(q) === -1 ? 'none' : '';
       });
     });
-  });
+  }
+
+  /* ---------- Results & Accuracy ---------- */
+  function renderResults() {
+    var body = $('#resultsBody');
+    if (!body) return;
+    var hit1x2 = 0, hitScore = 0, hitOu = 0, n = HISTORY.length || 1;
+    var rows = HISTORY.map(function (m) {
+      var p = predictPoisson(m.home, m.away);
+      var predTip = bestKey(p);
+      var actual = m.fh > m.fa ? '1' : (m.fh < m.fa ? '2' : 'X');
+      var okTip = predTip === actual;
+      var okScore = p.scoreH === m.fh && p.scoreA === m.fa;
+      var predOver = p.pOver >= 0.5;
+      var actualOver = (m.fh + m.fa) > 2.5;
+      var okOu = predOver === actualOver;
+      if (okTip) hit1x2++; if (okScore) hitScore++; if (okOu) hitOu++;
+      return '<tr><td>' + esc(m.date.slice(5)) + '</td>'
+        + '<td class="col-league"><span class="league-cell">' + esc(m.league) + '</span></td>'
+        + '<td class="col-match">' + esc(m.home + ' v ' + m.away) + '</td>'
+        + '<td>' + tipBadge(predTip) + '</td>'
+        + '<td><span class="score">' + p.scoreH + '-' + p.scoreA + '</span></td>'
+        + '<td><span class="score">' + m.fh + '-' + m.fa + '</span></td>'
+        + '<td><span class="verdict ' + (okTip ? 'win' : 'miss') + '">' + (okTip ? 'Hit' : 'Miss') + '</span></td></tr>';
+    }).join('');
+    body.innerHTML = rows;
+    $('#accOverall').textContent = pct(hit1x2 / n) + '%';
+    $('#accScore').textContent = pct(hitScore / n) + '%';
+    $('#accOu').textContent = pct(hitOu / n) + '%';
+    $('#settled').textContent = HISTORY.length;
+  }
+
+  function showView(view) {
+    $all('.view').forEach(function (v) { v.hidden = v.id !== 'view-' + view; });
+    $all('.nav-btn').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-view') === view); });
+    var nav = $('#menuToggle');
+    if (nav) nav.setAttribute('aria-expanded', 'false');
+    $('.main-nav').classList.remove('open');
+  }
+
+  /* ---------- init / wiring ---------- */
+  function init() {
+    buildSidebar();
+    renderPredictions();
+    renderResults();
+
+    $all('.mode-btn').forEach(function (b) {
+      b.addEventListener('click', function () { setMode(b.getAttribute('data-mode')); });
+    });
+    $all('.eng-btn').forEach(function (b) {
+      b.addEventListener('click', function () { setEngine(b.getAttribute('data-engine')); });
+    });
+    $all('.nav-btn').forEach(function (b) {
+      b.addEventListener('click', function () { showView(b.getAttribute('data-view')); });
+    });
+    var lf = $('#leagueFilter');
+    if (lf) lf.addEventListener('change', function () {
+      state.league = lf.value;
+      $all('.side-item[data-league]').forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute('data-league') === state.league);
+      });
+      renderPredictions();
+    });
+    var tf = $('#tipFilter');
+    if (tf) tf.addEventListener('change', function () { state.tip = tf.value; renderPredictions(); });
+    var pf = $('#probFilter');
+    if (pf) pf.addEventListener('change', function () { state.minProb = parseInt(pf.value, 10) || 0; renderPredictions(); });
+    var sb = $('#searchBox');
+    if (sb) sb.addEventListener('input', function () { state.search = sb.value.trim(); renderPredictions(); });
+
+    var mt = $('#menuToggle');
+    if (mt) mt.addEventListener('click', function () {
+      var nav = $('.main-nav'), open = nav.classList.toggle('open');
+      mt.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    var st = $('#sideToggle');
+    if (st) st.addEventListener('click', function () {
+      var open = $('#sidebar').classList.toggle('open');
+      st.classList.toggle('open', open);
+    });
+    var ac = $('#anchorAdClose');
+    if (ac) ac.addEventListener('click', function () { document.body.classList.add('anchor-hidden'); });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 })();
