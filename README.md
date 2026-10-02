@@ -106,3 +106,17 @@ The sidebar's top block (Today / Live / Tomorrow / Weekend / Yesterday / All / T
 - **Live** shows fixtures with `live: true`, or (on real dates) kicked off within the last 110 minutes.
 - **Top** = best 1X2 probability of at least 60% (`TOP_MIN` in `app.js`).
 - Count badges follow the selected engine (Poisson/KPI) and hide when zero.
+
+
+## Stats tab (match detail panel)
+
+On the **Stats** tab each row expands (click, or Enter/Space) into a detail panel:
+
+- **Overall statistic** and **Home / Away statistic** tables: P, W, D, L, GF, GA, W%, D%, L%, AGF, AGA, AG+, APPG, and Over 2.5 (Total / Last 8). The small circle before the team name is its league position.
+- **Head to head**, **Last 6 matches** for each team, and the home team's **Home matches** / away team's **Away matches**, each with a Win / Draw / Lost summary.
+
+It is computed in the browser from `DATA.matches` in `data.js`:
+`{date, home, away, league, fh, fa, ht:[home, away]}` (`ht` = half-time score, optional).
+The shipped `matches` list is generated sample data. If `DATA.matches` is missing
+(for example after running `fetch-data.js`), the panel falls back to `DATA.history`,
+which is much shorter, so most numbers will be small.

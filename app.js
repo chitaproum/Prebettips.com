@@ -291,7 +291,8 @@
       + '<th class="col-match">Match</th><th>1</th><th>X</th><th>2</th><th>Tip</th><th>Score</th></tr>',
     'ou': '<tr><th class="col-pick">Pick</th><th>Date</th><th class="col-league">League</th>'
       + '<th class="col-match">Match</th><th>Exp. goals</th><th>Over 2.5</th><th>Under 2.5</th><th>Tip</th></tr>',
-    'stats': '<tr><th class="col-match">Match</th><th>1</th><th>X</th><th>2</th><th>Exp. goals</th><th>Over 2.5</th><th>Score</th></tr>',
+    'stats': '<tr><th>Date</th><th class="col-league">League</th><th class="col-match">Match</th>'
+      + '<th>Exp. H</th><th>Exp. A</th><th>Exp. total</th><th>Score</th><th>Over 2.5</th></tr>',
     'selection': '<tr><th>Date</th><th class="col-league">League</th><th class="col-match">Match</th>'
       + '<th class="col-prob">Probabilities</th><th>Tip</th><th>Score</th><th></th></tr>'
   };
@@ -362,71 +363,204 @@
       + '</tr>';
   }
   function rowStats(f, p, idx) {
-    var best = bestKey(p);
-    return '<tr class="stats-row" data-idx="' + idx + '">'
-      + '<td class="col-match"><span class="exp-caret">&#9656;</span>' + esc(f.home) + ' v ' + esc(f.away) + '</td>'
-      + '<td>' + probCell(p.pHome, '1', best) + '</td>'
-      + '<td>' + probCell(p.pDraw, 'X', best) + '</td>'
-      + '<td>' + probCell(p.pAway, '2', best) + '</td>'
-      + '<td><span class="score">' + p.expTotal.toFixed(2) + '</span></td>'
+    return '<tr class="stats-row" data-idx="' + idx + '" tabindex="0" aria-expanded="false">'
+      + '<td>' + fmtDate(f.date) + '</td>'
+      + '<td class="col-league"><span class="league-cell">' + esc(f.league) + '</span></td>'
+      + '<td class="col-match"><span class="exp-caret">&#9662;</span><span class="sr-match">' + esc(f.home) + ' v ' + esc(f.away) + '</span></td>'
+      + '<td><span class="sr-num">' + p.expH.toFixed(2) + '</span></td>'
+      + '<td><span class="sr-num">' + p.expA.toFixed(2) + '</span></td>'
+      + '<td><span class="sr-num sr-tot">' + p.expTotal.toFixed(2) + '</span></td>'
+      + '<td><span class="score">' + p.scoreH + ':' + p.scoreA + '</span></td>'
       + '<td><span class="ou over">' + pct(p.pOver) + '%</span></td>'
-      + '<td><span class="score">' + p.scoreH + '-' + p.scoreA + '</span></td>'
       + '</tr>';
   }
-  /* ---------- Stats detail panel (recent form + H2H) ---------- */
-  function formRowsHtml(team) {
-    var st = teamStat(team);
-    if (!st || !st.recent6.length) {
-      return '<tr><td class="ft-team">' + esc(team) + '</td><td colspan="6" style="color:var(--muted)">No recent matches in sample</td></tr>';
+  /* ---------- Stats detail panel ----------
+     Season tables, last-6 form, home/away form and head-to-head, all computed
+     in the browser from DATA.matches (falls back to DATA.history). */
+  var MATCHES = (DATA.matches && DATA.matches.length ? DATA.matches : HISTORY).slice()
+    .sort(function (x, y) { return x.date < y.date ? -1 : (x.date > y.date ? 1 : 0); });
+  var CODES = {
+    'Man City': 'MCI', 'Arsenal': 'ARS', 'Liverpool': 'LIV', 'Tottenham': 'TOT', 'Chelsea': 'CHE',
+    'Man United': 'MUN', 'Brighton': 'BHA', 'Everton': 'EVE', 'Burnley': 'BUR', 'Sheffield Utd': 'SHU',
+    'Real Madrid': 'RMA', 'Barcelona': 'BAR', 'Atletico': 'ATM', 'Girona': 'GIR', 'Sevilla': 'SEV',
+    'Getafe': 'GET', 'Cadiz': 'CAD', 'Almeria': 'ALM', 'Inter': 'INT', 'Juventus': 'JUV',
+    'Milan': 'MIL', 'Napoli': 'NAP', 'Roma': 'ROM', 'Lazio': 'LAZ', 'Salernitana': 'SAL', 'Empoli': 'EMP'
+  };
+  function teamCode(t) {
+    return CODES[t] || String(t).replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase();
+  }
+  function leagueCode(l) {
+    var w = String(l).split(/\s+/).filter(Boolean);
+    return (w.length > 1 ? w[0].charAt(0) + w[1].charAt(0) : String(l).slice(0, 2)).toUpperCase();
+  }
+  function fmtFull(d) { return String(d).slice(0, 10).split('-').reverse().join('/'); }
+
+  var _seasonStart = null;
+  function seasonStart() {
+    if (_seasonStart) return _seasonStart;
+    var last = MATCHES.length ? MATCHES[MATCHES.length - 1].date : '';
+    var y = parseInt(last.slice(0, 4), 10), mo = parseInt(last.slice(5, 7), 10);
+    if (!y) { _seasonStart = '0000-00-00'; return _seasonStart; }
+    _seasonStart = (mo < 7 ? y - 1 : y) + '-07-01';
+    return _seasonStart;
+  }
+
+  /* one team's games, oldest first. venue: 'H' | 'A' */
+  function teamGames(team, season) {
+    var from = season ? seasonStart() : '';
+    var out = [];
+    MATCHES.forEach(function (m) {
+      if (m.home !== team && m.away !== team) return;
+      if (from && m.date < from) return;
+      var home = m.home === team;
+      var gf = home ? m.fh : m.fa, ga = home ? m.fa : m.fh;
+      out.push({ m: m, venue: home ? 'H' : 'A', gf: gf, ga: ga,
+        res: gf > ga ? 'W' : (gf < ga ? 'L' : 'D') });
+    });
+    return out;
+  }
+  function aggregate(games) {
+    var s = { p: games.length, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0, over: 0 };
+    games.forEach(function (g) {
+      if (g.res === 'W') { s.w++; s.pts += 3; } else if (g.res === 'D') { s.d++; s.pts++; } else s.l++;
+      s.gf += g.gf; s.ga += g.ga;
+      if (g.gf + g.ga > 2.5) s.over++;
+    });
+    var last8 = games.slice(-8);
+    s.overTotal = s.p ? Math.round(100 * s.over / s.p) : null;
+    s.overLast8 = last8.length ? Math.round(100 * last8.filter(function (g) { return g.gf + g.ga > 2.5; }).length / last8.length) : null;
+    return s;
+  }
+  var _rankCache = {};
+  function leagueRank(team, league) {
+    if (!_rankCache[league]) {
+      var tbl = {};
+      MATCHES.forEach(function (m) {
+        if (m.league !== league || m.date < seasonStart()) return;
+        [[m.home, m.fh, m.fa], [m.away, m.fa, m.fh]].forEach(function (x) {
+          var r = tbl[x[0]] || (tbl[x[0]] = { t: x[0], pts: 0, gd: 0, gf: 0 });
+          r.pts += x[1] > x[2] ? 3 : (x[1] === x[2] ? 1 : 0); r.gd += x[1] - x[2]; r.gf += x[1];
+        });
+      });
+      var arr = Object.keys(tbl).map(function (k) { return tbl[k]; }).sort(function (a, b) {
+        return (b.pts - a.pts) || (b.gd - a.gd) || (b.gf - a.gf);
+      });
+      var map = {};
+      arr.forEach(function (r, i) { map[r.t] = i + 1; });
+      _rankCache[league] = map;
     }
-    var g = st.recent6;
-    var cells = g.map(function (x) {
-      var cls = x.res === 'W' ? 'ppg' : x.res === 'L' ? 'aga' : '';
-      return '<td class="' + cls + '">' + x.res + '</td>';
-    }).join('');
-    while (g.length < 6) { cells += '<td style="color:var(--muted)">–</td>'; g = g.concat([0]); }
-    return '<tr><td class="ft-team">' + esc(team) + '</td>'
-      + '<td class="agf">' + st.aGF.toFixed(2) + '</td>'
-      + '<td class="aga">' + st.aGA.toFixed(2) + '</td>'
-      + '<td class="ppg">' + st.ppg.toFixed(2) + '</td>'
-      + '<td class="ovg">' + pct(st.overRate) + '%</td></tr>';
+    return _rankCache[league][team] || null;
+  }
+
+  function dash(v, suffix) { return v == null ? '–' : v + (suffix || ''); }
+  function per(n, d) { return d ? Math.round(100 * n / d) : 0; }
+  function avg(n, d) { return d ? (n / d) : 0; }
+
+  function statRow(team, league, games, tag) {
+    var s = aggregate(games), rk = leagueRank(team, league);
+    var agf = avg(s.gf, s.p), aga = avg(s.ga, s.p);
+    return '<tr><td class="sp-team">' + (rk ? '<span class="sp-rank">' + rk + '</span>' : '')
+      + '<span class="sp-name">' + esc(team) + '</span>' + (tag ? '<span class="sp-tag">' + tag + '</span>' : '') + '</td>'
+      + '<td><span class="sp-p">' + s.p + '</span></td><td>' + s.w + '</td><td>' + s.d + '</td><td>' + s.l + '</td>'
+      + '<td>' + s.gf + '</td><td>' + s.ga + '</td>'
+      + '<td>' + per(s.w, s.p) + '</td><td>' + per(s.d, s.p) + '</td><td>' + per(s.l, s.p) + '</td>'
+      + '<td class="sp-agf">' + agf.toFixed(2) + '</td><td class="sp-aga">' + aga.toFixed(2) + '</td>'
+      + '<td>' + (agf + aga).toFixed(2) + '</td><td class="sp-ppg">' + avg(s.pts, s.p).toFixed(2) + '</td>'
+      + '<td class="sp-ov sp-ov-l">' + dash(s.overTotal, '%') + '</td><td class="sp-ov">' + dash(s.overLast8, '%') + '</td></tr>';
+  }
+  function statTable(title, rowsHtml) {
+    return '<h3 class="sp-title">' + title + '</h3><div class="sp-scroll"><table class="sp-table"><thead>'
+      + '<tr><th rowspan="2" class="sp-th-team">Team</th><th rowspan="2">P</th><th rowspan="2">W</th><th rowspan="2">D</th>'
+      + '<th rowspan="2">L</th><th rowspan="2">GF</th><th rowspan="2">GA</th><th rowspan="2">W%</th><th rowspan="2">D%</th>'
+      + '<th rowspan="2">L%</th><th rowspan="2">AGF</th><th rowspan="2">AGA</th><th rowspan="2">AG+</th><th rowspan="2">APPG</th>'
+      + '<th colspan="2" class="sp-th-ov">Over 2.5</th></tr>'
+      + '<tr><th class="sp-th-ov2 sp-ov-l">Total</th><th class="sp-th-ov2">Last 8</th></tr>'
+      + '</thead><tbody>' + rowsHtml + '</tbody></table></div>';
+  }
+
+  /* one match line: date | HOME score (ht) AWAY | league tag */
+  function matchLine(m, focus, showLg) {
+    var hw = m.fh > m.fa, aw = m.fh < m.fa;
+    var hb = focus ? (m.home === focus) : hw, ab = focus ? (m.away === focus) : aw;
+    var ht = m.ht && m.ht.length === 2 ? '<i>(' + m.ht[0] + '-' + m.ht[1] + ')</i>' : '';
+    return '<div class="sp-mr' + (showLg ? ' has-lg' : '') + '"><span class="sp-d">' + fmtFull(m.date) + '</span>'
+      + '<span class="sp-h' + (hb ? ' b' : '') + '">' + esc(teamCode(m.home)) + '</span>'
+      + '<span class="sp-s"><b>' + m.fh + '-' + m.fa + '</b>' + ht + '</span>'
+      + '<span class="sp-a' + (ab ? ' b' : '') + '">' + esc(teamCode(m.away)) + '</span>'
+      + (showLg ? '<span class="sp-lg" title="' + esc(m.league) + '">' + esc(leagueCode(m.league)) + '</span>' : '') + '</div>';
+  }
+  function card(tag, title, rowsHtml, footHtml) {
+    return '<div class="sp-card"><div class="sp-card-h">' + (tag ? '<span class="sp-pill">' + esc(tag) + '</span>' : '')
+      + '<span class="sp-card-t">' + title + '</span><span class="sp-all">All</span></div>'
+      + '<div class="sp-card-b">' + (rowsHtml || '<div class="sp-none">No matches in the data yet</div>') + '</div>'
+      + '<div class="sp-card-f">' + (footHtml || '') + '</div></div>';
+  }
+  function foot(a, b, c, n, labels, cls) {
+    return '<span class="' + cls[0] + '">' + labels[0] + ' ' + a + ' (' + per(a, n) + '%)</span>'
+      + '<span class="sp-fd">' + labels[1] + ' ' + b + ' (' + per(b, n) + '%)</span>'
+      + '<span class="' + cls[1] + '">' + labels[2] + ' ' + c + ' (' + per(c, n) + '%)</span>';
+  }
+  function formCard(team, games, title, count) {
+    var g = games.slice(-count).reverse();
+    var w = g.filter(function (x) { return x.res === 'W'; }).length;
+    var d = g.filter(function (x) { return x.res === 'D'; }).length;
+    var rows = g.map(function (x) { return matchLine(x.m, team, title !== 'Last 6 matches'); }).join('');
+    return card(teamCode(team), title, rows,
+      g.length ? foot(w, d, g.length - w - d, g.length, ['Win', 'Draw', 'Lost'], ['sp-fw', 'sp-fl']) : '');
   }
   function detailPanel(f) {
-    var hh = h2h(f.home, f.away);
-    var formTbl = '<p class="form-title">Season form (sample)</p>'
-      + '<table class="form-table"><thead><tr>'
-      + '<th class="ft-team">Team</th><th>Avg GF</th><th>Avg GA</th><th>PPG</th><th class="ovg">Over 2.5</th>'
-      + '</tr></thead><tbody>' + formRowsHtml(f.home) + formRowsHtml(f.away) + '</tbody></table>';
-    var h2hRows = hh.rows.length
-      ? hh.rows.map(function (m) {
-        var hw = m.fh > m.fa, aw = m.fh < m.fa;
-        return '<div class="rs-row"><span class="rs-date">' + esc(m.date.slice(5)) + '</span>'
-          + '<span class="rs-teams"><span class="rs-tn ' + (hw ? 'win' : '') + '">' + esc(m.home) + '</span>'
-          + '<span class="rs-sc">' + m.fh + '–' + m.fa + '</span>'
-          + '<span class="rs-tn ' + (aw ? 'win' : '') + '">' + esc(m.away) + '</span></span>'
-          + '<span class="rs-lg">' + esc(m.league) + '</span></div>';
-      }).join('')
-      : '<div class="rs-row"><span class="rs-tn" style="text-align:center;flex:1">No head-to-head in sample</span></div>';
-    var h2hMod = '<div class="rs-module"><div class="rs-head"><span class="rs-tag">H2H</span>'
-      + '<span class="rs-title">Head to head</span></div><div class="rs-rows">' + h2hRows + '</div></div>';
-    return '<div class="form-panel">' + formTbl + '</div><div class="results-info">' + h2hMod + '</div>';
+    var hAll = teamGames(f.home, true), aAll = teamGames(f.away, true);
+    var hHome = hAll.filter(function (x) { return x.venue === 'H'; });
+    var aAway = aAll.filter(function (x) { return x.venue === 'A'; });
+    var overall = statTable('Overall statistic',
+      statRow(f.home, f.league, hAll) + statRow(f.away, f.league, aAll));
+    var split = statTable('Home / Away statistic',
+      statRow(f.home, f.league, hHome, 'Home') + statRow(f.away, f.league, aAway, 'Away'));
+
+    var hh = MATCHES.filter(function (m) {
+      return (m.home === f.home && m.away === f.away) || (m.home === f.away && m.away === f.home);
+    }).slice(-6).reverse();
+    var hw = 0, dw = 0, aw = 0;
+    hh.forEach(function (m) {
+      var a = m.home === f.home ? m.fh : m.fa, b = m.home === f.home ? m.fa : m.fh;
+      if (a > b) hw++; else if (a < b) aw++; else dw++;
+    });
+    var h2hCard = card('', 'Head to head', hh.map(function (m) { return matchLine(m, null, true); }).join(''),
+      hh.length ? foot(hw, dw, aw, hh.length, [teamCode(f.home), 'Draw', teamCode(f.away)], ['sp-fw', 'sp-fl']) : '');
+    h2hCard = h2hCard.replace('<div class="sp-card-h">', '<div class="sp-card-h sp-card-h2h">');
+
+    return '<div class="sp-panel">' + overall + split + '<div class="sp-grid">'
+      + h2hCard
+      + formCard(f.home, hAll, 'Last 6 matches', 6)
+      + formCard(f.away, aAll, 'Last 6 matches', 6)
+      + formCard(f.home, hHome, 'Home matches', 4)
+      + formCard(f.away, aAway, 'Away matches', 4)
+      + '</div></div>';
   }
   function toggleDetail(tr) {
     var idx = tr.getAttribute('data-idx');
     var next = tr.nextElementSibling;
     if (next && next.classList.contains('detail-row')) {
-      next.parentNode.removeChild(next); tr.classList.remove('open'); return;
+      next.parentNode.removeChild(next); tr.classList.remove('open'); tr.setAttribute('aria-expanded', 'false'); return;
     }
     $all('tr.detail-row').forEach(function (d) { d.parentNode.removeChild(d); });
-    $all('tr.stats-row.open').forEach(function (d) { d.classList.remove('open'); });
+    $all('tr.stats-row.open').forEach(function (d) { d.classList.remove('open'); d.setAttribute('aria-expanded', 'false'); });
     var f = _rendered[idx];
     if (!f) return;
     var dr = document.createElement('tr');
     dr.className = 'detail-row';
-    dr.innerHTML = '<td colspan="7">' + detailPanel(f) + '</td>';
+    dr.innerHTML = '<td colspan="8">' + detailPanel(f) + '</td>';
     tr.parentNode.insertBefore(dr, tr.nextElementSibling);
-    tr.classList.add('open');
+    tr.classList.add('open'); tr.setAttribute('aria-expanded', 'true');
+    sizeDetail();
   }
+  /* keep the panel as wide as the visible table area (the table itself may scroll sideways on phones) */
+  function sizeDetail() {
+    var p = $('.sp-panel'), w = $('.table-wrap');
+    if (!p || !w) return;
+    p.style.width = Math.max(260, w.clientWidth - 2) + 'px';
+  }
+  window.addEventListener('resize', sizeDetail);
   /* ---------- filtering + render ---------- */
   var _rendered = [];
   function passesFilters(f, p) {
@@ -457,7 +591,7 @@
     if (state.mode === 'selection') { renderSelection(head, body, empty); return; }
     head.innerHTML = HEADS[state.mode];
     _rendered = [];
-    var rows = [], cols = state.mode === 'ou' ? 8 : (state.mode === 'stats' ? 7 : 9);
+    var rows = [], cols = state.mode === 'ou' ? 8 : (state.mode === 'stats' ? 8 : 9);
     FIXTURES.forEach(function (f) {
       var p = predict(f.home, f.away);
       if (!passesFilters(f, p)) return;
@@ -484,6 +618,9 @@
     });
     $all('tr.stats-row').forEach(function (tr) {
       tr.addEventListener('click', function () { toggleDetail(tr); });
+      tr.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleDetail(tr); }
+      });
     });
   }
 
