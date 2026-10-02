@@ -48,7 +48,7 @@
       <button class="side-toggle" id="sideToggle" aria-label="Toggle leagues menu">Leagues &amp; Countries <span class="side-caret">&#9662;</span></button></aside>
     <div class="content">
     <!-- Ad: top leaderboard banner (728x90) -->
-    <div class="ad-slot ad-leaderboard" aria-label="Advertisement">
+    <div class="ad-slot ad-leaderboard" data-ad-placement="top" aria-label="Advertisement">
       <span class="ad-body">Your banner here<span class="ad-size">Leaderboard 728×90</span></span>
     </div>
     <!-- PREDICTIONS VIEW -->
@@ -106,7 +106,7 @@
       </div>
 
       <!-- Ad: in-content leaderboard below the table -->
-      <div class="ad-slot ad-inline" aria-label="Advertisement">
+      <div class="ad-slot ad-inline" data-ad-placement="below" aria-label="Advertisement">
         <span class="ad-body">Your banner here<span class="ad-size">Leaderboard 728×90</span></span>
       </div>
 
@@ -178,7 +178,7 @@
 
   <div class="container">
     <!-- Ad: footer banner -->
-    <div class="ad-slot ad-footer" aria-label="Advertisement">
+    <div class="ad-slot ad-footer" data-ad-placement="footer" aria-label="Advertisement">
       <span class="ad-body">Your banner here<span class="ad-size">Billboard 970×90</span></span>
     </div>
   </div>
@@ -190,12 +190,13 @@
   </footer>
 
   <!-- Ad: sticky bottom anchor -->
-  <div id="anchorAd" class="ad-slot ad-anchor" aria-label="Advertisement">
+  <div id="anchorAd" class="ad-slot ad-anchor" data-ad-placement="anchor" aria-label="Advertisement">
     <span class="ad-body">Your sticky banner here<span class="ad-size">Anchor 320×50</span></span>
     <button type="button" class="ad-close" id="anchorAdClose" aria-label="Close advertisement">×</button>
   </div>
 
   <script src="data.js"></script>
   <script src="app.js"></script>
+  <script src="ads.js"></script>
 </body>
 </html>

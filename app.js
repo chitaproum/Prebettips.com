@@ -271,7 +271,7 @@
       b.classList.toggle('active', b.getAttribute('data-period') === state.period);
     });
     var r = periodRange(state.period, state.day), dr = $('#dateRange');
-    if (dr) dr.textContent = showDay(r[0]) + ' - ' + showDay(r[1]);
+    if (dr) dr.textContent = (r[0] === r[1] || showDay(r[0]) === showDay(r[1])) ? showDay(r[0]) : showDay(r[0]) + ' - ' + showDay(r[1]);
     var counts = { today: 0, live: 0, tomorrow: 0, weekend: 0, yesterday: 0, all: 0 };
     FIXTURES.forEach(function (f) {
       var p = predict(f.home, f.away);
@@ -299,7 +299,7 @@
 
   function adRowHtml(cols) {
     return '<tr class="ad-row"><td colspan="' + cols + '" style="padding:0">'
-      + '<div class="ad-slot ad-inline" style="margin:0;border-radius:0;border-left:0;border-right:0" aria-label="Advertisement">'
+      + '<div class="ad-slot ad-inline" data-ad-placement="inTable" style="margin:0;border-radius:0;border-left:0;border-right:0" aria-label="Advertisement">'
       + '<span class="ad-body">Your banner here<span class="ad-size">Leaderboard 728×90</span></span></div></td></tr>';
   }
 
@@ -762,7 +762,7 @@
       + '<div class="side-group"><div class="side-title">Countries</div>'
       + '<div class="side-search"><span class="ico">⚲</span><input type="search" id="countrySearch" placeholder="Search country…" aria-label="Search country"></div>'
       + '<div class="country-list">' + countries + '</div></div>'
-      + '<div class="ad-slot ad-mpu" aria-label="Advertisement"><span class="ad-body">Your ad here<span class="ad-size">MPU 300×250</span></span></div>'
+      + '<div class="ad-slot ad-mpu" data-ad-placement="sidebar" aria-label="Advertisement"><span class="ad-body">Your ad here<span class="ad-size">MPU 300×250</span></span></div>'
       + '<div class="visitors"><div class="vc-head"><span class="vc-icon">◉</span>Live traffic</div>'
       + '<ul class="vc-list"><li class="online"><span class="vc-k">Online now</span><span class="vc-v">1,284</span></li>'
       + '<li><span class="vc-k">Today</span><span class="vc-v">38,902</span></li>'
