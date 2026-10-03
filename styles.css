@@ -411,3 +411,48 @@ tr.detail-row>td{padding:0 !important;background:var(--bg)}
 .league-favorite.starred{color:#d99813}
 .country-empty{font-size:12px;color:var(--muted);padding:6px;margin:0}
 .country-expand:focus-visible,.league-favorite:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+
+/* ---------- Compact League Badge (Forebet Style) ---------- */
+.col-league {
+  width: 68px;
+  min-width: 60px;
+  max-width: 78px;
+  text-align: center !important;
+  padding: 6px 4px !important;
+}
+.pred-table th.col-league {
+  text-align: center !important;
+}
+.league-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.15;
+  cursor: help;
+  user-select: none;
+  vertical-align: middle;
+}
+.league-badge .lb-flag {
+  font-size: 16px;
+  display: inline-block;
+  line-height: 1;
+  margin-bottom: 2px;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.15));
+}
+.league-badge .lb-code {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--ink, #1f2937);
+  background: rgba(0, 0, 0, 0.05);
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  white-space: nowrap;
+}
+body.theme-dark .league-badge .lb-code {
+  color: #e5e7eb;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+}

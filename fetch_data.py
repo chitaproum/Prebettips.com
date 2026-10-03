@@ -5,6 +5,8 @@ Read the API key ONLY from API_FOOTBALL_KEY. No browser-side API requests.
 import datetime as dt
 import json
 import math
+import re
+import unicodedata
 import os
 from pathlib import Path
 import time
@@ -214,9 +216,23 @@ class CachedClient:
         if ttl: self.cache[key] = {'at':self.now.isoformat(), 'rows':rows}
         return rows
 
+def league_name_key(name):
+    """Normalize API display-name punctuation without guessing competition IDs."""
+    text = unicodedata.normalize('NFKD', str(name)).casefold()
+    text = ''.join(ch for ch in text if not unicodedata.combining(ch))
+    return re.sub(r'[^a-z0-9]+', '', text)
+
+def league_is_allowed(league, config):
+    rules = config.get('countryDiscovery', {}).get('allowedLeaguesByCountry', {})
+    country = league.get('country')
+    if country not in rules:
+        return True
+    name = league.get('displayName') or league.get('name', '').split(' · ')[0]
+    return league_name_key(name) in {league_name_key(n) for n in rules[country]}
+
 def discover_leagues(config, api, now, catalog_cache, warnings):
     opts = config.get('countryDiscovery', {})
-    configured = list(config.get('leagues', []))
+    configured = [x for x in config.get('leagues', []) if league_is_allowed(x, config)]
     if not opts.get('enabled'): return configured
     selected = {x['id']:dict(x) for x in configured}
     limit = max(1, min(10, int(opts.get('maxLeaguesPerCountry',10))))
@@ -232,6 +248,7 @@ def discover_leagues(config, api, now, catalog_cache, warnings):
             league = row.get('league', {})
             if not league.get('id') or not row.get('seasons'): continue
             if not opts.get('includeCups',True) and league.get('type') == 'Cup': continue
+            if not league_is_allowed({'country':country, 'name':league.get('name','')}, config): continue
             candidates.append(row)
         priority = {x['id'] for x in configured if x['country']==country}
         def rank(row):
@@ -253,7 +270,13 @@ def discover_leagues(config, api, now, catalog_cache, warnings):
                 'displayName':lg['name'], 'country':country,
                 'icon':row.get('country',{}).get('code') or '⚽', '_meta':[row]}
             used+=1
-        if len(chosen)<5:
+        rules = opts.get('allowedLeaguesByCountry', {})
+        if country in rules:
+            available = {league_name_key(r['league']['name']) for r in candidates}
+            missing = [n for n in rules[country] if league_name_key(n) not in available]
+            if missing:
+                warnings.append(country+': selected competitions unavailable in current API catalog: '+', '.join(missing))
+        if len(chosen)<5 and country not in rules:
             warnings.append(country+': fewer than five current competitions returned by the API; no invented leagues added.')
     return list(selected.values())
 
@@ -301,7 +324,9 @@ def run(root, api=None, now=None):
         current_rows = [normalize(f,lg,year,tz) for f in raw]
         finished = [r for r in current_rows if complete(r)]
         played, goals = len(finished),sum(r['fh']+r['fa'] for r in finished)
-        avg = goals/played if played else 2.7
+        observed_avg = goals/played if played else 0
+        # A zero-goal season must not cause division by zero in model ratings.
+        avg = observed_avg if observed_avg > 0 else 2.7
         league_averages[lg['name']] = round(avg,5)
         form = {}
         league_teams = {}
@@ -311,7 +336,7 @@ def run(root, api=None, now=None):
                 rec=form.setdefault(name,[0,0,0]); rec[0]+=1; rec[1]+=gf; rec[2]+=ga
         for r in current_rows:
             for side in ['home','away']:
-                name = r[side]; n,gf,ga = form.get(name,[0,0,0]); prior=5; baseline=avg/2 if avg > 0 else 1.35
+                name = r[side]; n,gf,ga = form.get(name,[0,0,0]); prior=5; baseline=avg/2
                 league_teams[name] = {'id':r[side+'Id'],'logo':r[side+'Logo'],'league':lg['name'],
                     'att':round((gf+prior*baseline)/(n+prior)/baseline,5),
                     'def':round((ga+prior*baseline)/(n+prior)/baseline,5),'played':n}

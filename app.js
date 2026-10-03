@@ -387,7 +387,7 @@
     return '<tr>'
       + '<td class="col-pick"><input type="checkbox" class="pick-cb" data-key="' + esc(k) + '"' + checked + ' aria-label="Add to selection"></td>'
       + '<td>' + fmtDate(f.date) + '</td>'
-      + '<td class="col-league"><span class="league-cell">' + esc(f.league) + '</span></td>'
+      + '<td class="col-league">' + renderLeagueBadge(f) + '</td>'
       + '<td class="col-match">' + matchCell(f) + '</td>'
       + '<td>' + probCell(p.pHome, '1', best) + '</td>'
       + '<td>' + probCell(p.pDraw, 'X', best) + '</td>'
@@ -403,7 +403,7 @@
     return '<tr>'
       + '<td class="col-pick"><input type="checkbox" class="pick-cb" data-key="' + esc(k) + '"' + checked + ' aria-label="Add to selection"></td>'
       + '<td>' + fmtDate(f.date) + '</td>'
-      + '<td class="col-league"><span class="league-cell">' + esc(f.league) + '</span></td>'
+      + '<td class="col-league">' + renderLeagueBadge(f) + '</td>'
       + '<td class="col-match">' + matchCell(f) + '</td>'
       + '<td><span class="score">' + p.expTotal.toFixed(2) + '</span></td>'
       + '<td><span class="ou over">' + pct(over) + '%</span></td>'
@@ -415,7 +415,7 @@
   function rowStats(f, p, idx) {
     return '<tr class="stats-row" data-idx="' + idx + '" tabindex="0" aria-expanded="false">'
       + '<td>' + fmtDate(f.date) + '</td>'
-      + '<td class="col-league"><span class="league-cell">' + esc(f.league) + '</span></td>'
+      + '<td class="col-league">' + renderLeagueBadge(f) + '</td>'
       + '<td class="col-match"><span class="exp-caret">&#9662;</span><span class="sr-match">' + esc(f.home) + ' v ' + esc(f.away) + '</span></td>'
       + '<td><span class="sr-num">' + p.expH.toFixed(2) + '</span></td>'
       + '<td><span class="sr-num">' + p.expA.toFixed(2) + '</span></td>'
@@ -439,7 +439,126 @@
   function teamCode(t) {
     return CODES[t] || String(t).replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase();
   }
-  function leagueCode(l) {
+  
+  /* ---------- Compact League & Country Badging ---------- */
+  var COUNTRY_DATA = {
+    'England': { iso: 'gb-eng', code: 'En', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', icon: 'GB' },
+    'Spain': { iso: 'es', code: 'Es', flag: '🇪🇸', icon: 'ES' },
+    'Italy': { iso: 'it', code: 'It', flag: '🇮🇹', icon: 'IT' },
+    'Germany': { iso: 'de', code: 'De', flag: '🇩🇪', icon: 'DE' },
+    'France': { iso: 'fr', code: 'Fr', flag: '🇫🇷', icon: 'FR' },
+    'Netherlands': { iso: 'nl', code: 'Nl', flag: '🇳🇱', icon: 'NL' },
+    'Portugal': { iso: 'pt', code: 'Pt', flag: '🇵🇹', icon: 'PT' },
+    'Argentina': { iso: 'ar', code: 'Ar', flag: '🇦🇷', icon: 'AR' },
+    'Australia': { iso: 'au', code: 'Au', flag: '🇦🇺', icon: 'AU' },
+    'Austria': { iso: 'at', code: 'At', flag: '🇦🇹', icon: 'AT' },
+    'Belarus': { iso: 'by', code: 'By', flag: '🇧🇾', icon: 'BY' },
+    'Belgium': { iso: 'be', code: 'Be', flag: '🇧🇪', icon: 'BE' },
+    'Brazil': { iso: 'br', code: 'Br', flag: '🇧🇷', icon: 'BR' },
+    'Bulgaria': { iso: 'bg', code: 'Bg', flag: '🇧🇬', icon: 'BG' },
+    'Canada': { iso: 'ca', code: 'Ca', flag: '🇨🇦', icon: 'CA' },
+    'Chile': { iso: 'cl', code: 'Cl', flag: '🇨🇱', icon: 'CL' },
+    'China': { iso: 'cn', code: 'Cn', flag: '🇨🇳', icon: 'CN' },
+    'Croatia': { iso: 'hr', code: 'Hr', flag: '🇭🇷', icon: 'HR' },
+    'Cyprus': { iso: 'cy', code: 'Cy', flag: '🇨🇾', icon: 'CY' },
+    'Czech-Republic': { iso: 'cz', code: 'Cz', flag: '🇨🇿', icon: 'CZ' },
+    'Denmark': { iso: 'dk', code: 'Dk', flag: '🇩🇰', icon: 'DK' },
+    'Estonia': { iso: 'ee', code: 'Ee', flag: '🇪🇪', icon: 'EE' },
+    'Finland': { iso: 'fi', code: 'Fi', flag: '🇫🇮', icon: 'FI' },
+    'Greece': { iso: 'gr', code: 'Gr', flag: '🇬🇷', icon: 'GR' },
+    'Hungary': { iso: 'hu', code: 'Hu', flag: '🇭🇺', icon: 'HU' },
+    'Iceland': { iso: 'is', code: 'Is', flag: '🇮🇸', icon: 'IS' },
+    'Ireland': { iso: 'ie', code: 'Ie', flag: '🇮🇪', icon: 'IE' },
+    'Israel': { iso: 'il', code: 'Il', flag: '🇮🇱', icon: 'IL' },
+    'Japan': { iso: 'jp', code: 'Jp', flag: '🇯🇵', icon: 'JP' },
+    'Mexico': { iso: 'mx', code: 'Mx', flag: '🇲🇽', icon: 'MX' },
+    'Norway': { iso: 'no', code: 'No', flag: '🇳🇴', icon: 'NO' },
+    'Poland': { iso: 'pl', code: 'Pl', flag: '🇵🇱', icon: 'PL' },
+    'Romania': { iso: 'ro', code: 'Ro', flag: '🇷🇴', icon: 'RO' },
+    'Russia': { iso: 'ru', code: 'Ru', flag: '🇷🇺', icon: 'RU' },
+    'Saudi-Arabia': { iso: 'sa', code: 'Sa', flag: '🇸🇦', icon: 'SA' },
+    'Scotland': { iso: 'gb-sct', code: 'Sc', flag: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', icon: 'SC' },
+    'Serbia': { iso: 'rs', code: 'Rs', flag: '🇷🇸', icon: 'RS' },
+    'Slovakia': { iso: 'sk', code: 'Sk', flag: '🇸🇰', icon: 'SK' },
+    'Slovenia': { iso: 'si', code: 'Si', flag: '🇸🇮', icon: 'SI' },
+    'South-Korea': { iso: 'kr', code: 'Kr', flag: '🇰🇷', icon: 'KR' },
+    'Sweden': { iso: 'se', code: 'Se', flag: '🇸🇪', icon: 'SE' },
+    'Switzerland': { iso: 'ch', code: 'Ch', flag: '🇨🇭', icon: 'CH' },
+    'Turkey': { iso: 'tr', code: 'Tr', flag: '🇹🇷', icon: 'TR' },
+    'Ukraine': { iso: 'ua', code: 'Ua', flag: '🇺🇦', icon: 'UA' },
+    'Uruguay': { iso: 'uy', code: 'Uy', flag: '🇺🇾', icon: 'UY' },
+    'USA': { iso: 'us', code: 'Us', flag: '🇺🇸', icon: 'US' },
+    'Wales': { iso: 'gb-wls', code: 'Wa', flag: '🏴󠁧󠁢󠁷󠁬󠁳󠁿', icon: 'WA' }
+  };
+
+  function getLeagueShortCode(leagueName, countryName) {
+    var raw = String(leagueName || '').trim();
+    var cInfo = COUNTRY_DATA[countryName] || {};
+    var prefix = cInfo.code || (countryName ? countryName.slice(0, 2).toUpperCase() : '');
+
+    // Known specific league mappings
+    var l = raw.toLowerCase();
+    if (l.indexOf('premier league') !== -1 || l.indexOf('serie a') !== -1 || l.indexOf('la liga') !== -1 || l.indexOf('ligue 1') !== -1 || l.indexOf('bundesliga') !== -1 || l.indexOf('super lig') !== -1 || l.indexOf('super liga') !== -1 || l.indexOf('superliga') !== -1 || l.indexOf('eliteserien') !== -1 || l.indexOf('ekstraklasa') !== -1 || l.indexOf('eredivisie') !== -1 || l.indexOf('primeira liga') !== -1 || l.indexOf('hnl') !== -1 || l.indexOf('pro league') !== -1 || l.indexOf('first league') !== -1 || l.indexOf('1. division') !== -1 || l.indexOf('liga i') !== -1 || l.indexOf('liga profesional') !== -1) {
+      if (l.indexOf('women') !== -1 || l.indexOf('feminine') !== -1) return (prefix || 'L') + 'W';
+      if (l.indexOf('2. bundesliga') !== -1 || l.indexOf('bundesliga 2') !== -1) return (prefix || 'De') + '2';
+      return (prefix || 'L') + '1';
+    }
+    if (l.indexOf('championship') !== -1 || l.indexOf('serie b') !== -1 || l.indexOf('ligue 2') !== -1 || l.indexOf('segunda') !== -1 || l.indexOf('2. liga') !== -1 || l.indexOf('first nl') !== -1 || l.indexOf('second league') !== -1 || l.indexOf('liga ii') !== -1 || l.indexOf('primera nacional') !== -1 || l.indexOf('challenge league') !== -1 || l.indexOf('i liga') !== -1) {
+      return (prefix || 'L') + '2';
+    }
+    if (l.indexOf('league one') !== -1 || l.indexOf('serie c') !== -1 || l.indexOf('ligue 3') !== -1 || l.indexOf('3. liga') !== -1 || l.indexOf('second nl') !== -1 || l.indexOf('ii liga') !== -1 || l.indexOf('primera b') !== -1) {
+      return (prefix || 'L') + '3';
+    }
+    if (l.indexOf('league two') !== -1 || l.indexOf('serie d') !== -1 || l.indexOf('national league') !== -1 || l.indexOf('third nl') !== -1 || l.indexOf('iii liga') !== -1 || l.indexOf('primera c') !== -1) {
+      return (prefix || 'L') + '4';
+    }
+    if (l.indexOf('cup') !== -1 || l.indexOf('copa') !== -1 || l.indexOf('pokal') !== -1 || l.indexOf('kupas') !== -1) {
+      return (prefix || 'C') + 'C';
+    }
+    if (l.indexOf('women') !== -1 || l.indexOf('feminin') !== -1 || l.indexOf('nwsl') !== -1) {
+      return (prefix || 'W') + 'W';
+    }
+
+    // Default short code: prefix + number or first initials
+    var numMatch = raw.match(/\b([1-4])\b/);
+    if (numMatch) return (prefix || 'D') + numMatch[1];
+    var words = raw.replace(/[^a-zA-Z0-9\s]/g, '').split(/\s+/).filter(Boolean);
+    if (words.length >= 2) return (prefix ? prefix.charAt(0) : words[0].charAt(0)) + words[0].charAt(0).toUpperCase() + words[1].charAt(0).toUpperCase();
+    return (prefix || '') + raw.slice(0, 2).toUpperCase();
+  }
+
+  function renderLeagueBadge(f) {
+    if (!f) return '';
+    var leagueName = typeof f === 'string' ? f : (f.league || '');
+    var countryName = (typeof f === 'object' && f.country) ? f.country : '';
+
+    // If country is not on fixture, try to deduce from CATALOG or string
+    if (!countryName && leagueName.indexOf(' · ') !== -1) {
+      var parts = leagueName.split(' · ');
+      leagueName = parts[0].trim();
+      countryName = parts[1].trim();
+    }
+    if (!countryName && typeof CATALOG !== 'undefined' && CATALOG.length) {
+      for (var i = 0; i < CATALOG.length; i++) {
+        if (CATALOG[i].name === leagueName && CATALOG[i].country) {
+          countryName = CATALOG[i].country;
+          break;
+        }
+      }
+    }
+
+    var cInfo = COUNTRY_DATA[countryName] || {};
+    var flag = cInfo.flag || '⚽';
+    var shortCode = getLeagueShortCode(leagueName, countryName);
+    var fullName = leagueName + (countryName ? ' · ' + countryLabel(countryName) : '');
+
+    return '<div class="league-badge" title="' + esc(fullName) + '">'
+      + '<span class="lb-flag" aria-hidden="true">' + flag + '</span>'
+      + '<span class="lb-code">' + esc(shortCode) + '</span>'
+      + '</div>';
+  }
+
+function leagueCode(l) {
     var w = String(l).split(/\s+/).filter(Boolean);
     return (w.length > 1 ? w[0].charAt(0) + w[1].charAt(0) : String(l).slice(0, 2)).toUpperCase();
   }
@@ -718,7 +837,7 @@
       var p = (state.engine === 'poisson' && f.prediction ? f.prediction : predict(f.home, f.away, f.league)), k = fxKey(f);
       return '<tr>'
         + '<td>' + fmtDate(f.date) + '</td>'
-        + '<td class="col-league"><span class="league-cell">' + esc(f.league) + '</span></td>'
+        + '<td class="col-league">' + renderLeagueBadge(f) + '</td>'
         + '<td class="col-match">' + matchCell(f) + '</td>'
         + '<td class="col-prob">' + selProbHtml(p) + '</td>'
         + '<td>' + selTipHtml(p) + '</td>'
@@ -926,7 +1045,7 @@
         if ((p.pOver >= 0.5) === (m.fh + m.fa > 2.5)) hitOu++;
       }
       return '<tr><td>' + esc(m.date.slice(0,10).split('-').reverse().join('/')) + '</td>'
-        + '<td class="col-league"><span class="league-cell">' + esc(m.league) + '</span></td>'
+        + '<td class="col-league">' + renderLeagueBadge(m) + '</td>'
         + '<td class="col-match">' + esc(m.home + ' v ' + m.away) + '</td>'
         + '<td>' + (p ? tipBadge(predTip) : '–') + '</td>'
         + '<td><span class="score">' + (p ? p.scoreH + '-' + p.scoreA : '–') + '</span></td>'
