@@ -33,7 +33,7 @@
       <div class="hero-copy">
         <span class="hero-eyebrow">Poisson &amp; KPI models</span>
         <h1>Smarter football predictions, backed by the numbers.</h1>
-        <p>Win probabilities, correct scores and goal markets for every upcoming fixture. Demo data only.</p>
+        <p>Win probabilities, correct scores and goal markets for every upcoming fixture. Statistical estimates, not guaranteed outcomes.</p>
       </div>
       <div class="hero-stats">
         <div class="hero-stat"><b id="heroMatches">–</b><span>Upcoming matches</span></div>
@@ -57,6 +57,7 @@
         <div class="day-strip" id="dayStrip" role="group" aria-label="Pick a day"><!-- built by app.js --></div>
         <p class="date-range" id="dateRange"></p>
       </div>
+      <p id="dataStatus" class="data-status" role="status"></p>
       <div class="toolbar">
         <div class="mode-switch" role="tablist" aria-label="Prediction type">
           <button class="mode-btn m1x2 active" data-mode="1x2" role="tab">1 x 2</button>
@@ -145,7 +146,7 @@
         <div class="stat-card"><span class="stat-num" id="accOverall">–</span><span class="stat-lbl">1X2 hit rate</span></div>
         <div class="stat-card"><span class="stat-num" id="accScore">–</span><span class="stat-lbl">Correct score</span></div>
         <div class="stat-card"><span class="stat-num" id="accOu">–</span><span class="stat-lbl">Over/Under hit rate</span></div>
-        <div class="stat-card"><span class="stat-num" id="settled">–</span><span class="stat-lbl">Settled matches</span></div>
+        <div class="stat-card"><span class="stat-num" id="settled">–</span><span class="stat-lbl">Tracked settled predictions</span></div>
       </div>
       <div class="table-wrap">
         <table class="pred-table">
@@ -169,7 +170,7 @@
           <li><strong>Outcomes.</strong> Summing the grid gives 1 / X / 2 probabilities, the most likely correct score, expected total goals and the Over/Under 2.5 split.</li>
         </ol>
         <p><strong>KPI engine.</strong> Switch the <em>Data</em> toggle to <strong>KPI</strong> for an alternative, stats-weighted prediction. It builds a KPI Confidence Index from win rate, venue form, recent form, head-to-head dominance and average goals — see the README for the exact weights.</p>
-        <p class="muted">This is a demonstration app using sample fixtures and ratings. Predictions are for entertainment and study only — no gambling advice is implied.</p>
+        <p class="muted">Fixtures and results are supplied by API-Football after the updater runs. Probabilities and expected goals are estimates from this site’s own models, not official API-Football forecasts or measured xG. Predictions are for entertainment and study only — no gambling advice is implied.</p>
       </article>
     </section>
     </div><!-- /.content -->
@@ -184,7 +185,7 @@
 
   <footer class="site-footer">
     <div class="container">
-      <p>PreBetTips &middot; Poisson-model &amp; KPI football predictions &middot; Demo project. 18+ Please gamble responsibly.</p>
+      <p>PreBetTips &middot; Poisson-model &amp; KPI football predictions &middot; 18+ Please gamble responsibly.</p>
     </div>
   </footer>
 

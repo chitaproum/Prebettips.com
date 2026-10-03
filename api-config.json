@@ -1,0 +1,54 @@
+{
+  "timezone": "UTC",
+  "daysAhead": 14,
+  "daysBack": 2,
+  "homeAdvantage": 1.15,
+  "fetchPreviousSeason": true,
+  "h2hLast": 6,
+  "h2hCacheHours": 24,
+  "maxRequestsPerRun": 500,
+  "leagues": [
+    {
+      "id": 39,
+      "name": "Premier League",
+      "country": "England",
+      "icon": "GB"
+    },
+    {
+      "id": 140,
+      "name": "La Liga",
+      "country": "Spain",
+      "icon": "ES"
+    },
+    {
+      "id": 135,
+      "name": "Serie A",
+      "country": "Italy",
+      "icon": "IT"
+    },
+    {
+      "id": 78,
+      "name": "Bundesliga",
+      "country": "Germany",
+      "icon": "DE"
+    },
+    {
+      "id": 61,
+      "name": "Ligue 1",
+      "country": "France",
+      "icon": "FR"
+    },
+    {
+      "id": 88,
+      "name": "Eredivisie",
+      "country": "Netherlands",
+      "icon": "NL"
+    },
+    {
+      "id": 94,
+      "name": "Primeira Liga",
+      "country": "Portugal",
+      "icon": "PT"
+    }
+  ]
+}

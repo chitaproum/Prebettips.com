@@ -31,7 +31,7 @@
   function lambdas(home, away) {
     var h = TEAMS[home] || { att: 1, def: 1 };
     var a = TEAMS[away] || { att: 1, def: 1 };
-    var base = LEAGUE_AVG / 2;
+    var base = ((DATA.leagueAvgGoalsByLeague || {})[h.league] || LEAGUE_AVG) / 2;
     var lh = h.att * a.def * base * HOME_ADV;
     var la = a.att * h.def * base;
     return { lh: clamp(lh, 0.15, 6), la: clamp(la, 0.15, 6) };
@@ -110,7 +110,8 @@
     return { ppg: pts / g.length, winRate: g.filter(function (x) { return x.res === 'W'; }).length / g.length, n: g.length };
   }
   function h2h(home, away) {
-    var rows = HISTORY.filter(function (m) {
+    var ids = [TEAMS[home] && TEAMS[home].id, TEAMS[away] && TEAMS[away].id].sort(function(a,b){return a-b;}).join('-');
+    var rows = (DATA.demo === false ? ((DATA.h2h || {})[ids] || []) : HISTORY).filter(function (m) {
       return (m.home === home && m.away === away) || (m.home === away && m.away === home);
     }).sort(function (x, y) { return x.date < y.date ? 1 : -1; });
     var hp = 0, ap = 0;
@@ -171,6 +172,7 @@
     tip: 'all',
     minProb: 0,
     search: '',
+    country: 'all',
     period: 'today',    // today | live | tomorrow | weekend | yesterday | all | top | day
     day: null,          // 'YYYY-MM-DD' when period === 'day'
     selection: {}       // key -> true
@@ -186,10 +188,10 @@
   function addDays(s, n) { var d = parseDay(s); d.setDate(d.getDate() + n); return isoDate(d); }
   function dayOf(f) { return String(f.date).slice(0, 10); }
   function showDay(s) { var a = s.split('-'); return a[2] + '.' + a[1] + '.' + a[0]; }
-  var REAL_TODAY = isoDate(new Date());
+  var REAL_TODAY = DATA.today || isoDate(new Date());
   /* "Today" is the real date when the data has fixtures within 2 days of it;
      otherwise (static demo data) it is the first fixture day, so the page is never empty. */
-  var REF = (function () {
+  var REF = DATA.demo === false ? REAL_TODAY : (function () {
     var days = FIXTURES.map(dayOf).sort(), near = [];
     for (var i = -2; i <= 2; i++) near.push(addDays(REAL_TODAY, i));
     if (days.some(function (d) { return near.indexOf(d) !== -1; })) return REAL_TODAY;
@@ -205,6 +207,7 @@
     return [days[0] || REF, days[days.length - 1] || REF];
   }
   function isLive(f) {
+    if (f.status) return f.live === true;
     if (f.live === true) return true;
     if (REF !== REAL_TODAY) return false;        // demo dates: nothing is really live
     var t = String(f.date).split(' ')[1];
@@ -274,7 +277,7 @@
     if (dr) dr.textContent = (r[0] === r[1] || showDay(r[0]) === showDay(r[1])) ? showDay(r[0]) : showDay(r[0]) + ' - ' + showDay(r[1]);
     var counts = { today: 0, live: 0, tomorrow: 0, weekend: 0, yesterday: 0, all: 0 };
     FIXTURES.forEach(function (f) {
-      var p = predict(f.home, f.away);
+      var p = (state.engine === 'poisson' && f.prediction ? f.prediction : predict(f.home, f.away));
       Object.keys(counts).forEach(function (k) { if (inPeriod(f, p, k)) counts[k]++; });
     });
     Object.keys(counts).forEach(function (k) {
@@ -317,7 +320,8 @@
     return '<div class="match-cell">'
       + '<span class="mc-team"><span class="crest" aria-hidden="true">' + esc(initials(f.home)) + '</span>' + esc(f.home) + '</span>'
       + '<span class="mc-team"><span class="crest" aria-hidden="true">' + esc(initials(f.away)) + '</span>' + esc(f.away) + '</span>'
-      + '<span class="mc-league">' + esc(f.league) + '</span></div>';
+      + '<span class="mc-league">' + esc(f.league) + '</span>'
+      + (f.status ? '<span class="match-status">' + esc(f.status) + (f.live && f.elapsed != null ? ' ' + esc(f.elapsed) + ' min' : '') + (f.currentHome != null && f.currentAway != null ? ' · ' + esc(f.currentHome) + '–' + esc(f.currentAway) : '') + '</span>' : '') + '</div>';
   }
   function bestKey(p) {
     if (p.pHome >= p.pDraw && p.pHome >= p.pAway) return '1';
@@ -411,7 +415,10 @@
     var out = [];
     MATCHES.forEach(function (m) {
       if (m.home !== team && m.away !== team) return;
-      if (from && m.date < from) return;
+      if (DATA.demo === false && season) {
+        var lg = TEAMS[team] && TEAMS[team].league;
+        if (m.league !== lg || m.season !== (DATA.seasons || {})[lg]) return;
+      } else if (from && m.date < from) return;
       var home = m.home === team;
       var gf = home ? m.fh : m.fa, ga = home ? m.fa : m.fh;
       out.push({ m: m, venue: home ? 'H' : 'A', gf: gf, ga: ga,
@@ -433,6 +440,7 @@
   }
   var _rankCache = {};
   function leagueRank(team, league) {
+    if (DATA.demo === false) return ((DATA.standings || {})[league] || {})[team] || null;
     if (!_rankCache[league]) {
       var tbl = {};
       MATCHES.forEach(function (m) {
@@ -517,7 +525,9 @@
     var split = statTable('Home / Away statistic',
       statRow(f.home, f.league, hHome, 'Home') + statRow(f.away, f.league, aAway, 'Away'));
 
-    var hh = MATCHES.filter(function (m) {
+    var pair = [f.homeId, f.awayId].sort(function (a,b) { return a-b; }).join('-');
+    var hhSource = DATA.demo === false ? ((DATA.h2h || {})[pair] || []) : MATCHES;
+    var hh = hhSource.filter(function (m) {
       return (m.home === f.home && m.away === f.away) || (m.home === f.away && m.away === f.home);
     }).slice(-6).reverse();
     var hw = 0, dw = 0, aw = 0;
@@ -566,6 +576,7 @@
   function passesFilters(f, p) {
     if (!matchesPeriod(f, p)) return false;
     if (state.league !== 'all' && f.league !== state.league) return false;
+    if (state.country !== 'all' && !(DATA.popularLeagues || []).some(function(lg){ return lg.name === f.league && lg.country === state.country; })) return false;
     if (state.search) {
       var q = state.search.toLowerCase();
       if ((f.home + ' ' + f.away).toLowerCase().indexOf(q) === -1) return false;
@@ -593,7 +604,7 @@
     _rendered = [];
     var rows = [], cols = state.mode === 'ou' ? 8 : (state.mode === 'stats' ? 8 : 9);
     FIXTURES.forEach(function (f) {
-      var p = predict(f.home, f.away);
+      var p = (state.engine === 'poisson' && f.prediction ? f.prediction : predict(f.home, f.away));
       if (!passesFilters(f, p)) return;
       var idx = _rendered.length;
       _rendered.push(f);
@@ -657,7 +668,7 @@
       + '<button type="button" class="sel-pdf" id="selPdf">Download PDF</button>'
       + '</td></tr>';
     var rows = fx.map(function (f) {
-      var p = predict(f.home, f.away), k = fxKey(f);
+      var p = (state.engine === 'poisson' && f.prediction ? f.prediction : predict(f.home, f.away)), k = fxKey(f);
       return '<tr>'
         + '<td>' + fmtDate(f.date) + '</td>'
         + '<td class="col-league"><span class="league-cell">' + esc(f.league) + '</span></td>'
@@ -690,7 +701,7 @@
     var w = window.open('', '_blank');
     if (!w) return;
     var rows = fx.map(function (f) {
-      var p = predict(f.home, f.away);
+      var p = (state.engine === 'poisson' && f.prediction ? f.prediction : predict(f.home, f.away));
       return '<tr><td>' + esc(f.date) + '</td><td>' + esc(f.league) + '</td>'
         + '<td>' + esc(f.home + ' v ' + f.away) + '</td>'
         + '<td>1 ' + pct(p.pHome) + '% / X ' + pct(p.pDraw) + '% / 2 ' + pct(p.pAway) + '%</td>'
@@ -708,7 +719,7 @@
       + '<p class="sub">' + fx.length + ' match(es) · ' + engName + ' engine · generated ' + new Date().toLocaleString() + '</p>'
       + '<table><thead><tr><th>Date</th><th>League</th><th>Match</th><th>1 X 2</th><th>Tip</th><th>Score</th><th>O/U</th></tr></thead>'
       + '<tbody>' + rows + '</tbody></table>'
-      + '<p class="foot">Sample/demo predictions — not betting advice. 18+ Please gamble responsibly.</p>'
+      + '<p class="foot">Statistical predictions — not betting advice. 18+ Please gamble responsibly.</p>'
       + '<script>window.onload=function(){window.print();}<\/script></body></html>';
     w.document.open(); w.document.write(html); w.document.close();
   }
@@ -763,10 +774,10 @@
       + '<div class="side-search"><span class="ico">⚲</span><input type="search" id="countrySearch" placeholder="Search country…" aria-label="Search country"></div>'
       + '<div class="country-list">' + countries + '</div></div>'
       + '<div class="ad-slot ad-mpu" data-ad-placement="sidebar" aria-label="Advertisement"><span class="ad-body">Your ad here<span class="ad-size">MPU 300×250</span></span></div>'
-      + '<div class="visitors"><div class="vc-head"><span class="vc-icon">◉</span>Live traffic</div>'
-      + '<ul class="vc-list"><li class="online"><span class="vc-k">Online now</span><span class="vc-v">1,284</span></li>'
-      + '<li><span class="vc-k">Today</span><span class="vc-v">38,902</span></li>'
-      + '<li><span class="vc-k">This week</span><span class="vc-v">241,517</span></li></ul></div>');
+      + '<div class="visitors"><div class="vc-head"><span class="vc-icon">◉</span>Traffic analytics not connected</div>'
+      + '<ul class="vc-list"><li class="online"><span class="vc-k">Online now</span><span class="vc-v">–</span></li>'
+      + '<li><span class="vc-k">Today</span><span class="vc-v">–</span></li>'
+      + '<li><span class="vc-k">This week</span><span class="vc-v">–</span></li></ul></div>');
 
     // populate league filter dropdown
     var sel = $('#leagueFilter');
@@ -778,8 +789,18 @@
     side.addEventListener('click', function (e) {
       var pb = e.target.closest('.side-item[data-period]');
       if (pb) { setPeriod(pb.getAttribute('data-period')); return; }
+      var cb = e.target.closest('.side-item[data-country]');
+      if (cb) {
+        state.country = cb.getAttribute('data-country'); state.league = 'all';
+        if (sel) sel.value = 'all';
+        $all('.side-item[data-country]').forEach(function(b){b.classList.toggle('active',b === cb);});
+        $all('.side-item[data-league]').forEach(function(b){b.classList.remove('active');});
+        renderPredictions(); return;
+      }
       var btn = e.target.closest('.side-item[data-league]');
       if (!btn) return;
+      state.country = 'all';
+      $all('.side-item[data-country]').forEach(function(b){b.classList.remove('active');});
       state.league = btn.getAttribute('data-league');
       $all('.side-item[data-league]').forEach(function (b) { b.classList.remove('active'); });
       btn.classList.add('active');
@@ -799,31 +820,32 @@
   function renderResults() {
     var body = $('#resultsBody');
     if (!body) return;
-    var hit1x2 = 0, hitScore = 0, hitOu = 0, n = HISTORY.length || 1;
-    var rows = HISTORY.map(function (m) {
-      var p = predictPoisson(m.home, m.away);
-      var predTip = bestKey(p);
+    var records = DATA.demo === false ? (DATA.recentResults || []) : HISTORY;
+    var hit1x2 = 0, hitScore = 0, hitOu = 0, n = 0;
+    body.innerHTML = records.slice().reverse().map(function (m) {
+      var p = DATA.demo === false ? m.prediction : predictPoisson(m.home, m.away);
+      var predTip = p ? bestKey(p) : null;
       var actual = m.fh > m.fa ? '1' : (m.fh < m.fa ? '2' : 'X');
-      var okTip = predTip === actual;
-      var okScore = p.scoreH === m.fh && p.scoreA === m.fa;
-      var predOver = p.pOver >= 0.5;
-      var actualOver = (m.fh + m.fa) > 2.5;
-      var okOu = predOver === actualOver;
-      if (okTip) hit1x2++; if (okScore) hitScore++; if (okOu) hitOu++;
-      return '<tr><td>' + esc(m.date.slice(5)) + '</td>'
+      var okTip = p && predTip === actual;
+      if (p) {
+        n++;
+        if (okTip) hit1x2++;
+        if (p.scoreH === m.fh && p.scoreA === m.fa) hitScore++;
+        if ((p.pOver >= 0.5) === (m.fh + m.fa > 2.5)) hitOu++;
+      }
+      return '<tr><td>' + esc(m.date.slice(0,10).split('-').reverse().join('/')) + '</td>'
         + '<td class="col-league"><span class="league-cell">' + esc(m.league) + '</span></td>'
         + '<td class="col-match">' + esc(m.home + ' v ' + m.away) + '</td>'
-        + '<td>' + tipBadge(predTip) + '</td>'
-        + '<td><span class="score">' + p.scoreH + '-' + p.scoreA + '</span></td>'
+        + '<td>' + (p ? tipBadge(predTip) : '–') + '</td>'
+        + '<td><span class="score">' + (p ? p.scoreH + '-' + p.scoreA : '–') + '</span></td>'
         + '<td><span class="score">' + m.fh + '-' + m.fa + '</span></td>'
-        + '<td><span class="verdict ' + (okTip ? 'win' : 'miss') + '">' + (okTip ? 'Hit' : 'Miss') + '</span></td></tr>';
+        + '<td>' + (p ? '<span class="verdict ' + (okTip ? 'win' : 'miss') + '">' + (okTip ? 'Hit' : 'Miss') + '</span>' : 'Not tracked before kickoff') + '</td></tr>';
     }).join('');
-    body.innerHTML = rows;
-    $('#accOverall').textContent = pct(hit1x2 / n) + '%';
-    $('#accScore').textContent = pct(hitScore / n) + '%';
-    $('#accOu').textContent = pct(hitOu / n) + '%';
-    $('#settled').textContent = HISTORY.length;
-    var ha = $('#heroAcc'); if (ha) ha.textContent = pct(hit1x2 / n) + '%';
+    $('#accOverall').textContent = n ? pct(hit1x2 / n) + '%' : '–';
+    $('#accScore').textContent = n ? pct(hitScore / n) + '%' : '–';
+    $('#accOu').textContent = n ? pct(hitOu / n) + '%' : '–';
+    $('#settled').textContent = n;
+    var ha = $('#heroAcc'); if (ha) ha.textContent = n ? pct(hit1x2 / n) + '%' : '–';
   }
 
   function showView(view) {
@@ -838,6 +860,11 @@
   function init() {
     buildSidebar();
     buildDayStrip();
+    var info = $('#dataStatus');
+    if (info) {
+      info.textContent = DATA.demo === false && DATA.generatedAt ? 'API-Football · Updated ' + DATA.generatedAt.replace('T',' ').slice(0,16) + ' UTC · Match times: ' + DATA.timezone : 'Waiting for first API-Football update';
+      if (DATA.generatedAt && Date.now() - new Date(DATA.generatedAt).getTime() > 7200000) info.textContent += ' · Data may be stale';
+    }
     renderPredictions();
     renderResults();
     var hm = $('#heroMatches'); if (hm) hm.textContent = FIXTURES.length;

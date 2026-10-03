@@ -377,3 +377,7 @@ tr.detail-row>td{padding:0 !important;background:var(--bg)}
   .prose{padding:22px}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none !important}}
+
+/* Real-data freshness and match status */
+.data-status{font-size:11px;opacity:.75;margin:8px 2px;}
+.match-status{font-size:10px;font-weight:700;opacity:.8;margin-top:3px;}
