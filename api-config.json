@@ -6,7 +6,7 @@
   "fetchPreviousSeason": true,
   "h2hLast": 6,
   "h2hCacheHours": 24,
-  "maxRequestsPerRun": 500,
+  "maxRequestsPerRun": 1800,
   "leagues": [
     {
       "id": 39,
@@ -50,5 +50,77 @@
       "country": "Portugal",
       "icon": "PT"
     }
-  ]
+  ],
+  "odds": {
+    "enabled": true,
+    "daysAhead": 7,
+    "cacheHours": 6,
+    "maxDisplayAgeHours": 24,
+    "maxFixturesPerRun": 80,
+    "defaultBookmaker": "best"
+  },
+  "countryDiscovery": {
+    "enabled": true,
+    "countries": [
+      "England",
+      "Spain",
+      "Italy",
+      "Germany",
+      "France",
+      "Netherlands",
+      "Portugal",
+      "Australia",
+      "Austria",
+      "Japan",
+      "Israel",
+      "Estonia",
+      "China",
+      "South-Korea",
+      "Norway",
+      "Denmark",
+      "Greece",
+      "Mexico",
+      "USA",
+      "Brazil",
+      "Argentina",
+      "Ireland",
+      "Hungary",
+      "Finland",
+      "Czech-Republic",
+      "Chile",
+      "Canada",
+      "Belgium",
+      "Russia",
+      "Iceland",
+      "Romania",
+      "Bulgaria",
+      "Croatia",
+      "Slovenia",
+      "Slovakia",
+      "Turkey",
+      "Uruguay",
+      "Wales",
+      "Sweden",
+      "Scotland",
+      "Switzerland",
+      "Saudi-Arabia",
+      "Ukraine",
+      "Serbia",
+      "Poland",
+      "Cyprus",
+      "Belarus"
+    ],
+    "maxLeaguesPerCountry": 10,
+    "cacheHours": 168,
+    "includeCups": true
+  },
+  "requestCache": {
+    "enabled": true,
+    "fixturesHours": 6,
+    "standingsHours": 12,
+    "previousSeasonHours": 168,
+    "metadataHours": 168
+  },
+  "dailyRequestsReserve": 500,
+  "maxH2HRefreshPerRun": 60
 }

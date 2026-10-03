@@ -1,8 +1,8 @@
-/* PreBetTips - front-end logic (demo).
+/* PreBetTips - front-end logic with API-Football data.
    Two prediction engines:
    (1) Poisson model  : expected goals from att/def ratings -> score grid.
    (2) KPI framework  : stats-weighted confidence index (PDF-style method).
-   Sample data only - not betting advice. No inline event handlers are used;
+   Model estimates and market odds are not guarantees. No inline event handlers are used;
    everything is wired with addEventListener. */
 (function () {
   'use strict';
@@ -12,6 +12,10 @@
   var HISTORY = DATA.history || [];
   var LEAGUE_AVG = DATA.leagueAvgGoals || 2.7;
   var HOME_ADV = DATA.homeAdvantage || 1.15;
+  var CATALOG = DATA.leagues || DATA.popularLeagues || [];
+  var activeLeague = null;
+  function teamRating(name) { return ((DATA.teamsByLeague || {})[activeLeague] || TEAMS)[name]; }
+  function countryLabel(name) { return name === 'South-Korea' ? 'South Korea' : name === 'Czech-Republic' ? 'Czech Republic' : name === 'Saudi-Arabia' ? 'Saudi Arabia' : name; }
 
   /* ---------- tiny DOM helpers ---------- */
   function $(sel, root) { return (root || document).querySelector(sel); }
@@ -29,8 +33,8 @@
   function poissonPmf(k, lambda) { return Math.pow(lambda, k) * Math.exp(-lambda) / factorial(k); }
 
   function lambdas(home, away) {
-    var h = TEAMS[home] || { att: 1, def: 1 };
-    var a = TEAMS[away] || { att: 1, def: 1 };
+    var h = teamRating(home) || { att: 1, def: 1 };
+    var a = teamRating(away) || { att: 1, def: 1 };
     var base = ((DATA.leagueAvgGoalsByLeague || {})[h.league] || LEAGUE_AVG) / 2;
     var lh = h.att * a.def * base * HOME_ADV;
     var la = a.att * h.def * base;
@@ -59,8 +63,10 @@
   }
   /* ---------- KPI stats (computed from HISTORY) ---------- */
   var _statsCache = null;
+  var _statsLeague = null;
   function buildStats() {
-    if (_statsCache) return _statsCache;
+    if (_statsCache && _statsLeague === activeLeague) return _statsCache;
+    _statsLeague = activeLeague;
     var map = {};
     function ensure(t) {
       if (!map[t]) map[t] = {
@@ -73,6 +79,7 @@
     // chronological order (oldest first) so "recent" = tail
     var hist = HISTORY.slice().sort(function (x, y) { return x.date < y.date ? -1 : 1; });
     hist.forEach(function (m) {
+      if (activeLeague && m.league !== activeLeague) return;
       var H = ensure(m.home), A = ensure(m.away);
       var res = m.fh > m.fa ? 'H' : (m.fh < m.fa ? 'A' : 'D');
       H.gf += m.fh; H.ga += m.fa; A.gf += m.fa; A.ga += m.fh;
@@ -110,7 +117,7 @@
     return { ppg: pts / g.length, winRate: g.filter(function (x) { return x.res === 'W'; }).length / g.length, n: g.length };
   }
   function h2h(home, away) {
-    var ids = [TEAMS[home] && TEAMS[home].id, TEAMS[away] && TEAMS[away].id].sort(function(a,b){return a-b;}).join('-');
+    var ids = [teamRating(home) && teamRating(home).id, teamRating(away) && teamRating(away).id].sort(function(a,b){return a-b;}).join('-');
     var rows = (DATA.demo === false ? ((DATA.h2h || {})[ids] || []) : HISTORY).filter(function (m) {
       return (m.home === home && m.away === away) || (m.home === away && m.away === home);
     }).sort(function (x, y) { return x.date < y.date ? 1 : -1; });
@@ -161,7 +168,8 @@
     };
   }
 
-  function predict(home, away) {
+  function predict(home, away, league) {
+    activeLeague = league || null;
     return state.engine === 'random' ? predictKpi(home, away) : predictPoisson(home, away);
   }
   /* ---------- state ---------- */
@@ -277,7 +285,7 @@
     if (dr) dr.textContent = (r[0] === r[1] || showDay(r[0]) === showDay(r[1])) ? showDay(r[0]) : showDay(r[0]) + ' - ' + showDay(r[1]);
     var counts = { today: 0, live: 0, tomorrow: 0, weekend: 0, yesterday: 0, all: 0 };
     FIXTURES.forEach(function (f) {
-      var p = (state.engine === 'poisson' && f.prediction ? f.prediction : predict(f.home, f.away));
+      var p = (state.engine === 'poisson' && f.prediction ? f.prediction : predict(f.home, f.away, f.league));
       Object.keys(counts).forEach(function (k) { if (inPeriod(f, p, k)) counts[k]++; });
     });
     Object.keys(counts).forEach(function (k) {
@@ -291,9 +299,9 @@
   /* ---------- table headers per mode ---------- */
   var HEADS = {
     '1x2': '<tr><th class="col-pick">Pick</th><th>Date</th><th class="col-league">League</th>'
-      + '<th class="col-match">Match</th><th>1</th><th>X</th><th>2</th><th>Tip</th><th>Score</th></tr>',
+      + '<th class="col-match">Match</th><th>1</th><th>X</th><th>2</th><th>Tip</th><th>Score</th><th title="Decimal bookmaker odds for the displayed tip">Coef.</th></tr>',
     'ou': '<tr><th class="col-pick">Pick</th><th>Date</th><th class="col-league">League</th>'
-      + '<th class="col-match">Match</th><th>Exp. goals</th><th>Over 2.5</th><th>Under 2.5</th><th>Tip</th></tr>',
+      + '<th class="col-match">Match</th><th>Exp. goals</th><th>Over 2.5</th><th>Under 2.5</th><th>Tip</th><th title="Decimal bookmaker odds for the displayed tip">Coef.</th></tr>',
     'stats': '<tr><th>Date</th><th class="col-league">League</th><th class="col-match">Match</th>'
       + '<th>Exp. H</th><th>Exp. A</th><th>Exp. total</th><th>Score</th><th>Over 2.5</th></tr>',
     'selection': '<tr><th>Date</th><th class="col-league">League</th><th class="col-match">Match</th>'
@@ -337,6 +345,42 @@
     return '<span class="tip ' + cls + '">' + key + '</span>';
   }
 
+  /* Decimal bookmaker odds: separate from the model probability. */
+  var selectedBookmaker = String((DATA.oddsConfig || {}).defaultBookmaker || 'best');
+  function oddsQuote(f, market, outcome) {
+    if (f.status !== 'NS' || !f.odds || Date.parse(f.kickoffUtc) <= Date.now()) return null;
+    var maxAge = Number((DATA.oddsConfig || {}).maxDisplayAgeHours || 24) * 3600000;
+    var fetched = Date.parse(f.odds.fetchedAt), updated = Date.parse(f.odds.providerUpdatedAt || f.odds.fetchedAt);
+    if (!isFinite(fetched) || !isFinite(updated) || Date.now()-fetched > maxAge || Date.now()-updated > maxAge) return null;
+    var best = null;
+    (f.odds.bookmakers || []).forEach(function (b) {
+      if (selectedBookmaker !== 'best' && String(b.id) !== selectedBookmaker) return;
+      var value = Number(((b.markets || {})[market] || {})[outcome]);
+      if (isFinite(value) && value > 1 && (!best || value > best.value)) best = {value:value, name:b.name, updated:f.odds.providerUpdatedAt || f.odds.fetchedAt, cached:f.odds.cached};
+    });
+    return best;
+  }
+  function oddsCell(f, market, tip) {
+    var q = oddsQuote(f, market, tip);
+    if (!q) return '<td class="col-odds"><span class="odds-missing" title="No recent pre-match odds available from the selected bookmaker">—</span></td>';
+    var title = 'Decimal market odds for the tip. ' + q.name + '. Provider update: ' + q.updated + '. Implied probability: ' + (100/q.value).toFixed(1) + '% (includes bookmaker margin). ' + (q.cached ? 'Cached quote. ' : '') + 'Not a guaranteed result.';
+    var keys = market === '1x2' ? ['1','X','2'] : ['over','under'];
+    var detail = keys.map(function (key) {
+      var x = oddsQuote(f, market, key), label = key === 'over' ? 'Over 2.5' : key === 'under' ? 'Under 2.5' : key;
+      return '<span>' + label + ': <b>' + (x ? x.value.toFixed(2) : '—') + '</b>' + (x ? ' · ' + esc(x.name) : '') + '</span>';
+    }).join('');
+    return '<td class="col-odds"><span class="odds-badge" title="' + esc(title) + '">' + q.value.toFixed(2) + '</span><small class="odds-book">' + esc(q.name) + '</small><details class="odds-detail"><summary>Market odds</summary>' + detail + '<small>Updated: ' + esc(q.updated) + '</small></details></td>';
+  }
+  function initBookmakers() {
+    var el = $('#bookmakerFilter'); if (!el) return;
+    var names = {};
+    FIXTURES.forEach(function (f) { ((f.odds || {}).bookmakers || []).forEach(function (b) { names[String(b.id)] = b.name; }); });
+    el.innerHTML = '<option value="best">Best available odds</option>' + Object.keys(names).sort(function (a,b) { return names[a].localeCompare(names[b]); }).map(function (id) { return '<option value="' + esc(id) + '">' + esc(names[id]) + '</option>'; }).join('');
+    if (selectedBookmaker !== 'best' && !names[selectedBookmaker]) selectedBookmaker = 'best';
+    el.value = selectedBookmaker;
+    el.addEventListener('change', function () { selectedBookmaker = el.value; renderPredictions(); });
+  }
+
   /* ---------- row builders per mode ---------- */
   function row1x2(f, p) {
     var best = bestKey(p), k = fxKey(f), checked = state.selection[k] ? ' checked' : '';
@@ -350,6 +394,7 @@
       + '<td>' + probCell(p.pAway, '2', best) + '</td>'
       + '<td>' + tipBadge(best) + '</td>'
       + '<td><span class="score">' + p.scoreH + '-' + p.scoreA + '</span></td>'
+      + oddsCell(f, '1x2', best)
       + '</tr>';
   }
   function rowOu(f, p) {
@@ -364,6 +409,7 @@
       + '<td><span class="ou over">' + pct(over) + '%</span></td>'
       + '<td><span class="ou under">' + pct(under) + '%</span></td>'
       + '<td><span class="ou ' + tip + '">' + (tip === 'over' ? 'Over 2.5' : 'Under 2.5') + '</span></td>'
+      + oddsCell(f, 'ou', tip)
       + '</tr>';
   }
   function rowStats(f, p, idx) {
@@ -416,7 +462,7 @@
     MATCHES.forEach(function (m) {
       if (m.home !== team && m.away !== team) return;
       if (DATA.demo === false && season) {
-        var lg = TEAMS[team] && TEAMS[team].league;
+        var lg = activeLeague || (TEAMS[team] && TEAMS[team].league);
         if (m.league !== lg || m.season !== (DATA.seasons || {})[lg]) return;
       } else if (from && m.date < from) return;
       var home = m.home === team;
@@ -517,6 +563,7 @@
       g.length ? foot(w, d, g.length - w - d, g.length, ['Win', 'Draw', 'Lost'], ['sp-fw', 'sp-fl']) : '');
   }
   function detailPanel(f) {
+    activeLeague = f.league;
     var hAll = teamGames(f.home, true), aAll = teamGames(f.away, true);
     var hHome = hAll.filter(function (x) { return x.venue === 'H'; });
     var aAway = aAll.filter(function (x) { return x.venue === 'A'; });
@@ -576,7 +623,7 @@
   function passesFilters(f, p) {
     if (!matchesPeriod(f, p)) return false;
     if (state.league !== 'all' && f.league !== state.league) return false;
-    if (state.country !== 'all' && !(DATA.popularLeagues || []).some(function(lg){ return lg.name === f.league && lg.country === state.country; })) return false;
+    if (state.country !== 'all' && !CATALOG.some(function(lg){ return lg.name === f.league && lg.country === state.country; })) return false;
     if (state.search) {
       var q = state.search.toLowerCase();
       if ((f.home + ' ' + f.away).toLowerCase().indexOf(q) === -1) return false;
@@ -602,9 +649,9 @@
     if (state.mode === 'selection') { renderSelection(head, body, empty); return; }
     head.innerHTML = HEADS[state.mode];
     _rendered = [];
-    var rows = [], cols = state.mode === 'ou' ? 8 : (state.mode === 'stats' ? 8 : 9);
+    var rows = [], cols = state.mode === 'ou' ? 9 : (state.mode === 'stats' ? 8 : 10);
     FIXTURES.forEach(function (f) {
-      var p = (state.engine === 'poisson' && f.prediction ? f.prediction : predict(f.home, f.away));
+      var p = (state.engine === 'poisson' && f.prediction ? f.prediction : predict(f.home, f.away, f.league));
       if (!passesFilters(f, p)) return;
       var idx = _rendered.length;
       _rendered.push(f);
@@ -668,7 +715,7 @@
       + '<button type="button" class="sel-pdf" id="selPdf">Download PDF</button>'
       + '</td></tr>';
     var rows = fx.map(function (f) {
-      var p = (state.engine === 'poisson' && f.prediction ? f.prediction : predict(f.home, f.away)), k = fxKey(f);
+      var p = (state.engine === 'poisson' && f.prediction ? f.prediction : predict(f.home, f.away, f.league)), k = fxKey(f);
       return '<tr>'
         + '<td>' + fmtDate(f.date) + '</td>'
         + '<td class="col-league"><span class="league-cell">' + esc(f.league) + '</span></td>'
@@ -701,7 +748,7 @@
     var w = window.open('', '_blank');
     if (!w) return;
     var rows = fx.map(function (f) {
-      var p = (state.engine === 'poisson' && f.prediction ? f.prediction : predict(f.home, f.away));
+      var p = (state.engine === 'poisson' && f.prediction ? f.prediction : predict(f.home, f.away, f.league));
       return '<tr><td>' + esc(f.date) + '</td><td>' + esc(f.league) + '</td>'
         + '<td>' + esc(f.home + ' v ' + f.away) + '</td>'
         + '<td>1 ' + pct(p.pHome) + '% / X ' + pct(p.pDraw) + '% / 2 ' + pct(p.pAway) + '%</td>'
@@ -759,9 +806,28 @@
     }).join('');
     var allBtn = '<button class="side-item active" data-league="all"><span class="ico">★</span>'
       + '<span class="lbl">All leagues</span><span class="cnt">' + FIXTURES.length + '</span></button>';
-    var countries = (DATA.countries || []).map(function (co) {
-      return '<button class="side-item" data-country="' + esc(co) + '"><span class="ico">⚽</span>'
-        + '<span class="lbl">' + esc(co) + '</span><span class="caret">›</span></button>';
+    var favorites = {}, opened = {};
+    try { favorites = JSON.parse(localStorage.getItem('pbt-favorite-leagues') || '{}'); } catch (e) {}
+    try { opened = JSON.parse(localStorage.getItem('pbt-open-countries') || '{}'); } catch (e) {}
+    if (!favorites || typeof favorites !== 'object') favorites = {};
+    if (!opened || typeof opened !== 'object') opened = {};
+    function leagueItem(lg) {
+      var n = counts[lg.name] || 0, favorite = !!favorites[lg.id];
+      return '<div class="country-league-row"><button type="button" class="league-favorite' + (favorite ? ' starred' : '')
+        + '" data-favorite="' + esc(lg.id) + '" aria-label="Favorite ' + esc(lg.displayName || lg.name) + '" aria-pressed="' + favorite + '">'
+        + (favorite ? '★' : '☆') + '</button><button type="button" class="side-item country-league" data-league="' + esc(lg.name) + '">'
+        + '<span class="lbl">' + esc(lg.displayName || lg.name) + '</span><span class="cnt" title="Matches in the loaded date window">' + n + '</span></button></div>';
+    }
+    var countries = (DATA.countries || []).map(function (co, i) {
+      var leagues = CATALOG.filter(function(lg) { return lg.country === co; });
+      var isOpen = !!opened[co], id = 'country-leagues-' + i;
+      return '<div class="country-group" data-country-group="' + esc(co) + '"><div class="country-heading">'
+        + '<button type="button" class="side-item country-select" data-country="' + esc(co) + '"><span class="ico">⚽</span>'
+        + '<span class="lbl">' + esc(countryLabel(co)) + '</span></button>'
+        + '<button type="button" class="country-expand" data-expand-country="' + esc(co) + '" aria-expanded="' + isOpen
+        + '" aria-controls="' + id + '" aria-label="Show leagues in ' + esc(countryLabel(co)) + '"><span class="caret">›</span></button></div>'
+        + '<div class="country-leagues" id="' + id + '"' + (isOpen ? '' : ' hidden') + '>'
+        + (leagues.length ? leagues.map(leagueItem).join('') : '<p class="country-empty">No current competitions returned by the API.</p>') + '</div></div>';
     }).join('');
     var periodBtns = [['today','Predictions for TODAY'],['live','LIVE predictions'],['tomorrow','Predictions for TOMORROW'],['weekend','Predictions for the WEEKEND'],['yesterday','Predictions from YESTERDAY'],['all','ALL predictions']].map(function (x) {
       return '<button class="side-item side-period" data-period="' + x[0] + '"><span class="lbl">' + x[1]
@@ -782,11 +848,28 @@
     // populate league filter dropdown
     var sel = $('#leagueFilter');
     if (sel) {
-      Object.keys(counts).forEach(function (lg) {
-        var o = document.createElement('option'); o.value = lg; o.textContent = lg; sel.appendChild(o);
+      CATALOG.forEach(function (lg) {
+        var o = document.createElement('option'); o.value = lg.name;
+        o.textContent = countryLabel(lg.country) + ' — ' + (lg.displayName || lg.name); sel.appendChild(o);
       });
     }
+    function persist() {
+      try { localStorage.setItem('pbt-favorite-leagues', JSON.stringify(favorites));
+        localStorage.setItem('pbt-open-countries', JSON.stringify(opened)); } catch (e) {}
+    }
     side.addEventListener('click', function (e) {
+      var expand = e.target.closest('[data-expand-country]');
+      if (expand) {
+        var co = expand.getAttribute('data-expand-country'), panel = document.getElementById(expand.getAttribute('aria-controls'));
+        opened[co] = expand.getAttribute('aria-expanded') !== 'true';
+        expand.setAttribute('aria-expanded', String(opened[co])); panel.hidden = !opened[co]; persist(); return;
+      }
+      var star = e.target.closest('[data-favorite]');
+      if (star) {
+        var id = star.getAttribute('data-favorite'); favorites[id] = !favorites[id];
+        star.classList.toggle('starred', favorites[id]); star.setAttribute('aria-pressed', String(favorites[id]));
+        star.textContent = favorites[id] ? '★' : '☆'; persist(); return;
+      }
       var pb = e.target.closest('.side-item[data-period]');
       if (pb) { setPeriod(pb.getAttribute('data-period')); return; }
       var cb = e.target.closest('.side-item[data-country]');
@@ -809,9 +892,18 @@
     });
     var cs = $('#countrySearch');
     if (cs) cs.addEventListener('input', function () {
-      var q = cs.value.toLowerCase();
-      $all('.country-list .side-item').forEach(function (b) {
-        b.style.display = b.textContent.toLowerCase().indexOf(q) === -1 ? 'none' : '';
+      var q = cs.value.trim().toLowerCase();
+      $all('.country-group').forEach(function (group) {
+        var co = group.getAttribute('data-country-group'), countryMatch = countryLabel(co).toLowerCase().indexOf(q) !== -1;
+        var rows = $all('.country-league-row', group), matches = 0;
+        rows.forEach(function(row) {
+          var match = !q || countryMatch || row.textContent.toLowerCase().indexOf(q) !== -1;
+          row.hidden = !match; if (match) matches++;
+        });
+        group.hidden = !!q && !countryMatch && !matches;
+        var panel = $('.country-leagues', group), toggle = $('.country-expand', group);
+        var open = q ? !group.hidden : !!opened[co];
+        panel.hidden = !open; toggle.setAttribute('aria-expanded', String(open));
       });
     });
   }
@@ -858,6 +950,7 @@
 
   /* ---------- init / wiring ---------- */
   function init() {
+    initBookmakers();
     buildSidebar();
     buildDayStrip();
     var info = $('#dataStatus');
@@ -896,7 +989,8 @@
     });
     var lf = $('#leagueFilter');
     if (lf) lf.addEventListener('change', function () {
-      state.league = lf.value;
+      state.league = lf.value; state.country = 'all';
+      $all('.side-item[data-country]').forEach(function(b){b.classList.remove('active');});
       $all('.side-item[data-league]').forEach(function (b) {
         b.classList.toggle('active', b.getAttribute('data-league') === state.league);
       });

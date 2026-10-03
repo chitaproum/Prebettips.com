@@ -381,3 +381,33 @@ tr.detail-row>td{padding:0 !important;background:var(--bg)}
 /* Real-data freshness and match status */
 .data-status{font-size:11px;opacity:.75;margin:8px 2px;}
 .match-status{font-size:10px;font-weight:700;opacity:.8;margin-top:3px;}
+
+/* API-Football bookmaker odds */
+.col-odds {min-width:112px;text-align:center;vertical-align:middle;}
+.odds-badge {display:inline-block;padding:5px 10px;border:1px solid var(--line);border-radius:7px;background:var(--brand-soft);color:var(--brand);font-weight:800;font-variant-numeric:tabular-nums;}
+.odds-book {display:block;font-size:10px;color:var(--muted);margin-top:3px;max-width:140px;white-space:normal;}
+.odds-missing {color:var(--muted);}
+.odds-detail {margin-top:5px;font-size:10px;color:var(--muted);white-space:normal;min-width:110px;}
+.odds-detail summary {cursor:pointer;}
+.odds-detail[open] {min-width:160px;}
+.odds-detail span,.odds-detail small {display:block;margin-top:4px;}
+.odds-note {padding:10px 14px;margin:0;color:var(--muted);font-size:11px;line-height:1.5;border-top:1px solid var(--line);}
+
+/* Expandable country/competition catalog */
+.country-list{max-height:560px;overflow-y:auto;overscroll-behavior:contain}
+.country-group[hidden],.country-leagues[hidden],.country-league-row[hidden]{display:none!important}
+.country-heading{display:flex;align-items:center;margin:1px 8px;border-radius:var(--radius-sm)}
+.country-heading .country-select{width:auto;flex:1;min-width:0;margin:0}
+.country-expand{width:32px;height:32px;flex:0 0 32px;background:transparent;border:0;border-radius:8px;color:var(--muted);cursor:pointer}
+.country-expand:hover{background:var(--brand-soft);color:var(--brand)}
+.country-expand .caret{display:inline-block;font-size:21px;transition:transform .15s}
+.country-expand[aria-expanded="true"] .caret{transform:rotate(90deg)}
+.country-leagues{margin:0 8px 8px 19px;padding:3px 0 4px 5px;border-left:1px solid var(--line)}
+.country-league-row{display:flex;align-items:center;gap:2px}
+.country-league-row .country-league{width:auto;flex:1;min-width:0;margin:1px 0;padding:6px 5px;font-size:12px;gap:5px}
+.country-league .lbl{white-space:normal;line-height:1.3}
+.country-list .country-league .cnt{background:var(--brand);color:var(--brand-ink);font-size:10px;min-width:18px;padding:1px 5px}
+.league-favorite{flex:0 0 23px;width:23px;padding:3px 0;background:transparent;border:0;color:var(--muted);font-size:18px;cursor:pointer}
+.league-favorite.starred{color:#d99813}
+.country-empty{font-size:12px;color:var(--muted);padding:6px;margin:0}
+.country-expand:focus-visible,.league-favorite:focus-visible{outline:2px solid var(--brand);outline-offset:2px}

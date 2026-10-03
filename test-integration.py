@@ -13,6 +13,7 @@ class Mock:
  def get(self,ep,**p):
   self.calls+=1
   if self.fail:raise RuntimeError('Simulated API outage')
+  if ep=='/odds':return [{'fixture':{'id':11},'update':now.isoformat(),'bookmakers':[{'id':8,'name':'Test Book','bets':[{'id':1,'name':'Match Winner','values':[{'value':'Home','odd':'1.85'}]},{'id':5,'name':'Goals Over/Under','values':[{'value':'Over 2.5','odd':'1.9'}]}]}]}]
   if ep=='/leagues':return [{'seasons':[{'year':2025,'start':'2025-08-01','end':'2026-05-31','current':False,'coverage':{'standings':True}},{'year':2026,'start':'2026-08-01','end':'2027-05-31','current':True,'coverage':{'standings':True}}]}]
   if ep=='/standings':return [{'league':{'standings':[[{'team':{'name':'Alpha'},'rank':1},{'team':{'name':'Beta'},'rank':2}]]}}]
   if ep=='/fixtures/headtohead':return [fixture(9,'2025-03-01T15:00:00+00:00',season=2024)]
@@ -20,13 +21,15 @@ class Mock:
   if ep=='/fixtures':return [fixture(10,'2026-10-01T15:00:00+00:00'),fixture(11,'2026-10-04T15:00:00+00:00','FT' if self.finished else 'NS',2 if self.finished else None,1 if self.finished else None),fixture(12,'2026-10-03T10:00:00+00:00','2H',1,0)]
   raise AssertionError(ep)
 with tempfile.TemporaryDirectory() as td:
- p=Path(td);config=json.loads((Path(__file__).resolve().parent/'api-config.json').read_text());config['leagues']=[{'id':39,'name':'Test League','country':'England','icon':'GB'}];(p/'api-config.json').write_text(json.dumps(config))
+ p=Path(td);config=json.loads((Path(__file__).resolve().parent/'api-config.json').read_text());config['countryDiscovery']['enabled']=False;config['requestCache']['enabled']=False;config['leagues']=[{'id':39,'name':'Test League','country':'England','icon':'GB'}];(p/'api-config.json').write_text(json.dumps(config))
  d=m.run(p,Mock(),now)
  assert d['seasons']['Test League']==2026
  assert len(d['history'])==1 and len(d['matches'])==2
  assert len(d['h2h']['1-2'])==1
  assert d['fixtures'][1]['live'] is True
  assert next(r for r in d['fixtures'] if r['id']==11).get('prediction')
+ assert next(r for r in d['fixtures'] if r['id']==11)['odds']['bookmakers'][0]['markets']['ou']['over']==1.9
+ assert (p/'odds-cache.json').exists()
  assert all('prediction' not in r for r in d['recentResults'])
  archive=json.loads((p/'prediction-archive.json').read_text());assert list(archive)==['11']
  second=Mock(True);d2=m.run(p,second,now+dt.timedelta(days=2));assert second.calls==5
