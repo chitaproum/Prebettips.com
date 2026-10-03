@@ -311,7 +311,7 @@ def run(root, api=None, now=None):
                 rec=form.setdefault(name,[0,0,0]); rec[0]+=1; rec[1]+=gf; rec[2]+=ga
         for r in current_rows:
             for side in ['home','away']:
-                name = r[side]; n,gf,ga = form.get(name,[0,0,0]); prior=5; baseline=avg/2
+                name = r[side]; n,gf,ga = form.get(name,[0,0,0]); prior=5; baseline=avg/2 if avg > 0 else 1.35
                 league_teams[name] = {'id':r[side+'Id'],'logo':r[side+'Logo'],'league':lg['name'],
                     'att':round((gf+prior*baseline)/(n+prior)/baseline,5),
                     'def':round((ga+prior*baseline)/(n+prior)/baseline,5),'played':n}
