@@ -1,33 +1,64 @@
-name: Update Football Data
-
+name: Update football data and deploy
 on:
-  schedule:
-    # Runs automatically every day at 06:00 UTC
-    - cron: '0 6 * * *'
-  # Allows manual triggering from the Actions tab anytime
   workflow_dispatch:
-
+  schedule:
+    - cron: '17,47 * * * *'
+  push:
+    branches: [main]
+    paths:
+      - '**.html'
+      - '**.css'
+      - '**.js'
+      - 'fetch_data.py'
+      - 'api-config.json'
+      - '.github/workflows/update-data.yml'
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: football-pages
+  cancel-in-progress: false
 jobs:
-  update-data:
+  update:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          node-version: '20'
-
-      - name: Fetch fresh data
+          python-version: '3.12'
+      - name: Fetch real data (key stays private)
         env:
           API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
-        run: node fetch-data.js
-
-      - name: Commit and push changes
+        run: python fetch_data.py
+      - name: Preserve data and prediction snapshots
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add data.js
-          git diff --quiet && git diff --staged --quiet || git commit -m "Auto-update prediction data"
-          git push
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data.js prediction-archive.json h2h-cache.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Refresh football data and saved predictions'
+            git push
+          fi
+      - uses: actions/configure-pages@v5
+      - name: Prepare public website only
+        run: |
+          mkdir -p _site
+          cp index.html styles.css theme.js app.js ads.js data.js _site/
+          for folder in images assets; do
+            if [ -d "$folder" ]; then cp -r "$folder" _site/; fi
+          done
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+  deploy:
+    needs: update
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
