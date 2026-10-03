@@ -1,1 +1,1807 @@
-{}
+{
+  "1575516": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-09T17:45:00+00:00",
+    "home": "Moreirense",
+    "away": "GIL Vicente",
+    "league": "Primeira Liga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.3069062788774727,
+      "pDraw": 0.2684843173814601,
+      "pAway": 0.4246094037410672,
+      "pOver": 0.45228597666387,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.119083469781977,
+      "expA": 1.36617114572505,
+      "expTotal": 2.485254615507027
+    }
+  },
+  "1552180": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-09T18:00:00+00:00",
+    "home": "PSV Eindhoven",
+    "away": "Heerenveen",
+    "league": "Eredivisie",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.6189680095228516,
+      "pDraw": 0.17912328524581575,
+      "pAway": 0.20190870523133267,
+      "pOver": 0.7656840361998682,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.6036383613304634,
+      "expA": 1.4609058274736642,
+      "expTotal": 4.064544188804128
+    }
+  },
+  "1575176": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-09T18:30:00+00:00",
+    "home": "Borussia Dortmund",
+    "away": "Werder Bremen",
+    "league": "Bundesliga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.617961039465589,
+      "pDraw": 0.18702921020964555,
+      "pAway": 0.19500975032476547,
+      "pOver": 0.7156650014016611,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.4193839102288566,
+      "expA": 1.308368351239092,
+      "expTotal": 3.7277522614679484
+    }
+  },
+  "1552775": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-09T18:45:00+00:00",
+    "home": "Lens",
+    "away": "Lyon",
+    "league": "Ligue 1",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.2312118845763762,
+      "pDraw": 0.22051716472424995,
+      "pAway": 0.5482709506993738,
+      "pOver": 0.6033484751554604,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.1869220260074367,
+      "expA": 1.9383526935591842,
+      "expTotal": 3.1252747195666206
+    }
+  },
+  "1570408": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-09T19:00:00+00:00",
+    "home": "Malaga",
+    "away": "Espanyol",
+    "league": "La Liga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.2353683745179599,
+      "pDraw": 0.2526220401748614,
+      "pAway": 0.5120095853071787,
+      "pOver": 0.4702415789476051,
+      "scoreH": 0,
+      "scoreA": 1,
+      "expH": 0.9803580423292754,
+      "expA": 1.575707360034126,
+      "expTotal": 2.5560654023634015
+    }
+  },
+  "1575512": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-09T19:15:00+00:00",
+    "home": "SC Braga",
+    "away": "Sporting CP",
+    "league": "Primeira Liga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.31954295751437883,
+      "pDraw": 0.2470338776994138,
+      "pAway": 0.4334231647862073,
+      "pOver": 0.5469075412539393,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.30787986942895,
+      "expA": 1.56269329965,
+      "expTotal": 2.87057316907895
+    }
+  },
+  "1557417": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T11:30:00+00:00",
+    "home": "Arsenal",
+    "away": "Leeds",
+    "league": "Premier League",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.3922922204173579,
+      "pDraw": 0.280409022515,
+      "pAway": 0.3272987570676422,
+      "pOver": 0.413079597685448,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.2336314316758998,
+      "expA": 1.1010801397049998,
+      "expTotal": 2.3347115713808995
+    }
+  },
+  "1570410": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T12:00:00+00:00",
+    "home": "Rayo Vallecano",
+    "away": "Athletic Club",
+    "league": "La Liga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.32611727591858347,
+      "pDraw": 0.23360361636005395,
+      "pAway": 0.4402791077213625,
+      "pOver": 0.6125846705693863,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.4498363826024594,
+      "expA": 1.717006188667572,
+      "expTotal": 3.166842571270031
+    }
+  },
+  "1550140": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T13:00:00+00:00",
+    "home": "Genoa",
+    "away": "Fiorentina",
+    "league": "Serie A",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.3791303339745872,
+      "pDraw": 0.2368410305102456,
+      "pAway": 0.38402863551516725,
+      "pOver": 0.6072285879815202,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5649043461424998,
+      "expA": 1.5762941465299998,
+      "expTotal": 3.1411984926724994
+    }
+  },
+  "1575181": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T13:30:00+00:00",
+    "home": "FSV Mainz 05",
+    "away": "Bayer Leverkusen",
+    "league": "Bundesliga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.425820364589363,
+      "pDraw": 0.20487999675892551,
+      "pAway": 0.3692996386517114,
+      "pOver": 0.7705119905470261,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.1132740865856947,
+      "expA": 1.9642318784351998,
+      "expTotal": 4.077505965020895
+    }
+  },
+  "1575178": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T13:30:00+00:00",
+    "home": "1899 Hoffenheim",
+    "away": "Hamburger SV",
+    "league": "Bundesliga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.6483788497010239,
+      "pDraw": 0.16862804174111193,
+      "pAway": 0.18299310855786405,
+      "pOver": 0.7860879565638462,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.774106595447348,
+      "expA": 1.4577795623754,
+      "expTotal": 4.231886157822748
+    }
+  },
+  "1575180": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T13:30:00+00:00",
+    "home": "FC Augsburg",
+    "away": "Bayern München",
+    "league": "Bundesliga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.28908431284214176,
+      "pDraw": 0.19644402321770937,
+      "pAway": 0.5144716639401489,
+      "pOver": 0.7766614462989606,
+      "scoreH": 1,
+      "scoreA": 2,
+      "expH": 1.762350587073232,
+      "expA": 2.3668520099368315,
+      "expTotal": 4.129202597010064
+    }
+  },
+  "1575182": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T13:30:00+00:00",
+    "home": "Union Berlin",
+    "away": "SV Elversberg",
+    "league": "Bundesliga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.19265681322538272,
+      "pDraw": 0.16166851391499557,
+      "pAway": 0.6456746728596217,
+      "pOver": 0.8329599682517965,
+      "scoreH": 1,
+      "scoreA": 3,
+      "expH": 1.665143409548609,
+      "expA": 3.012901781077188,
+      "expTotal": 4.678045190625797
+    }
+  },
+  "1575184": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T13:30:00+00:00",
+    "home": "SC Paderborn 07",
+    "away": "VfB Stuttgart",
+    "league": "Bundesliga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.44067908096075176,
+      "pDraw": 0.23266839950648086,
+      "pAway": 0.32665251953276736,
+      "pOver": 0.6173526277112308,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.7286822252257577,
+      "expA": 1.4609437858097278,
+      "expTotal": 3.1896260110354855
+    }
+  },
+  "1557419": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T14:00:00+00:00",
+    "home": "Chelsea",
+    "away": "Bournemouth",
+    "league": "Premier League",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.45956781085254883,
+      "pDraw": 0.20906098479956142,
+      "pAway": 0.33137120434788986,
+      "pOver": 0.738082288223871,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.0928655804973997,
+      "expA": 1.7631296521379995,
+      "expTotal": 3.855995232635399
+    }
+  },
+  "1557423": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T14:00:00+00:00",
+    "home": "Ipswich",
+    "away": "Fulham",
+    "league": "Premier League",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42303220739743924,
+      "pDraw": 0.23071869566274347,
+      "pAway": 0.3462490969398172,
+      "pOver": 0.6333099580665369,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.7246124838214996,
+      "expA": 1.542568828014,
+      "expTotal": 3.2671813118354995
+    }
+  },
+  "1557418": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T14:00:00+00:00",
+    "home": "Aston Villa",
+    "away": "Brentford",
+    "league": "Premier League",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.18904044892528388,
+      "pDraw": 0.21732529005443577,
+      "pAway": 0.5936342610202804,
+      "pOver": 0.5615568972770899,
+      "scoreH": 0,
+      "scoreA": 1,
+      "expH": 0.9958766811061499,
+      "expA": 1.9408017276599998,
+      "expTotal": 2.9366784087661495
+    }
+  },
+  "1557426": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T14:00:00+00:00",
+    "home": "Sunderland",
+    "away": "Brighton",
+    "league": "Premier League",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.1528568744780961,
+      "pDraw": 0.16128195614539775,
+      "pAway": 0.6858611693765061,
+      "pOver": 0.763963822927604,
+      "scoreH": 1,
+      "scoreA": 2,
+      "expH": 1.2825533039359498,
+      "expA": 2.7872490769499993,
+      "expTotal": 4.06980238088595
+    }
+  },
+  "1570403": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T14:15:00+00:00",
+    "home": "Alaves",
+    "away": "Atletico Madrid",
+    "league": "La Liga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.3671195615074759,
+      "pDraw": 0.2481189587021511,
+      "pAway": 0.3847614797903731,
+      "pOver": 0.5521149233711099,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.4266708152400003,
+      "expA": 1.466182773644336,
+      "expTotal": 2.8928535888843365
+    }
+  },
+  "1552182": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T14:30:00+00:00",
+    "home": "GO Ahead Eagles",
+    "away": "Sparta Rotterdam",
+    "league": "Eredivisie",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.6161233719858532,
+      "pDraw": 0.17112017385312442,
+      "pAway": 0.2127564541610224,
+      "pOver": 0.8187424980734177,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.838429793205463,
+      "expA": 1.6744481139311638,
+      "expTotal": 4.512877907136627
+    }
+  },
+  "1575513": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T14:30:00+00:00",
+    "home": "Casa Pia",
+    "away": "Santa Clara",
+    "league": "Primeira Liga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.10037030196782923,
+      "pDraw": 0.18806283422608175,
+      "pAway": 0.711566863806089,
+      "pOver": 0.5026124430463171,
+      "scoreH": 0,
+      "scoreA": 2,
+      "expH": 0.623131098251238,
+      "expA": 2.067020481482586,
+      "expTotal": 2.6901515797338242
+    }
+  },
+  "1552776": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T15:15:00+00:00",
+    "home": "Lille",
+    "away": "Le Havre",
+    "league": "Ligue 1",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.5762800518933907,
+      "pDraw": 0.236564362470891,
+      "pAway": 0.18715558563571835,
+      "pOver": 0.4791960882226068,
+      "scoreH": 1,
+      "scoreA": 0,
+      "expH": 1.724203039261875,
+      "expA": 0.86805419921875,
+      "expTotal": 2.592257238480625
+    }
+  },
+  "1550141": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T16:00:00+00:00",
+    "home": "Inter",
+    "away": "Parma",
+    "league": "Serie A",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.6618534023988704,
+      "pDraw": 0.17604591392072438,
+      "pAway": 0.16210068368040514,
+      "pOver": 0.7097693861373423,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.5146326293039998,
+      "expA": 1.18318184484,
+      "expTotal": 3.6978144741439998
+    }
+  },
+  "1557425": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T16:30:00+00:00",
+    "home": "Manchester United",
+    "away": "Tottenham",
+    "league": "Premier League",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.5802919846954268,
+      "pDraw": 0.2256107545803806,
+      "pAway": 0.1940972607241926,
+      "pOver": 0.5330506772361095,
+      "scoreH": 1,
+      "scoreA": 0,
+      "expH": 1.8473750544246,
+      "expA": 0.9659729226719999,
+      "expTotal": 2.8133479770966
+    }
+  },
+  "1570404": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T16:30:00+00:00",
+    "home": "Barcelona",
+    "away": "Getafe",
+    "league": "La Liga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.8108942422865996,
+      "pDraw": 0.12056864322385294,
+      "pAway": 0.06853711448954752,
+      "pOver": 0.7091970186806957,
+      "scoreH": 2,
+      "scoreA": 0,
+      "expH": 2.960007691432,
+      "expA": 0.77390826832,
+      "expTotal": 3.733915959752
+    }
+  },
+  "1575177": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T16:30:00+00:00",
+    "home": "RB Leipzig",
+    "away": "Eintracht Frankfurt",
+    "league": "Bundesliga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.5785136542164727,
+      "pDraw": 0.17994231883970518,
+      "pAway": 0.24154402694382204,
+      "pOver": 0.8124426146423168,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.6956693155496496,
+      "expA": 1.74345011351874,
+      "expTotal": 4.4391194290683895
+    }
+  },
+  "1552181": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T16:45:00+00:00",
+    "home": "Feyenoord",
+    "away": "AZ Alkmaar",
+    "league": "Eredivisie",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.5117209426405239,
+      "pDraw": 0.2023631068155983,
+      "pAway": 0.28591595054387775,
+      "pOver": 0.7450945679980558,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.2470582179109635,
+      "expA": 1.658128963583664,
+      "expTotal": 3.9051871814946275
+    }
+  },
+  "1575515": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T17:00:00+00:00",
+    "home": "Maritimo",
+    "away": "FC Porto",
+    "league": "Primeira Liga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.11737489209017281,
+      "pDraw": 0.17164845462170802,
+      "pAway": 0.7109766532881192,
+      "pOver": 0.622480467219324,
+      "scoreH": 0,
+      "scoreA": 2,
+      "expH": 0.8527584023264213,
+      "expA": 2.373799927588128,
+      "expTotal": 3.2265583299145493
+    }
+  },
+  "1552184": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T18:00:00+00:00",
+    "home": "Fortuna Sittard",
+    "away": "Twente",
+    "league": "Eredivisie",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.28738411332547725,
+      "pDraw": 0.2102649966592752,
+      "pAway": 0.5023508900152476,
+      "pOver": 0.7066548189502437,
+      "scoreH": 1,
+      "scoreA": 2,
+      "expH": 1.5604494878537136,
+      "expA": 2.1032685184436644,
+      "expTotal": 3.663718006297378
+    }
+  },
+  "1550144": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T18:45:00+00:00",
+    "home": "Napoli",
+    "away": "Frosinone",
+    "league": "Serie A",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.3246363715890576,
+      "pDraw": 0.25350106785832505,
+      "pAway": 0.42186256055261734,
+      "pOver": 0.5198636856809747,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.271442359478,
+      "expA": 1.4849092068949998,
+      "expTotal": 2.7563515663729996
+    }
+  },
+  "1552780": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T18:45:00+00:00",
+    "home": "Paris Saint Germain",
+    "away": "Le Mans",
+    "league": "Ligue 1",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.46601821473450045,
+      "pDraw": 0.21718457348722292,
+      "pAway": 0.3167972117782766,
+      "pOver": 0.6901323058669614,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.9685689685506251,
+      "expA": 1.5985223078516582,
+      "expTotal": 3.5670912764022833
+    }
+  },
+  "1552778": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T18:45:00+00:00",
+    "home": "Monaco",
+    "away": "Toulouse",
+    "league": "Ligue 1",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.5978407401681382,
+      "pDraw": 0.21492282834600202,
+      "pAway": 0.18723643148585978,
+      "pOver": 0.5694556790412607,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.9685689685506251,
+      "expA": 1.003216293592092,
+      "expTotal": 2.971785262142717
+    }
+  },
+  "1552777": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T18:45:00+00:00",
+    "home": "Lorient",
+    "away": "Paris FC",
+    "league": "Ligue 1",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.26735420580105485,
+      "pDraw": 0.2707510108014226,
+      "pAway": 0.4618947833975225,
+      "pOver": 0.4257932397045916,
+      "scoreH": 0,
+      "scoreA": 1,
+      "expH": 0.9901769792247191,
+      "expA": 1.39306093445,
+      "expTotal": 2.3832379136747193
+    }
+  },
+  "1552774": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T18:45:00+00:00",
+    "home": "Stade Brestois 29",
+    "away": "Angers",
+    "league": "Ligue 1",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.37037666476003794,
+      "pDraw": 0.2541662897808179,
+      "pAway": 0.3754570454591441,
+      "pOver": 0.5243543796693485,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.3818939671659691,
+      "expA": 1.39306093445,
+      "expTotal": 2.774954901615969
+    }
+  },
+  "1570411": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T19:00:00+00:00",
+    "home": "Real Madrid",
+    "away": "Villarreal",
+    "league": "La Liga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.6230224069267588,
+      "pDraw": 0.17736863845397963,
+      "pAway": 0.19960895461926156,
+      "pOver": 0.7707302110489223,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.6353084245396676,
+      "expA": 1.4679563719621682,
+      "expTotal": 4.103264796501836
+    }
+  },
+  "1552183": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T19:00:00+00:00",
+    "home": "Ajax",
+    "away": "NEC Nijmegen",
+    "league": "Eredivisie",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.6664986447554461,
+      "pDraw": 0.1620004832554821,
+      "pAway": 0.17150087198907174,
+      "pOver": 0.7974424969265752,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.8825533324152133,
+      "expA": 1.453614168098664,
+      "expTotal": 4.336167500513877
+    }
+  },
+  "1575509": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-10T19:30:00+00:00",
+    "home": "Academico Viseu",
+    "away": "Estoril",
+    "league": "Primeira Liga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.5549433482171479,
+      "pDraw": 0.2549457334579969,
+      "pAway": 0.19011091832485533,
+      "pOver": 0.41646236723942814,
+      "scoreH": 1,
+      "scoreA": 0,
+      "expH": 1.5566729256990257,
+      "expA": 0.7914521308402619,
+      "expTotal": 2.3481250565392875
+    }
+  },
+  "1552185": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-11T10:15:00+00:00",
+    "home": "Utrecht",
+    "away": "Willem II",
+    "league": "Eredivisie",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.5210500050010337,
+      "pDraw": 0.188800246405319,
+      "pAway": 0.2901497485936472,
+      "pOver": 0.8138696441964267,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.5405475077547135,
+      "expA": 1.897366224346164,
+      "expTotal": 4.437913732100878
+    }
+  },
+  "1550139": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-11T10:30:00+00:00",
+    "home": "Como",
+    "away": "AS Roma",
+    "league": "Serie A",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.26028719516705034,
+      "pDraw": 0.22080578142331023,
+      "pAway": 0.5189070234096393,
+      "pOver": 0.6320711215676901,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.3210197814674995,
+      "expA": 1.9418074051599998,
+      "expTotal": 3.2628271866274994
+    }
+  },
+  "1570406": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-11T12:00:00+00:00",
+    "home": "Elche",
+    "away": "Celta Vigo",
+    "league": "La Liga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.29178994478468184,
+      "pDraw": 0.23379123669982418,
+      "pAway": 0.47441881851549395,
+      "pOver": 0.5943573406146974,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.329015197936822,
+      "expA": 1.7528796317318882,
+      "expTotal": 3.0818948296687103
+    }
+  },
+  "1552187": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-11T12:30:00+00:00",
+    "home": "PEC Zwolle",
+    "away": "Cambuur",
+    "league": "Eredivisie",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.34926293061995173,
+      "pDraw": 0.20729027104232406,
+      "pAway": 0.44344679833772427,
+      "pOver": 0.7535116298377127,
+      "scoreH": 1,
+      "scoreA": 2,
+      "expH": 1.8565358584337133,
+      "expA": 2.101532686846164,
+      "expTotal": 3.958068545279877
+    }
+  },
+  "1552186": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-11T12:30:00+00:00",
+    "home": "Telstar",
+    "away": "ADO Den Haag",
+    "league": "Eredivisie",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.44870011582409935,
+      "pDraw": 0.24382020510700822,
+      "pAway": 0.30747967906889245,
+      "pOver": 0.5564272895850751,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.6151549331482136,
+      "expA": 1.296669325043664,
+      "expTotal": 2.911824258191878
+    }
+  },
+  "1557421": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-11T13:00:00+00:00",
+    "home": "Crystal Palace",
+    "away": "Nottingham Forest",
+    "league": "Premier League",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.3407458241996369,
+      "pDraw": 0.25773064878895957,
+      "pAway": 0.4015235270114036,
+      "pOver": 0.5054948705177813,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.2825533039359498,
+      "expA": 1.414558412406,
+      "expTotal": 2.69711171634195
+    }
+  },
+  "1557422": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-11T13:00:00+00:00",
+    "home": "Hull City",
+    "away": "Everton",
+    "league": "Premier League",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.3620146244197041,
+      "pDraw": 0.30011306770946133,
+      "pAway": 0.33787230787083455,
+      "pOver": 0.3482877991434581,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.0696873643491498,
+      "expA": 1.022713334037,
+      "expTotal": 2.09240069838615
+    }
+  },
+  "1550142": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-11T13:00:00+00:00",
+    "home": "Lazio",
+    "away": "Monza",
+    "league": "Serie A",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.6517899200099173,
+      "pDraw": 0.1862548685252781,
+      "pAway": 0.16195521146480452,
+      "pOver": 0.6586648318067344,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.328251802129,
+      "expA": 1.0780182586,
+      "expTotal": 3.4062700607289997
+    }
+  },
+  "1550143": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-11T13:00:00+00:00",
+    "home": "Lecce",
+    "away": "Bologna",
+    "league": "Serie A",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.38142186923331095,
+      "pDraw": 0.2694589538525377,
+      "pAway": 0.34911917691415145,
+      "pOver": 0.45780624332616804,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.2873053405047499,
+      "expA": 1.2194074483,
+      "expTotal": 2.50671278880475
+    }
+  },
+  "1552779": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-11T13:00:00+00:00",
+    "home": "Nice",
+    "away": "Strasbourg",
+    "league": "Ligue 1",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.33915150353619217,
+      "pDraw": 0.24312724827419321,
+      "pAway": 0.41772124818961465,
+      "pOver": 0.5711573748078508,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.3989639335394386,
+      "expA": 1.577430090781632,
+      "expTotal": 2.9763940243210705
+    }
+  },
+  "1575183": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-11T13:30:00+00:00",
+    "home": "1. FC Köln",
+    "away": "Borussia Mönchengladbach",
+    "league": "Bundesliga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.5987436578105554,
+      "pDraw": 0.16955534253663757,
+      "pAway": 0.23170099965280697,
+      "pOver": 0.847438442811901,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.9533962986979256,
+      "expA": 1.8635639173113598,
+      "expTotal": 4.816960216009285
+    }
+  },
+  "1570412": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-11T14:15:00+00:00",
+    "home": "Real Sociedad",
+    "away": "Deportivo La Coruna",
+    "league": "La Liga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.3157188717291581,
+      "pDraw": 0.23950520743656423,
+      "pAway": 0.4447759208342777,
+      "pOver": 0.5800932128214599,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.3604880790213152,
+      "expA": 1.6560621109076221,
+      "expTotal": 3.016550189928937
+    }
+  },
+  "1575517": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-11T14:30:00+00:00",
+    "home": "Rio Ave",
+    "away": "Nacional",
+    "league": "Primeira Liga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.3740878722956679,
+      "pDraw": 0.24111013243934123,
+      "pAway": 0.38480199526499087,
+      "pOver": 0.585999666268211,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5092205064027122,
+      "expA": 1.533773522146536,
+      "expTotal": 3.0429940285492485
+    }
+  },
+  "1552188": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-11T14:45:00+00:00",
+    "home": "Excelsior",
+    "away": "Groningen",
+    "league": "Eredivisie",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.5257035919693925,
+      "pDraw": 0.198750482880184,
+      "pAway": 0.27554592515042337,
+      "pOver": 0.7547638518643836,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.315937399031714,
+      "expA": 1.6562189654936643,
+      "expTotal": 3.972156364525378
+    }
+  },
+  "1552781": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-11T15:15:00+00:00",
+    "home": "Rennes",
+    "away": "Auxerre",
+    "league": "Ligue 1",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.5411450334900688,
+      "pDraw": 0.19738487374494684,
+      "pAway": 0.26147009276498434,
+      "pOver": 0.7489201370008729,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.335135240234375,
+      "expA": 1.5985223078516582,
+      "expTotal": 3.9336575480860327
+    }
+  },
+  "1557424": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-11T15:30:00+00:00",
+    "home": "Liverpool",
+    "away": "Manchester City",
+    "league": "Premier League",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.335869453932948,
+      "pDraw": 0.24410861115950347,
+      "pAway": 0.4200219349075486,
+      "pOver": 0.5656727516454348,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.3808307020917499,
+      "expA": 1.571303073771,
+      "expTotal": 2.95213377586275
+    }
+  },
+  "1575179": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-11T15:30:00+00:00",
+    "home": "SC Freiburg",
+    "away": "FC Schalke 04",
+    "league": "Bundesliga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.6358536508120923,
+      "pDraw": 0.1972871248768317,
+      "pAway": 0.16685922431107597,
+      "pOver": 0.6152091715700568,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.1693262685047565,
+      "expA": 1.0160482674743279,
+      "expTotal": 3.1853745359790846
+    }
+  },
+  "1550145": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-11T16:00:00+00:00",
+    "home": "Sassuolo",
+    "away": "AC Milan",
+    "league": "Serie A",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.2900345044830604,
+      "pDraw": 0.22081314161605317,
+      "pAway": 0.4891523539008863,
+      "pOver": 0.655965866212937,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.4498888211194998,
+      "expA": 1.9331980948299996,
+      "expTotal": 3.3830869159494994
+    }
+  },
+  "1570405": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-11T16:30:00+00:00",
+    "home": "Real Betis",
+    "away": "Osasuna",
+    "league": "La Liga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.583189678020618,
+      "pDraw": 0.22962415015451304,
+      "pAway": 0.1871861718248689,
+      "pOver": 0.5066854827115055,
+      "scoreH": 1,
+      "scoreA": 0,
+      "expH": 1.7963007526569867,
+      "expA": 0.9072492140800001,
+      "expTotal": 2.703549966736987
+    }
+  },
+  "1575511": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-11T17:00:00+00:00",
+    "home": "Benfica",
+    "away": "Vitória SC",
+    "league": "Primeira Liga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.7357444719175843,
+      "pDraw": 0.1597923981979822,
+      "pAway": 0.10446312988443347,
+      "pOver": 0.642113728410239,
+      "scoreH": 2,
+      "scoreA": 0,
+      "expH": 2.496861568909814,
+      "expA": 0.831975988440168,
+      "expTotal": 3.3288375573499818
+    }
+  },
+  "1550138": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-11T18:45:00+00:00",
+    "home": "Cagliari",
+    "away": "Juventus",
+    "league": "Serie A",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.3801253119283862,
+      "pDraw": 0.30179641415450786,
+      "pAway": 0.3180782739171059,
+      "pOver": 0.3411092764242786,
+      "scoreH": 1,
+      "scoreA": 0,
+      "expH": 1.0929958978365,
+      "expA": 0.9728394224199999,
+      "expTotal": 2.0658353202565
+    }
+  },
+  "1552782": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-11T18:45:00+00:00",
+    "home": "Estac Troyes",
+    "away": "Marseille",
+    "league": "Ligue 1",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.2911820577332585,
+      "pDraw": 0.23043707594557863,
+      "pAway": 0.4783808663211628,
+      "pOver": 0.6098996230243036,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.357636767578125,
+      "expA": 1.796967053354592,
+      "expTotal": 3.154603820932717
+    }
+  },
+  "1570409": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-11T19:00:00+00:00",
+    "home": "Racing Santander",
+    "away": "Valencia",
+    "league": "La Liga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.4925406818784366,
+      "pDraw": 0.21562327664851683,
+      "pAway": 0.29183604147304665,
+      "pOver": 0.6830141253401627,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.0126223524442586,
+      "expA": 1.5155735834111181,
+      "expTotal": 3.5281959358553765
+    }
+  },
+  "1575510": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-11T19:30:00+00:00",
+    "home": "Arouca",
+    "away": "Estrela",
+    "league": "Primeira Liga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.5109072075193755,
+      "pDraw": 0.21375413750242536,
+      "pAway": 0.27533865497819904,
+      "pOver": 0.6798019101879896,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.0475822421864733,
+      "expA": 1.46359838708028,
+      "expTotal": 3.5111806292667533
+    }
+  },
+  "1550137": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-12T16:30:00+00:00",
+    "home": "Atalanta",
+    "away": "Venezia",
+    "league": "Serie A",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.5733876535078468,
+      "pDraw": 0.21711213975030336,
+      "pAway": 0.20950020674184977,
+      "pOver": 0.5919539398049682,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.9673954336137496,
+      "expA": 1.10560205172,
+      "expTotal": 3.0729974853337496
+    }
+  },
+  "1550146": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-12T18:45:00+00:00",
+    "home": "Torino",
+    "away": "Udinese",
+    "league": "Serie A",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42181327123317397,
+      "pDraw": 0.22666609371580465,
+      "pAway": 0.35152063505102127,
+      "pOver": 0.6550192107853379,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.7730859909455,
+      "expA": 1.60386668968,
+      "expTotal": 3.3769526806255
+    }
+  },
+  "1557420": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-12T19:00:00+00:00",
+    "home": "Coventry",
+    "away": "Newcastle",
+    "league": "Premier League",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.20165591072269476,
+      "pDraw": 0.21852745088051348,
+      "pAway": 0.5798166383967918,
+      "pOver": 0.5746717257370604,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.053777559674,
+      "expA": 1.9408017276599998,
+      "expTotal": 2.994579287334
+    }
+  },
+  "1570407": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-12T19:00:00+00:00",
+    "home": "Levante",
+    "away": "Sevilla",
+    "league": "La Liga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.3337628595243459,
+      "pDraw": 0.23261757133964367,
+      "pAway": 0.43361956913601046,
+      "pOver": 0.6201746510772919,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.4841760483001145,
+      "expA": 1.7189548176723781,
+      "expTotal": 3.2031308659724926
+    }
+  },
+  "1575514": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-12T19:15:00+00:00",
+    "home": "Famalicao",
+    "away": "Alverca",
+    "league": "Primeira Liga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.4985449399210219,
+      "pDraw": 0.2445593711612779,
+      "pAway": 0.2568956889177003,
+      "pOver": 0.5210331538167804,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.6490239817394616,
+      "expA": 1.112699620227096,
+      "expTotal": 2.7617236019665574
+    }
+  },
+  "1552189": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-16T18:00:00+00:00",
+    "home": "Heerenveen",
+    "away": "Excelsior",
+    "league": "Eredivisie",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.3707086864967337,
+      "pDraw": 0.23224378885305524,
+      "pAway": 0.397047524650211,
+      "pOver": 0.6298954789766478,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5939911209787134,
+      "expA": 1.6562189654936643,
+      "expTotal": 3.2502100864723777
+    }
+  },
+  "1575187": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-16T18:30:00+00:00",
+    "home": "Eintracht Frankfurt",
+    "away": "1. FC Köln",
+    "league": "Bundesliga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.5115355670351553,
+      "pDraw": 0.18823553426333778,
+      "pAway": 0.30022889870150676,
+      "pOver": 0.8230301210374642,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.557514784590369,
+      "expA": 1.9642318784351998,
+      "expTotal": 4.521746663025569
+    }
+  },
+  "1550151": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-16T18:45:00+00:00",
+    "home": "Frosinone",
+    "away": "Sassuolo",
+    "league": "Serie A",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.5648397906824532,
+      "pDraw": 0.20936617353018513,
+      "pAway": 0.22579403578736174,
+      "pOver": 0.6499985029461277,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.0942900818967494,
+      "expA": 1.26077288793,
+      "expTotal": 3.3550629698267493
+    }
+  },
+  "1552785": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-16T18:45:00+00:00",
+    "home": "Le Mans",
+    "away": "Toulouse",
+    "league": "Ligue 1",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.4936140040896889,
+      "pDraw": 0.21034206394263028,
+      "pAway": 0.29604393196768086,
+      "pOver": 0.7123803530541732,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.0988372830718434,
+      "expA": 1.5985223078516582,
+      "expTotal": 3.6973595909235017
+    }
+  },
+  "1570415": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-16T19:00:00+00:00",
+    "home": "Deportivo La Coruna",
+    "away": "Levante",
+    "league": "La Liga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.5507247660648584,
+      "pDraw": 0.2177243160582717,
+      "pAway": 0.23155091787686993,
+      "pOver": 0.6168798191486201,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.9767980403232346,
+      "expA": 1.212884693163528,
+      "expTotal": 3.1896827334867623
+    }
+  },
+  "1557430": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-17T11:30:00+00:00",
+    "home": "Everton",
+    "away": "Chelsea",
+    "league": "Premier League",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.561066609755609,
+      "pDraw": 0.21381264738789735,
+      "pAway": 0.22512074285649383,
+      "pOver": 0.6277364741571243,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.0275990999586995,
+      "expA": 1.2152729925539998,
+      "expTotal": 3.242872092512699
+    }
+  },
+  "1570416": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-17T12:00:00+00:00",
+    "home": "Espanyol",
+    "away": "Atletico Madrid",
+    "league": "La Liga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.2735149020250256,
+      "pDraw": 0.2238070760425834,
+      "pAway": 0.502678021932391,
+      "pOver": 0.6289799015455503,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.3500067714319999,
+      "expA": 1.897141037514756,
+      "expTotal": 3.247147808946756
+    }
+  },
+  "1550156": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-17T13:00:00+00:00",
+    "home": "Venezia",
+    "away": "Napoli",
+    "league": "Serie A",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.22308021051808294,
+      "pDraw": 0.21634369894528502,
+      "pAway": 0.5605760905366322,
+      "pOver": 0.613188688684011,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.1822126599245,
+      "expA": 1.9900865430999997,
+      "expTotal": 3.1722992030244996
+    }
+  },
+  "1575191": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-17T13:30:00+00:00",
+    "home": "Werder Bremen",
+    "away": "SC Paderborn 07",
+    "league": "Bundesliga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.48702598117903567,
+      "pDraw": 0.22331206158848033,
+      "pAway": 0.28966195723248406,
+      "pOver": 0.6434109907736374,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.8966797201334409,
+      "expA": 1.4220142918530119,
+      "expTotal": 3.3186940119864525
+    }
+  },
+  "1575192": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-17T13:30:00+00:00",
+    "home": "FC Schalke 04",
+    "away": "FSV Mainz 05",
+    "league": "Bundesliga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.32687699706489975,
+      "pDraw": 0.2339774062222865,
+      "pAway": 0.4391455967128137,
+      "pOver": 0.6110570685969815,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.448568866410617,
+      "expA": 1.7110057204052997,
+      "expTotal": 3.159574586815917
+    }
+  },
+  "1575190": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-17T13:30:00+00:00",
+    "home": "Hamburger SV",
+    "away": "VfB Stuttgart",
+    "league": "Bundesliga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.26955619371012024,
+      "pDraw": 0.2011833225877666,
+      "pAway": 0.5292604837021131,
+      "pOver": 0.737525816246756,
+      "scoreH": 1,
+      "scoreA": 2,
+      "expH": 1.5905276942664779,
+      "expA": 2.266201286477568,
+      "expTotal": 3.856728980744046
+    }
+  },
+  "1575188": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-17T13:30:00+00:00",
+    "home": "Union Berlin",
+    "away": "Borussia Dortmund",
+    "league": "Bundesliga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.10440168850394481,
+      "pDraw": 0.13041985611073692,
+      "pAway": 0.7651784553853184,
+      "pOver": 0.7918889379205288,
+      "scoreH": 1,
+      "scoreA": 3,
+      "expH": 1.1609778183114472,
+      "expA": 3.1849186138030796,
+      "expTotal": 4.345896432114527
+    }
+  },
+  "1575193": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-17T13:30:00+00:00",
+    "home": "SV Elversberg",
+    "away": "FC Augsburg",
+    "league": "Bundesliga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.3677570907203754,
+      "pDraw": 0.20095167155923818,
+      "pAway": 0.4312912377203864,
+      "pOver": 0.7899309078828581,
+      "scoreH": 2,
+      "scoreA": 2,
+      "expH": 2.02735017292991,
+      "expA": 2.1979721629204017,
+      "expTotal": 4.225322335850311
+    }
+  },
+  "1557431": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-17T14:00:00+00:00",
+    "home": "Fulham",
+    "away": "Hull City",
+    "league": "Premier League",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.293164617065194,
+      "pDraw": 0.26751193028540066,
+      "pAway": 0.4393234526494053,
+      "pOver": 0.45064859204038704,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.08599850762435,
+      "expA": 1.3929280180739998,
+      "expTotal": 2.4789265256983497
+    }
+  },
+  "1557433": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-17T14:00:00+00:00",
+    "home": "Manchester City",
+    "away": "Ipswich",
+    "league": "Premier League",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.7266857253511686,
+      "pDraw": 0.14688482275783687,
+      "pAway": 0.12642945189099455,
+      "pOver": 0.7724586215161269,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.9516914907499,
+      "expA": 1.200722349645,
+      "expTotal": 4.1524138403949
+    }
+  },
+  "1557428": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-17T14:00:00+00:00",
+    "home": "Brentford",
+    "away": "Liverpool",
+    "league": "Premier League",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.47327428506576813,
+      "pDraw": 0.2544999203549511,
+      "pAway": 0.27222579457928076,
+      "pOver": 0.49077377471668077,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5366203477487,
+      "expA": 1.1010801397049998,
+      "expTotal": 2.6377004874537
+    }
+  },
+  "1570422": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-17T14:15:00+00:00",
+    "home": "Villarreal",
+    "away": "Elche",
+    "league": "La Liga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.5879263479952781,
+      "pDraw": 0.18036684349896814,
+      "pAway": 0.2317068085057537,
+      "pOver": 0.7995375458250277,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.6615476518335033,
+      "expA": 1.6651884653400701,
+      "expTotal": 4.326736117173573
+    }
+  },
+  "1552190": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-17T14:30:00+00:00",
+    "home": "ADO Den Haag",
+    "away": "PSV Eindhoven",
+    "league": "Eredivisie",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.1260647621319744,
+      "pDraw": 0.1369473713033376,
+      "pAway": 0.7369878665646881,
+      "pOver": 0.8186635515356527,
+      "scoreH": 1,
+      "scoreA": 3,
+      "expH": 1.3526101956932135,
+      "expA": 3.2418123798986636,
+      "expTotal": 4.594422575591877
+    }
+  },
+  "1552790": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-17T15:15:00+00:00",
+    "home": "Strasbourg",
+    "away": "Paris Saint Germain",
+    "league": "Ligue 1",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.41962955765846394,
+      "pDraw": 0.21370836143044378,
+      "pAway": 0.36666208091109237,
+      "pOver": 0.7247552362462288,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.9523982687969383,
+      "expA": 1.8180451592999998,
+      "expTotal": 3.770443428096938
+    }
+  },
+  "1550149": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-17T16:00:00+00:00",
+    "home": "Bologna",
+    "away": "Inter",
+    "league": "Serie A",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.22958518975748315,
+      "pDraw": 0.21367899555320252,
+      "pAway": 0.5567358146893143,
+      "pOver": 0.633840189577187,
+      "scoreH": 1,
+      "scoreA": 2,
+      "expH": 1.2397209973899999,
+      "expA": 2.03317909484,
+      "expTotal": 3.2729000922299996
+    }
+  },
+  "1557434": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-17T16:30:00+00:00",
+    "home": "Newcastle",
+    "away": "Aston Villa",
+    "league": "Premier League",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.5668919154546401,
+      "pDraw": 0.2088250022640678,
+      "pAway": 0.22428308228129204,
+      "pOver": 0.6507126993967871,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.1010211521350004,
+      "expA": 1.2578248010700002,
+      "expTotal": 3.358845953205001
+    }
+  },
+  "1570413": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-17T16:30:00+00:00",
+    "home": "Real Betis",
+    "away": "Barcelona",
+    "league": "La Liga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.17192460173102198,
+      "pDraw": 0.17522397792253905,
+      "pAway": 0.652851420346439,
+      "pOver": 0.7335623289442941,
+      "scoreH": 1,
+      "scoreA": 2,
+      "expH": 1.2733287276160001,
+      "expA": 2.57391973168,
+      "expTotal": 3.8472484592960003
+    }
+  },
+  "1575185": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-17T16:30:00+00:00",
+    "home": "Bayern München",
+    "away": "RB Leipzig",
+    "league": "Bundesliga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.6250373406857324,
+      "pDraw": 0.18060090155476755,
+      "pAway": 0.19436175775950018,
+      "pOver": 0.7465596795956944,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.546444273864169,
+      "expA": 1.38306756023172,
+      "expTotal": 3.929511834095889
+    }
+  },
+  "1552192": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-17T18:00:00+00:00",
+    "home": "Telstar",
+    "away": "Feyenoord",
+    "league": "Eredivisie",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.11589587892649054,
+      "pDraw": 0.1532876633763829,
+      "pAway": 0.7308164576971267,
+      "pOver": 0.7104005191525324,
+      "scoreH": 1,
+      "scoreA": 2,
+      "expH": 1.0062113754257136,
+      "expA": 2.7091729125386643,
+      "expTotal": 3.715384287964378
+    }
+  },
+  "1550148": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-17T18:45:00+00:00",
+    "home": "AS Roma",
+    "away": "Genoa",
+    "league": "Serie A",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.8142324427265363,
+      "pDraw": 0.12065359717001455,
+      "pAway": 0.06511396010344914,
+      "pOver": 0.6928236568980491,
+      "scoreH": 2,
+      "scoreA": 0,
+      "expH": 2.9072370974359996,
+      "expA": 0.7245760345,
+      "expTotal": 3.6318131319359996
+    }
+  },
+  "1552786": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-17T18:45:00+00:00",
+    "home": "Lille",
+    "away": "Stade Brestois 29",
+    "league": "Ligue 1",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.5473770131315596,
+      "pDraw": 0.22747273081309038,
+      "pAway": 0.22515025605535005,
+      "pOver": 0.5645641423203844,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.84638600390625,
+      "expA": 1.1024316107812502,
+      "expTotal": 2.9488176146875
+    }
+  },
+  "1552791": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-17T18:45:00+00:00",
+    "home": "Estac Troyes",
+    "away": "Lens",
+    "league": "Ligue 1",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.27129285127409447,
+      "pDraw": 0.21351716987197294,
+      "pAway": 0.5151899788539326,
+      "pOver": 0.6775711672013399,
+      "scoreH": 1,
+      "scoreA": 2,
+      "expH": 1.4474771827578126,
+      "expA": 2.051645599845408,
+      "expTotal": 3.4991227826032207
+    }
+  },
+  "1570421": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-17T19:00:00+00:00",
+    "home": "Valencia",
+    "away": "Athletic Club",
+    "league": "La Liga",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.22751898812847055,
+      "pDraw": 0.2614024398677105,
+      "pAway": 0.511078572003819,
+      "pOver": 0.43097004765195474,
+      "scoreH": 0,
+      "scoreA": 1,
+      "expH": 0.9044457944008729,
+      "expA": 1.4988178722712142,
+      "expTotal": 2.4032636666720872
+    }
+  },
+  "1552193": {
+    "savedAt": "2026-10-03T04:30:21.002497+00:00",
+    "kickoffUtc": "2026-10-17T19:00:00+00:00",
+    "home": "Sparta Rotterdam",
+    "away": "Willem II",
+    "league": "Eredivisie",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.5767807604259085,
+      "pDraw": 0.19145027180360888,
+      "pAway": 0.23176896777048245,
+      "pOver": 0.74597643833327,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.4167625898730885,
+      "expA": 1.501184120528664,
+      "expTotal": 3.9179467104017522
+    }
+  }
+}
