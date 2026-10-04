@@ -1,0 +1,21 @@
+Replace only app.js and styles.css in your existing repository root.
+Keep index.html, fetch_data.py, api-config.json, advertising and data files unchanged.
+Commit, run your existing deployment workflow, then hard-refresh the website.
+
+League pages now show two groups, not just two individual matches:
+1. Completed matches in the round of the latest completed match.
+2. Pending matches in the live round, or nearest upcoming round.
+Every available match in these groups is shown without pagination.
+Without round labels, date groups are used instead.
+A partially completed round may occur in both groups with different matches.
+Date filtering applies only to these two groups. Clear the date to see both full lists.
+The desktop sidebar is 200px wide. Standings stack below matches on small screens.
+The match list uses page scrolling, not an internal scroll box.
+
+Standings key: green Champions League, yellow Europa League, red Relegation.
+Rank markers are based on API-Football descriptions, never assumed rank positions.
+Not every competition uses these zones.
+
+Based on prebettips-settings-and-counters-update.zip.
+Checked: patch structure, CSS brace balance and ZIP integrity.
+JavaScript execution, browser rendering and live API responses are not tested.
