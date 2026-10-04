@@ -1,0 +1,14 @@
+# Oversized API response cache (~75MB). It is only a local optimization for
+# the data fetcher and is NOT used by the website. Ignored so it is never
+# committed and never trips GitHub's 25MB upload limit.
+api-request-cache.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*.swp

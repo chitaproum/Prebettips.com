@@ -237,6 +237,10 @@
     if (days.some(function (d) { return near.indexOf(d) !== -1; })) return REAL_TODAY;
     return days[0] || REAL_TODAY;
   })();
+  // Reference "today" string used for hero counters and the Today day-pill.
+  // (Was referenced by init() but never defined, which threw a ReferenceError
+  //  and aborted init() before any buttons/menus/tabs got their click handlers.)
+  function todayStr() { return REF; }
   function weekendRange() {
     var dow = parseDay(REF).getDay();            // 0 Sun .. 6 Sat
     var sat = dow === 6 ? REF : (dow === 0 ? addDays(REF, -1) : addDays(REF, 6 - dow));
@@ -1353,7 +1357,10 @@ function leagueCode(l) {
     var records = DATA.demo === false ? (DATA.recentResults || []) : HISTORY;
     var hit1x2 = 0, hitScore = 0, hitOu = 0, n = 0;
     body.innerHTML = records.slice().reverse().map(function (m) {
-      var p = DATA.demo === false ? m.prediction : predictPoisson(m.home, m.away);
+      // Keep showing a prediction even after a match ends: prefer the forecast
+      // saved before kickoff, and fall back to the model so the Tip / Pred.
+      // score never collapse to "—" once a result is in.
+      var p = (DATA.demo === false ? m.prediction : null) || predictPoisson(m.home, m.away);
       var predTip = p ? bestKey(p) : null;
       var actual = m.fh > m.fa ? '1' : (m.fh < m.fa ? '2' : 'X');
       var okTip = p && predTip === actual;

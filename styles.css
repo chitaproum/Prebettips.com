@@ -132,7 +132,7 @@ button,input,select{font-family:inherit}
 /* ---------- Table ---------- */
 .table-wrap{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;box-shadow:var(--shadow)}
 .pred-table{width:100%;border-collapse:collapse;font-size:14px;min-width:720px}
-.pred-table thead th{background:var(--surface);color:var(--faint);text-align:center;padding:12px 10px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;border-bottom:2px solid var(--line);white-space:nowrap;position:sticky;top:64px;z-index:15;box-shadow:0 2px 4px rgba(0,0,0,0.04)}
+.pred-table thead th{background:var(--surface);color:var(--faint);text-align:center;padding:12px 10px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;border-bottom:2px solid var(--line);white-space:nowrap;position:sticky;top:0;z-index:15;box-shadow:0 2px 4px rgba(0,0,0,0.04)}
 .pred-table th.col-match,.pred-table td.col-match{text-align:left;min-width:200px}
 .pred-table th.col-league,.pred-table td.col-league{text-align:left}
 .pred-table tbody td{padding:12px 10px;text-align:center;border-bottom:1px solid var(--line);vertical-align:middle}
@@ -611,7 +611,7 @@ td.col-score, th.col-score {
 .lp-table-wrap{max-height:none!important;overflow:visible;overscroll-behavior:auto}
 .lp-table{min-width:0;width:100%;table-layout:fixed;font-size:11px}
 .lp-table tbody td{padding:9px 3px;overflow-wrap:anywhere}
-.lp-table thead th{padding:9px 2px!important;font-size:9px!important;letter-spacing:0;white-space:normal;top:64px;z-index:15}
+.lp-table thead th{padding:9px 2px!important;font-size:9px!important;letter-spacing:0;white-space:normal;top:0;z-index:15}
 .lp-table th:nth-child(1),.lp-table td:nth-child(1){width:27px}
 .lp-table th:nth-child(2),.lp-table td:nth-child(2){width:52px}
 .lp-table th:nth-child(3),.lp-table td:nth-child(3){width:30%;text-align:left}

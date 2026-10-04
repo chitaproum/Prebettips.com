@@ -8,6 +8,8 @@ import math
 import re
 import unicodedata
 import os
+import functools
+from collections import Counter
 from pathlib import Path
 import time
 import urllib.error
@@ -108,13 +110,18 @@ def normalize(f, league, season, tz):
 def complete(row):
     return row['status'] in FINISHED and isinstance(row['fh'],int) and isinstance(row['fa'],int)
 
+_FACTORIALS = [math.factorial(k) for k in range(8)]
+
 def poisson(home, away, base, advantage):
     lh = max(.15,min(6, home['att'] * away['def'] * base / 2 * advantage))
     la = max(.15,min(6, away['att'] * home['def'] * base / 2))
+    # exp term is loop-invariant and factorials 0..7 are precomputed; the
+    # per-term multiply/divide order is preserved so results stay identical.
+    norm = math.exp(-lh-la)
     h=d=a=o=0.; best=-1.; bh=ba=0
     for i in range(8):
         for j in range(8):
-            p = math.exp(-lh-la) * lh**i * la**j / math.factorial(i) / math.factorial(j)
+            p = norm * lh**i * la**j / _FACTORIALS[i] / _FACTORIALS[j]
             if i>j: h+=p
             elif i<j: a+=p
             else: d+=p
@@ -160,6 +167,7 @@ def update_odds(fixtures, config, api, cache, now, warnings, coverage):
     ttl=float(opts.get('cacheHours',6))*3600
     max_age=float(opts.get('maxDisplayAgeHours',24))*3600
     horizon=now+dt.timedelta(days=int(opts.get('daysAhead',7)))
+    now_iso=now.isoformat()
     candidates=[r for r in fixtures if r['status']=='NS' and now<stamp(r['kickoffUtc'])<=horizon]
     # Refresh earliest kickoffs first, while bounding extra requests per run.
     calls=0; limit=max(0,int(opts.get('maxFixturesPerRun',30)))
@@ -172,16 +180,18 @@ def update_odds(fixtures, config, api, cache, now, warnings, coverage):
             try:
                 fetched=parse_odds(api.get('/odds',fixture=r['id']),r['id'])
                 # Successful empty response means no current quote; do not invent or retain one.
-                entry=dict(fetched,fetchedAt=now.isoformat(),kickoffUtc=r['kickoffUtc'])
+                entry=dict(fetched,fetchedAt=now_iso,kickoffUtc=r['kickoffUtc'])
                 cache[key]=entry
             except RuntimeError:
                 warnings.append('Odds update failed for fixture '+key+'; any cached quote is age-limited.')
-        if entry and 0 <= (now-stamp(entry['fetchedAt'])).total_seconds()<=max_age and entry.get('bookmakers'):
-            # Provider update time must also be recent when supplied.
-            try: provider_age=(now-stamp(entry.get('providerUpdatedAt') or entry['fetchedAt'])).total_seconds()
-            except (ValueError,TypeError): provider_age=max_age+1
-            if -300<=provider_age<=max_age:
-                r['odds']=dict(entry,cached=(now-stamp(entry['fetchedAt'])).total_seconds()>=ttl)
+        if entry and entry.get('bookmakers'):
+            fetched_age=(now-stamp(entry['fetchedAt'])).total_seconds()
+            if 0 <= fetched_age <= max_age:
+                # Provider update time must also be recent when supplied.
+                try: provider_age=(now-stamp(entry.get('providerUpdatedAt') or entry['fetchedAt'])).total_seconds()
+                except (ValueError,TypeError): provider_age=max_age+1
+                if -300<=provider_age<=max_age:
+                    r['odds']=dict(entry,cached=fetched_age>=ttl)
     for key in list(cache):
         if (now-stamp(cache[key]['fetchedAt'])).total_seconds()>30*86400:
             del cache[key]
@@ -223,19 +233,26 @@ def league_name_key(name):
     text = ''.join(ch for ch in text if not unicodedata.combining(ch))
     return re.sub(r'[^a-z0-9]+', '', text)
 
+@functools.lru_cache(maxsize=None)
+def _allowed_name_keys(names):
+    """Normalized allowlist keys for a country, memoized on the (hashable) name tuple."""
+    return frozenset(league_name_key(n) for n in names)
+
 def league_is_allowed(league, config):
     rules = config.get('countryDiscovery', {}).get('allowedLeaguesByCountry', {})
     country = league.get('country')
     if country not in rules:
         return True
     name = league.get('displayName') or league.get('name', '').split(' · ')[0]
-    return league_name_key(name) in {league_name_key(n) for n in rules[country]}
+    return league_name_key(name) in _allowed_name_keys(tuple(rules[country]))
 
 def discover_leagues(config, api, now, catalog_cache, warnings):
     opts = config.get('countryDiscovery', {})
     configured = [x for x in config.get('leagues', []) if league_is_allowed(x, config)]
     if not opts.get('enabled'): return configured
     selected = {x['id']:dict(x) for x in configured}
+    # Running per-country tally avoids rescanning `selected` on every country.
+    used_by_country = Counter(x['country'] for x in selected.values())
     limit = max(1, min(10, int(opts.get('maxLeaguesPerCountry',10))))
     for country in opts.get('countries', []):
         entry = catalog_cache.get(country)
@@ -259,7 +276,7 @@ def discover_leagues(config, api, now, catalog_cache, warnings):
         candidates.sort(key=rank)
         chosen = candidates[:limit]
         # Existing priority leagues count toward this country's ten-competition cap.
-        used = sum(x['country']==country for x in selected.values())
+        used = used_by_country[country]
         for row in chosen:
             lg=row['league']
             if lg['id'] in selected:
@@ -271,6 +288,7 @@ def discover_leagues(config, api, now, catalog_cache, warnings):
                 'displayName':lg['name'], 'country':country,
                 'icon':row.get('country',{}).get('code') or '⚽', '_meta':[row]}
             used+=1
+        used_by_country[country]=used
         rules = opts.get('allowedLeaguesByCountry', {})
         if country in rules:
             available = {league_name_key(r['league']['name']) for r in candidates}
@@ -286,6 +304,7 @@ def run(root, api=None, now=None):
     config = load_json(root/'api-config.json', {})
     tz = ZoneInfo(config.get('timezone','UTC'))
     now = now or dt.datetime.now(UTC)
+    now_iso = now.isoformat()
     today = now.astimezone(tz).date()
     if api is None:
         key = os.environ.get('API_FOOTBALL_KEY')
@@ -324,8 +343,11 @@ def run(root, api=None, now=None):
         if not raw:
             warnings.append('No current-season fixtures for '+lg['name']); continue
         current_rows = [normalize(f,lg,year,tz) for f in raw]
-        league_fixtures[lg['name']] = [r for r in current_rows if not complete(r)]
-        finished = [r for r in current_rows if complete(r)]
+        # Single partition pass instead of calling complete() twice per row.
+        finished, upcoming = [], []
+        for r in current_rows:
+            (finished if complete(r) else upcoming).append(r)
+        league_fixtures[lg['name']] = upcoming
         played, goals = len(finished),sum(r['fh']+r['fa'] for r in finished)
         observed_avg = goals/played if played else 0
         # A zero-goal season must not cause division by zero in model ratings.
@@ -391,34 +413,36 @@ def run(root, api=None, now=None):
                 lg={'name':f['league']['name'],'id':f['league']['id']}
                 row=normalize(f,lg,f['league']['season'],tz)
                 if complete(row): rows.append(row)
-            entry={'fetchedAt':now.isoformat(),'rows':sorted(rows,key=lambda x:x['kickoffUtc'])}
+            entry={'fetchedAt':now_iso,'rows':sorted(rows,key=lambda x:x['kickoffUtc'])}
             cache[pair]=entry
         h2h[pair]=entry['rows']
     update_odds(fixtures,config,api,odds_cache,now,warnings,odds_coverage)
     for r in fixtures:
         # New snapshots only for NOT STARTED fixtures strictly before kickoff.
         # Preserve the FIRST recorded prediction; never fabricate historical accuracy.
-        if r['status']=='NS' and stamp(r['kickoffUtc'])>now:
-            key=str(r['id']); existing=archive.get(key)
-            if existing and stamp(existing['savedAt'])>=stamp(r['kickoffUtc']):
+        kickoff=stamp(r['kickoffUtc']); key=str(r['id'])
+        if r['status']=='NS' and kickoff>now:
+            existing=archive.get(key)
+            if existing and stamp(existing['savedAt'])>=kickoff:
                 archive.pop(key,None)
             if key not in archive:
                 p=poisson(teams_by_league[r['league']][r['home']],teams_by_league[r['league']][r['away']],league_averages[r['league']],config.get('homeAdvantage',1.15))
-                archive[key]={'savedAt':now.isoformat(),'kickoffUtc':r['kickoffUtc'],'home':r['home'],
+                archive[key]={'savedAt':now_iso,'kickoffUtc':r['kickoffUtc'],'home':r['home'],
                     'away':r['away'],'league':r['league'],'model':'poisson-v1','prediction':p}
-        saved=archive.get(str(r['id']))
-        if saved and stamp(saved['savedAt'])<stamp(r['kickoffUtc']): r['prediction']=saved['prediction']
+        saved=archive.get(key)
+        if saved and stamp(saved['savedAt'])<kickoff: r['prediction']=saved['prediction']
     results=sorted(all_results.values(),key=lambda x:x['kickoffUtc'])
     history=[r for r in results if r['season']==seasons.get(r['league'])]
     # Results page shows recent results plus all settled archived forecasts in retained seasons.
     visible=[]
+    cutoff30=(today-dt.timedelta(days=30)).isoformat()
     for r in history:
         saved=archive.get(str(r['id']))
         if saved and stamp(saved['savedAt'])<stamp(r['kickoffUtc']):
             r['prediction']=saved['prediction']; r['predictionSavedAt']=saved['savedAt']
-        if r['date'][:10]>=(today-dt.timedelta(days=30)).isoformat() or r.get('prediction'): visible.append(r)
+        if r['date'][:10]>=cutoff30 or r.get('prediction'): visible.append(r)
     total_goals=sum(r['fh']+r['fa'] for r in history)
-    data={'source':'API-Football','demo':False,'generatedAt':now.isoformat(),'today':today.isoformat(),
+    data={'source':'API-Football','demo':False,'generatedAt':now_iso,'today':today.isoformat(),
         'timezone':config.get('timezone','UTC'),'leagueAvgGoals':total_goals/len(history) if history else 2.7,
         'leagueAvgGoalsByLeague':league_averages,'homeAdvantage':config.get('homeAdvantage',1.15),
         'teams':teams,'teamsByLeague':teams_by_league,'fixtures':fixtures,'history':history,'recentResults':visible,

@@ -6,30 +6,93 @@ import tempfile
 spec=importlib.util.spec_from_file_location('updater',Path(__file__).parent/'fetch_data.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 now=dt.datetime(2026,10,3,12,tzinfo=m.UTC)
 config=json.loads((Path(__file__).parent/'api-config.json').read_text())
-assert len(config['countryDiscovery']['countries'])==47
-assert len(set(config['countryDiscovery']['countries']))==47
-assert all(c in config['countryDiscovery']['countries'] for c in ['Switzerland','Saudi-Arabia','Ukraine','Serbia','Poland','Cyprus','Belarus','Portugal'])
-assert config['countryDiscovery']['countries'].count('Portugal')==1
+countries=config['countryDiscovery']['countries']
+rules=config['countryDiscovery']['allowedLeaguesByCountry']
+LIMIT=max(1,min(10,int(config['countryDiscovery'].get('maxLeaguesPerCountry',10))))
+assert len(countries)==47
+assert len(set(countries))==47
+assert all(c in countries for c in ['Switzerland','Saudi-Arabia','Ukraine','Serbia','Poland','Cyprus','Belarus','Portugal'])
+assert countries.count('Portugal')==1
 assert m.COUNTRY_LABELS['Saudi-Arabia']=='Saudi Arabia'
+# Every allowlisted competition name is unique within its country.
+for country,names in rules.items():
+ assert country in countries, country
+ keys=[m.league_name_key(n) for n in names]
+ assert len(keys)==len(set(keys)), country
+
+def row(league_id,name,country,cup=False):
+ return {'league':{'id':league_id,'name':name,'type':'Cup' if cup else 'League'},
+  'country':{'name':country,'code':'XX'},'seasons':[{'year':2026,'current':True,'coverage':{}}]}
+
+# Discovery with the real country/allowlist settings, but no pre-seeded leagues,
+# so each country's count reflects allowlist filtering alone.
+disc_config=dict(config,leagues=[])
 class CatalogAPI:
  def __init__(self):self.calls=0;self.remaining=7500
  def get(self,endpoint,**p):
   assert endpoint=='/leagues' and p['current']=='true'
   self.calls+=1
-  base=config['countryDiscovery']['countries'].index(p['country'])*1000+10000
-  return [{'league':{'id':base+i,'name':'Division '+str(i),'type':'Cup' if i>7 else 'League'},'country':{'name':p['country'],'code':'XX'},'seasons':[{'year':2026,'current':True,'coverage':{}}]} for i in range(12)]
+  country=p['country'];base=countries.index(country)*1000+10000
+  if country in rules:
+   # Serve every allowlisted competition plus unlisted extras that MUST be dropped.
+   out=[row(base+i,nm,country) for i,nm in enumerate(rules[country])]
+   out+=[row(base+500+j,'Unlisted Competition '+str(j),country,cup=True) for j in range(3)]
+   return out
+  # No allowlist: 12 competitions (8 leagues + 4 cups) to exercise the ten cap.
+  return [row(base+i,'Division '+str(i),country,cup=i>7) for i in range(12)]
 api=CatalogAPI();cache={};warnings=[]
-leagues=m.discover_leagues(config,api,now,cache,warnings)
-for country in config['countryDiscovery']['countries']:
- assert len([x for x in leagues if x['country']==country])==10
+leagues=m.discover_leagues(disc_config,api,now,cache,warnings)
+by_country={}
+for x in leagues:by_country.setdefault(x['country'],[]).append(x)
+for country in countries:
+ got=by_country.get(country,[])
+ if country in rules:
+  # Only allowlisted competitions survive, capped at the per-country limit.
+  assert len(got)==min(len(rules[country]),LIMIT),(country,len(got))
+  allowed={m.league_name_key(n) for n in rules[country]}
+  assert all(m.league_name_key(x['displayName']) in allowed for x in got),country
+ else:
+  # Twelve generic competitions reduced to the ten-competition cap.
+  assert len(got)==LIMIT,(country,len(got))
 assert len({x['id'] for x in leagues})==len(leagues)
 assert len({x['name'] for x in leagues})==len(leagues)
-assert api.calls==47
-assert m.discover_leagues(config,api,now+dt.timedelta(days=1),cache,[])==leagues and api.calls==47
-class Few(CatalogAPI):
- def get(self,*a,**p):return super().get(*a,**p)[:2]
-c=dict(config,leagues=[],countryDiscovery=dict(config['countryDiscovery'],countries=['Wales']))
-w=[];assert len(m.discover_leagues(c,Few(),now,{},w))==2 and w
+# Every discovered league carries its country label in the display name.
+assert all(' \u00b7 ' in x['name'] for x in leagues)
+assert api.calls==len(countries)
+# A fresh catalog cache serves the next run without extra API calls.
+assert m.discover_leagues(disc_config,api,now+dt.timedelta(days=1),cache,[])==leagues and api.calls==len(countries)
+# A clean catalog (all allowlisted names present, >=5 non-allowlist entries) warns about nothing.
+assert not any('unavailable in current API catalog' in w for w in warnings)
+
+# Allowlisted competitions absent from the catalog must raise a coverage warning,
+# and only the available ones are returned.
+missing_country='Switzerland'
+present=rules[missing_country][:-1]
+mc=dict(config,leagues=[],countryDiscovery=dict(config['countryDiscovery'],countries=[missing_country]))
+class Missing:
+ def __init__(self):self.calls=0;self.remaining=7000
+ def get(self,endpoint,**p):
+  self.calls+=1
+  return [row(2000+i,nm,missing_country) for i,nm in enumerate(present)]
+w=[]
+got=m.discover_leagues(mc,Missing(),now,{},w)
+assert len(got)==len(present)
+assert all(m.league_name_key(x['displayName']) in {m.league_name_key(n) for n in present} for x in got)
+assert any(missing_country in msg and 'unavailable in current API catalog' in msg for msg in w)
+assert rules[missing_country][-1] in w[0]
+
+# A country without an allowlist still warns when fewer than five competitions exist.
+nc=next(c for c in countries if c not in rules)
+fc=dict(config,leagues=[],countryDiscovery=dict(config['countryDiscovery'],countries=[nc]))
+class Few:
+ def __init__(self):self.calls=0;self.remaining=7000
+ def get(self,endpoint,**p):
+  self.calls+=1
+  return [row(3000+i,'League '+str(i),nc) for i in range(2)]
+w=[]
+got=m.discover_leagues(fc,Few(),now,{},w)
+assert len(got)==2 and any(nc in msg for msg in w)
+
 class Raw:
  def __init__(self):self.calls=0;self.remaining=7000
  def get(self,*a,**p):self.calls+=1;return [{'ok':True}]
@@ -52,4 +115,4 @@ with tempfile.TemporaryDirectory() as td:
  assert d['teamsByLeague']['League']['Shared Team']['att'] != d['teamsByLeague']['Cup']['Shared Team']['att']
  assert len(d['leagues'])==2 and len(d['history'])==2
  assert (p/'api-request-cache.json').exists() and (p/'league-discovery-cache.json').exists()
-print('PASS: all 47 countries, ten-competition cap, unique verified IDs/names, discovery cache, short coverage warnings, request cache expiry and competition-isolated model ratings.')
+print('PASS: 47 countries, allowlist filtering (unlisted dropped, missing warned), ten-competition cap, country-labelled unique IDs/names, discovery cache, short-coverage warnings, request cache expiry and competition-isolated model ratings.')
