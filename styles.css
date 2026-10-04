@@ -130,9 +130,9 @@ button,input,select{font-family:inherit}
 .engine-seg .eng-btn.active{background:var(--surface);color:var(--brand);box-shadow:0 1px 3px rgba(0,0,0,.14)}
 
 /* ---------- Table ---------- */
-.table-wrap{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow-x:auto;-webkit-overflow-scrolling:touch;box-shadow:var(--shadow)}
+.table-wrap{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;box-shadow:var(--shadow)}
 .pred-table{width:100%;border-collapse:collapse;font-size:14px;min-width:720px}
-.pred-table thead th{background:var(--surface);color:var(--faint);text-align:center;padding:14px 10px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid var(--line);white-space:nowrap}
+.pred-table thead th{background:var(--surface);color:var(--faint);text-align:center;padding:12px 10px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;border-bottom:2px solid var(--line);white-space:nowrap;position:sticky;top:64px;z-index:15;box-shadow:0 2px 4px rgba(0,0,0,0.04)}
 .pred-table th.col-match,.pred-table td.col-match{text-align:left;min-width:200px}
 .pred-table th.col-league,.pred-table td.col-league{text-align:left}
 .pred-table tbody td{padding:12px 10px;text-align:center;border-bottom:1px solid var(--line);vertical-align:middle}
@@ -379,7 +379,7 @@ tr.detail-row>td{padding:0 !important;background:var(--bg)}
 @media(prefers-reduced-motion:reduce){*{transition:none !important}}
 
 /* Real-data freshness and match status */
-.data-status{font-size:11px;opacity:.75;margin:8px 2px;}
+.data-status{display:none !important;}
 .match-status{font-size:10px;font-weight:700;opacity:.8;margin-top:3px;}
 
 /* API-Football bookmaker odds */
@@ -456,3 +456,26 @@ body.theme-dark .league-badge .lb-code {
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.12);
 }
+
+/* Dedicated league pages */
+.lp-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.lp-title h1{font-size:22px;margin:0}.lp-title p{margin:3px 0;color:var(--muted);font-size:12px}
+.lp-grid{display:grid;grid-template-columns:minmax(0,1fr) 265px;gap:14px;align-items:start}
+.lp-main{min-width:0}.lp-controls,.lp-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px;margin-bottom:12px}
+.lp-tabs,.lp-options{display:flex;gap:8px;flex-wrap:wrap}.lp-options{margin-top:10px}
+.lp-options label,.lp-card label{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--muted)}
+.lp-options select,.lp-card input{border:1px solid var(--line);background:var(--surface2);color:var(--text);border-radius:7px;padding:7px;font-size:12px;max-width:100%}
+.lp-button{cursor:pointer;background:var(--surface2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700}
+.lp-button.active{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+.lp-table{min-width:650px;font-size:12px}.lp-table td{padding:10px 6px}.lp-table th{padding:10px 6px!important;font-size:10px!important}
+.lp-table .lp-match{min-width:170px;text-align:left}.lp-table .mc-league{display:none}.lp-table .mc-team{font-size:12px}
+.lp-table-wrap{max-height:70vh;overflow:auto;overscroll-behavior:contain}
+.lp-table thead th{top:0;z-index:3}.lp-table .lp-round th{background:var(--surface2);text-align:left;border-bottom:1px solid var(--line);color:var(--muted)}
+.lp-card h2{font-size:14px;margin:0 0 10px}.lp-card h3{font-size:11px;margin:10px 0 5px;color:var(--muted)}
+.lp-card .lp-button{margin-top:8px}.lp-standings-scroll{overflow:auto}.lp-standings{width:100%;border-collapse:collapse;font-size:10px}
+.lp-standings th,.lp-standings td{padding:5px 3px;border-bottom:1px solid var(--line);text-align:center}
+.lp-standings th:nth-child(2),.lp-standings td:nth-child(2){text-align:left;min-width:72px;max-width:120px;overflow-wrap:anywhere}
+.lp-standings tr:nth-child(even){background:var(--surface2)}.lp-muted{display:block;color:var(--muted);font-size:10px}
+.lp-note{font-size:11px;color:var(--muted);line-height:1.6}.lp-more{margin-top:12px}
+@media(max-width:1100px){.lp-grid{grid-template-columns:minmax(0,1fr)}.lp-aside{display:grid;grid-template-columns:200px minmax(0,1fr);gap:12px}}
+@media(max-width:650px){.lp-title{align-items:flex-start}.lp-title h1{font-size:18px}.lp-aside{grid-template-columns:minmax(0,1fr)}.lp-table-wrap{max-height:65vh}.lp-options label{flex:1;min-width:100px}}

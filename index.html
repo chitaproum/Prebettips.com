@@ -87,6 +87,9 @@
               <option value="70">≥ 70%</option>
             </select>
           </label>
+          <label>Bookmaker
+            <select id="bookmakerFilter"><option value="best">Best available odds</option></select>
+          </label>
           <div class="engine-toggle" role="group" aria-label="Prediction data source">
             <span class="engine-label">Data</span>
             <div class="engine-seg">
@@ -102,6 +105,7 @@
           <thead id="predHead"><!-- built by app.js --></thead>
           <tbody id="predBody"><!-- rows injected --></tbody>
         </table>
+        <p class="odds-note">Coef. = decimal pre-match odds for the displayed tip. Expand “Market odds” for all outcomes. Best available compares only returned bookmakers; availability and prices can change. Low odds are not a sure bet. Predictions are model estimates.</p>
         <p id="emptyMsg" class="empty" hidden>No matches match your filters.</p>
       </div>
 
@@ -138,6 +142,11 @@
         </div>
         <p class="aff-disc">Sponsored placeholders. 18+ | T&amp;Cs apply | Please gamble responsibly. These are demo links, not real offers.</p>
       </section>
+    </section>
+
+    <!-- League pages share this template; hash links work on GitHub Pages. -->
+    <section id="view-league" class="view" hidden aria-label="League fixtures and results">
+      <div id="leaguePage"></div>
     </section>
 
     <!-- RESULTS VIEW -->

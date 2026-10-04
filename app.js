@@ -803,7 +803,9 @@ function leagueCode(l) {
 
   /* ---------- Your Selection ---------- */
   function selectedFixtures() {
-    return FIXTURES.filter(function (f) { return state.selection[fxKey(f)]; });
+    var pool = FIXTURES.slice(), seen = {};
+    Object.keys(DATA.leagueFixtures || {}).forEach(function (name) { pool = pool.concat(DATA.leagueFixtures[name]); });
+    return pool.filter(function (f) { var key = fxKey(f); if (seen[key]) return false; seen[key] = true; return state.selection[key]; });
   }
   function updateSelBadges() {
     var n = Object.keys(state.selection).length;
@@ -990,10 +992,10 @@ function leagueCode(l) {
         star.textContent = favorites[id] ? '★' : '☆'; persist(); return;
       }
       var pb = e.target.closest('.side-item[data-period]');
-      if (pb) { setPeriod(pb.getAttribute('data-period')); return; }
+      if (pb) { showView('predictions'); setPeriod(pb.getAttribute('data-period')); return; }
       var cb = e.target.closest('.side-item[data-country]');
       if (cb) {
-        state.country = cb.getAttribute('data-country'); state.league = 'all';
+        showView('predictions'); state.country = cb.getAttribute('data-country'); state.league = 'all';
         if (sel) sel.value = 'all';
         $all('.side-item[data-country]').forEach(function(b){b.classList.toggle('active',b === cb);});
         $all('.side-item[data-league]').forEach(function(b){b.classList.remove('active');});
@@ -1007,7 +1009,8 @@ function leagueCode(l) {
       $all('.side-item[data-league]').forEach(function (b) { b.classList.remove('active'); });
       btn.classList.add('active');
       if (sel) sel.value = state.league;
-      renderPredictions();
+      if (state.league !== 'all') openLeaguePage(state.league);
+      else { showView('predictions'); renderPredictions(); }
     });
     var cs = $('#countrySearch');
     if (cs) cs.addEventListener('input', function () {
@@ -1060,11 +1063,124 @@ function leagueCode(l) {
   }
 
   function showView(view) {
+    if (view !== 'league' && location.hash.indexOf('#league=') === 0) history.replaceState(null, '', location.pathname + location.search);
     $all('.view').forEach(function (v) { v.hidden = v.id !== 'view-' + view; });
     $all('.nav-btn').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-view') === view); });
     var nav = $('#menuToggle');
     if (nav) nav.setAttribute('aria-expanded', 'false');
     $('.main-nav').classList.remove('open');
+  }
+
+
+  /* ---------- Dedicated league routes ---------- */
+  var leaguePageState = { name: '', tab: 'upcoming', date: '', market: '1x2', limit: 50 };
+  function leagueByName(name) {
+    return CATALOG.find(function (lg) { return lg.name === name; });
+  }
+  function leagueLink(lg) { return '#league=' + encodeURIComponent(lg.id != null ? lg.id : lg.name); }
+  function openLeaguePage(name) {
+    var lg = leagueByName(name); if (!lg) return;
+    if (leaguePageState.name !== name) {
+      leaguePageState.name = name; leaguePageState.date = ''; leaguePageState.tab = 'upcoming'; leaguePageState.limit = 50;
+    }
+    state.league = name; state.country = 'all';
+    var filter = $('#leagueFilter'); if (filter) filter.value = name;
+    $all('.side-item[data-league]').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-league') === name); });
+    if (location.hash !== leagueLink(lg)) history.pushState(null, '', leagueLink(lg));
+    showView('league'); renderLeaguePage();
+  }
+  function leagueRoute() {
+    if (location.hash.indexOf('#league=') !== 0) { showView('predictions'); return; }
+    var value; try { value = decodeURIComponent(location.hash.slice(8)); } catch (e) { return; }
+    var lg = CATALOG.find(function (x) { return String(x.id) === value || x.name === value; });
+    if (lg) openLeaguePage(lg.name);
+    else { showView('predictions'); }
+  }
+  function leagueRows(name) {
+    var season = (DATA.seasons || {})[name], found = {};
+    var extra = ((DATA.leagueFixtures || {})[name] || []);
+    HISTORY.concat(extra, FIXTURES).forEach(function (f) {
+      if (f.league !== name || (season != null && f.season != null && String(f.season) !== String(season))) return;
+      found[f.id != null ? f.id : fxKey(f)] = f;
+    });
+    return Object.keys(found).map(function (key) { return found[key]; });
+  }
+  function leagueFinished(f) { return ['FT', 'AET', 'PEN'].indexOf(f.status) >= 0 || (!f.status && f.fh != null && f.fa != null); }
+  function leagueStandings(name) {
+    var groups = (DATA.standingsTables || {})[name] || [];
+    if (!groups.length) return '<p class="empty">Standings are unavailable for this competition. Cups may not have a league table.</p>';
+    function val(x) { return x == null ? '—' : esc(x); }
+    return groups.map(function (group, index) {
+      var label = group[0] && group[0].group;
+      return '<h3>' + esc(label || (groups.length > 1 ? 'Group ' + (index + 1) : 'Overall table')) + '</h3><div class="lp-standings-scroll"><table class="lp-standings"><thead><tr><th>#</th><th>Team</th><th>Pts</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th></tr></thead><tbody>'
+        + group.map(function (r) {
+          var a = r.all || {};
+          return '<tr><td>' + val(r.rank) + '</td><td title="' + esc(r.description || '') + '">' + esc((r.team || {}).name) + '</td><td><b>' + val(r.points) + '</b></td><td>' + val(a.played) + '</td><td>' + val(a.win) + '</td><td>' + val(a.draw) + '</td><td>' + val(a.lose) + '</td><td>' + val(r.goalsDiff) + '</td></tr>';
+        }).join('') + '</tbody></table></div>';
+    }).join('');
+  }
+  function leagueMatchRow(f) {
+    var finished = leagueFinished(f), p = null;
+    // Do not produce retrospective forecasts for completed matches.
+    if (finished) p = f.prediction || null;
+    else p = state.engine === 'poisson' && f.prediction ? f.prediction : predict(f.home, f.away, f.league);
+    var ou = leaguePageState.market === 'ou', key = p ? (ou ? (p.pOver >= 0.5 ? 'over' : 'under') : bestKey(p)) : null;
+    var probs = p ? (ou ? '<td>' + pct(p.pOver) + '%</td><td>' + pct(1-p.pOver) + '%</td>' : '<td>' + pct(p.pHome) + '%</td><td>' + pct(p.pDraw) + '%</td><td>' + pct(p.pAway) + '%</td>') : (ou ? '<td>—</td><td>—</td>' : '<td>—</td><td>—</td><td>—</td>');
+    var actual = finished ? (f.currentHome != null && f.currentAway != null ? f.currentHome + '–' + f.currentAway : f.fh + '–' + f.fa) : (f.live && f.currentHome != null ? f.currentHome + '–' + f.currentAway : '—');
+    var forecast = p ? p.scoreH + '–' + p.scoreA : '—';
+    var tip = key ? (ou ? '<span class="tip t1">' + (key === 'over' ? 'Over' : 'Under') + ' 2.5</span>' : tipBadge(key)) : '—';
+    var status = finished && p ? 'Saved before kickoff' : (!finished ? 'Model estimate' : 'No saved forecast');
+    return '<tr><td><input class="pick-cb" type="checkbox" data-key="' + esc(fxKey(f)) + '" aria-label="Select ' + esc(f.home + ' vs ' + f.away) + '"' + (state.selection[fxKey(f)] ? ' checked' : '') + (finished ? ' disabled' : '') + '></td><td>' + fmtDate(f.date) + '</td><td class="lp-match">' + matchCell(f) + '</td>' + probs + '<td title="' + esc(status) + '">' + tip + '</td><td><b>' + esc(forecast) + '</b></td><td><b>' + esc(actual) + '</b>' + (f.ht ? '<small class="lp-muted">HT ' + esc(f.ht.join('–')) + '</small>' : '') + '</td>' + (key && !finished ? oddsCell(f, ou ? 'ou' : '1x2', key) : '<td>—</td>') + '</tr>';
+  }
+  function renderLeaguePage() {
+    var host = $('#leaguePage'), name = leaguePageState.name, lg = leagueByName(name);
+    if (!host || !lg) return;
+    var rows = leagueRows(name), upcoming = rows.filter(function (f) { return !leagueFinished(f) && ['CANC','ABD','AWD','WO'].indexOf(f.status) < 0; }), recent = rows.filter(leagueFinished);
+    var list = leaguePageState.tab === 'recent' ? recent : upcoming;
+    if (leaguePageState.date) list = list.filter(function (f) { return f.date.slice(0,10) === leaguePageState.date; });
+    list.sort(function (a,b) { return leaguePageState.tab === 'recent' ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date); });
+    var groups = [], keys = {}, ou = leaguePageState.market === 'ou', cols = ou ? 9 : 10;
+    list.slice(0,leaguePageState.limit).forEach(function (f) {
+      var key = f.round || f.date.slice(0,10);
+      if (keys[key] == null) { keys[key] = groups.length; groups.push({ title: key, rows: [] }); }
+      groups[keys[key]].rows.push(f);
+    });
+    var body = groups.map(function (g) { return '<tr class="lp-round"><th scope="rowgroup" colspan="' + cols + '">' + esc(g.title) + '</th></tr>' + g.rows.map(leagueMatchRow).join(''); }).join('');
+    var booknames = {};
+    rows.forEach(function (r) { ((r.odds || {}).bookmakers || []).forEach(function (b) { booknames[b.id] = b.name; }); });
+    host.innerHTML = '<header class="lp-title"><div><h1>' + esc(lg.displayName || name) + '</h1><p>' + esc(countryLabel(lg.country || '')) + ' · Season ' + esc((DATA.seasons || {})[name] || lg.season || '—') + '</p></div><button type="button" class="lp-button" data-lp-action="back">← Predictions</button></header>'
+      + '<div class="lp-grid"><div class="lp-main"><div class="lp-controls"><div class="lp-tabs" role="group" aria-label="Match list"><button class="lp-button' + (leaguePageState.tab === 'upcoming' ? ' active' : '') + '" data-lp-tab="upcoming">Upcoming / live (' + upcoming.length + ')</button><button class="lp-button' + (leaguePageState.tab === 'recent' ? ' active' : '') + '" data-lp-tab="recent">Recent results (' + recent.length + ')</button></div>'
+      + '<div class="lp-options"><label>Market<select data-lp-select="market"><option value="1x2"' + (!ou ? ' selected' : '') + '>1X2</option><option value="ou"' + (ou ? ' selected' : '') + '>Over/Under 2.5</option></select></label><label>Model<select data-lp-select="engine"><option value="poisson"' + (state.engine === 'poisson' ? ' selected' : '') + '>Poisson</option><option value="random"' + (state.engine === 'random' ? ' selected' : '') + '>KPI</option></select></label><label>Bookmaker<select data-lp-select="book"><option value="best">Best available</option>' + Object.keys(booknames).map(function (id) { return '<option value="' + esc(id) + '"' + (String(id) === selectedBookmaker ? ' selected' : '') + '>' + esc(booknames[id]) + '</option>'; }).join('') + '</select></label></div></div>'
+      + '<div class="table-wrap lp-table-wrap"><table class="pred-table lp-table"><thead><tr><th>Pick</th><th>Date</th><th>Match</th>' + (ou ? '<th>Over 2.5</th><th>Under 2.5</th>' : '<th>1</th><th>X</th><th>2</th>') + '<th>Tip</th><th>Pred.</th><th>Result</th><th>Coef.</th></tr></thead><tbody>' + body + '</tbody></table>' + (!list.length ? '<p class="empty">No ' + (leaguePageState.tab === 'recent' ? 'completed matches' : 'upcoming fixtures') + ' available' + (leaguePageState.date ? ' on this date' : '') + '.</p>' : '') + '</div>'
+      + (list.length > leaguePageState.limit ? '<button class="lp-button lp-more" data-lp-action="more">Show 50 more matches</button>' : '')
+      + '<p class="lp-note">Match times: ' + esc(DATA.timezone || 'UTC') + '. Updated: ' + esc(DATA.generatedAt || 'Not available') + '. Live scores are update snapshots. Completed matches show only forecasts saved before kickoff; — means unavailable. Odds and model estimates are not guarantees.</p></div>'
+      + '<aside class="lp-aside"><section class="lp-card"><h2>Match calendar</h2><label>Date<input type="date" data-lp-select="date" value="' + esc(leaguePageState.date) + '"></label><button class="lp-button" data-lp-action="clear-date">All dates</button><p class="lp-muted">Filters the selected match list.</p></section><section class="lp-card"><h2>Standings</h2>' + leagueStandings(name) + '</section></aside></div>';
+    $all('.pick-cb', host).forEach(function (cb) { cb.addEventListener('change', function () { var key = cb.getAttribute('data-key'); if (cb.checked) state.selection[key] = true; else delete state.selection[key]; updateSelBadges(); }); });
+    updateSelBadges();
+  }
+  function initLeaguePages() {
+    var host = $('#leaguePage'); if (!host) return;
+    host.addEventListener('click', function (e) {
+      var tab = e.target.closest('[data-lp-tab]'), action = e.target.closest('[data-lp-action]');
+      if (tab) { leaguePageState.tab = tab.getAttribute('data-lp-tab'); leaguePageState.limit = 50; renderLeaguePage(); }
+      if (action) {
+        var a = action.getAttribute('data-lp-action');
+        if (a === 'back') { state.period = 'all'; showView('predictions'); renderPredictions(); }
+        if (a === 'more') { leaguePageState.limit += 50; renderLeaguePage(); }
+        if (a === 'clear-date') { leaguePageState.date = ''; leaguePageState.limit = 50; renderLeaguePage(); }
+      }
+    });
+    host.addEventListener('change', function (e) {
+      var key = e.target.getAttribute('data-lp-select'); if (!key) return;
+      if (key === 'market') leaguePageState.market = e.target.value;
+      if (key === 'engine') setEngine(e.target.value);
+      if (key === 'book') { selectedBookmaker = e.target.value; var el = $('#bookmakerFilter'); if (el) el.value = selectedBookmaker; }
+      if (key === 'date') { leaguePageState.date = e.target.value; leaguePageState.limit = 50; }
+      renderLeaguePage();
+    });
+    window.addEventListener('hashchange', leagueRoute);
+    window.addEventListener('popstate', leagueRoute);
+    if (location.hash.indexOf('#league=') === 0) leagueRoute();
   }
 
   /* ---------- init / wiring ---------- */
@@ -1132,6 +1248,7 @@ function leagueCode(l) {
       var open = $('#sidebar').classList.toggle('open');
       st.classList.toggle('open', open);
     });
+    initLeaguePages();
     var ac = $('#anchorAdClose');
     if (ac) ac.addEventListener('click', function () { document.body.classList.add('anchor-hidden'); });
   }

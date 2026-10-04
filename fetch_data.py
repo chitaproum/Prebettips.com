@@ -97,6 +97,7 @@ def normalize(f, league, season, tz):
         'league':league['name'], 'leagueId':league['id'], 'country':league.get('country',''), 'season':season,
         'date':stamp(fix['date']).astimezone(tz).strftime('%Y-%m-%d %H:%M'),
         'kickoffUtc':stamp(fix['date']).astimezone(UTC).isoformat(),
+        'round':(f.get('league') or {}).get('round') or '',
         'status':status, 'live':status in LIVE, 'elapsed':fix['status'].get('elapsed'),
         'fh':final.get('home'), 'fa':final.get('away'),
         'currentHome':goals.get('home'), 'currentAway':goals.get('away'),
@@ -302,6 +303,7 @@ def run(root, api=None, now=None):
     teams, standings, seasons, all_results, fixture_map = {}, {}, {}, {}, {}
     league_averages, league_catalog, warnings = {}, [], []
     teams_by_league = {}
+    league_fixtures, standings_tables = {}, {}
     configured_leagues = discover_leagues(config, api, now, discovery_cache, warnings)
     for lg in configured_leagues:
         print('Fetching '+lg['name'], flush=True)
@@ -322,6 +324,7 @@ def run(root, api=None, now=None):
         if not raw:
             warnings.append('No current-season fixtures for '+lg['name']); continue
         current_rows = [normalize(f,lg,year,tz) for f in raw]
+        league_fixtures[lg['name']] = [r for r in current_rows if not complete(r)]
         finished = [r for r in current_rows if complete(r)]
         played, goals = len(finished),sum(r['fh']+r['fa'] for r in finished)
         observed_avg = goals/played if played else 0
@@ -347,6 +350,7 @@ def run(root, api=None, now=None):
         teams.update(league_teams)
         if coverage.get('standings'):
             tables = api.get('/standings',league=lg['id'],season=year)
+            standings_tables[lg['name']] = tables[0].get('league',{}).get('standings',[]) if tables else []
             ranks = {}
             for group in (tables[0].get('league',{}).get('standings',[]) if tables else []):
                 for row in group:
@@ -419,6 +423,7 @@ def run(root, api=None, now=None):
         'leagueAvgGoalsByLeague':league_averages,'homeAdvantage':config.get('homeAdvantage',1.15),
         'teams':teams,'teamsByLeague':teams_by_league,'fixtures':fixtures,'history':history,'recentResults':visible,
         'matches':results,'h2h':h2h,'standings':standings,'seasons':seasons,
+        'leagueFixtures':league_fixtures,'standingsTables':standings_tables,
         'popularLeagues':[x for x in league_catalog if x['id'] in {v['id'] for v in config.get('leagues',[])}],
         'leagues':league_catalog,'countries':sorted(set(config.get('countryDiscovery',{}).get('countries',[])) | {x['country'] for x in configured_leagues}),
         'oddsConfig':config.get('odds',{}),'warnings':warnings,'apiRequestsThisRun':api.calls,'apiRequestsRemaining':api.remaining}
