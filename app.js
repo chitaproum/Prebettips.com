@@ -1385,59 +1385,9 @@ function leagueCode(l) {
     var ha = $('#heroAcc'); if (ha) ha.textContent = n ? pct(hit1x2 / n) + '%' : '–';
   }
 
-  /* ---------- Page loading indicator ----------
-     Gives instant visual feedback when the user switches menus, so the site
-     never feels "stuck" during the brief render. A thin top progress bar plus
-     a small corner spinner appear, then finish and fade out automatically. */
-  var pageLoader = (function () {
-    var barWrap = null, bar = null, spin = null, t1 = null, t2 = null;
-    function build() {
-      if (barWrap) return;
-      barWrap = document.createElement('div');
-      barWrap.className = 'page-loader';
-      barWrap.setAttribute('aria-hidden', 'true');
-      bar = document.createElement('div');
-      bar.className = 'page-loader-bar';
-      barWrap.appendChild(bar);
-      spin = document.createElement('div');
-      spin.className = 'page-loader-spin';
-      spin.setAttribute('aria-hidden', 'true');
-      document.body.appendChild(barWrap);
-      document.body.appendChild(spin);
-    }
-    function run() {
-      build();
-      clearTimeout(t1); clearTimeout(t2);
-      // reset to the start without animating
-      barWrap.classList.remove('done');
-      barWrap.classList.add('active');
-      spin.classList.add('active');
-      bar.style.transition = 'none';
-      bar.style.width = '0%';
-      void bar.offsetWidth; // force reflow so the next width animates
-      bar.style.transition = 'width .4s ease';
-      bar.style.width = '85%';
-      t1 = setTimeout(function () {
-        bar.style.width = '100%';
-        barWrap.classList.add('done');
-        spin.classList.remove('active');
-        t2 = setTimeout(function () {
-          barWrap.classList.remove('active', 'done');
-          bar.style.transition = 'none';
-          bar.style.width = '0%';
-        }, 260);
-      }, 420);
-    }
-    return { run: run };
-  })();
-
   function showView(view) {
-    pageLoader.run();
     if (view !== 'league' && location.hash.indexOf('#league=') === 0) history.replaceState(null, '', location.pathname + location.search);
     $all('.view').forEach(function (v) { v.hidden = v.id !== 'view-' + view; });
-    // Gentle fade-in on the view that just became visible, so the switch feels responsive.
-    var shown = $('#view-' + view);
-    if (shown) { shown.classList.remove('pb-switching'); void shown.offsetWidth; shown.classList.add('pb-switching'); }
     $all('.nav-btn').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-view') === view); });
     var nav = $('#menuToggle');
     if (nav) nav.setAttribute('aria-expanded', 'false');
