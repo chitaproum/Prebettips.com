@@ -1389,7 +1389,7 @@ function leagueCode(l) {
 
 
   /* ---------- Dedicated league routes ---------- */
-  var leaguePageState = { name: '', tab: 'upcoming', date: '', market: '1x2', limit: 50 };
+  var leaguePageState = { name: '', tab: 'overview', date: '', market: '1x2', limit: 50 };
   function leagueByName(name) {
     return CATALOG.find(function (lg) { return lg.name === name; });
   }
@@ -1397,7 +1397,7 @@ function leagueCode(l) {
   function openLeaguePage(name) {
     var lg = leagueByName(name); if (!lg) return;
     if (leaguePageState.name !== name) {
-      leaguePageState.name = name; leaguePageState.date = ''; leaguePageState.tab = 'upcoming'; leaguePageState.limit = 50;
+      leaguePageState.name = name; leaguePageState.date = ''; leaguePageState.tab = 'overview'; leaguePageState.limit = 50;
     }
     state.league = name; state.country = 'all';
     var filter = $('#leagueFilter'); if (filter) filter.value = name;
@@ -1422,6 +1422,33 @@ function leagueCode(l) {
     return Object.keys(found).map(function (key) { return found[key]; });
   }
   function leagueFinished(f) { return ['FT', 'AET', 'PEN'].indexOf(f.status) >= 0 || (!f.status && f.fh != null && f.fa != null); }
+  // Keep the full latest-results round and next/live round, without pagination.
+  function leagueRoundKey(f) { return f.round || f.date.slice(0, 10); }
+  function leagueOverviewGroups(recent, upcoming, now) {
+    var results = recent.slice().sort(function (a, b) { return b.date.localeCompare(a.date); });
+    var pending = upcoming.slice().sort(function (a, b) { return a.date.localeCompare(b.date); });
+    var next = pending.find(function (f) { return f.live || ['1H','HT','2H','ET','BT','P','INT'].indexOf(f.status) >= 0; })
+      || pending.find(function (f) { return Date.parse(f.date) >= now && ['PST','SUSP'].indexOf(f.status) < 0; });
+    var groups = [];
+    function add(label, source, first) {
+      if (!first) return;
+      var key = leagueRoundKey(first);
+      groups.push({ title: label + ' · ' + key, rows: source.filter(function (f) { return leagueRoundKey(f) === key; }).sort(function (a,b) { return a.date.localeCompare(b.date); }) });
+    }
+    add('Latest results', results, results[0]);
+    add('Upcoming / live', pending, next);
+    return groups;
+  }
+  function standingZone(description) {
+    var text = String(description || '').toLowerCase();
+    if (/relegation|relegated/.test(text)) return 'relegation';
+    if (/champions league/.test(text)) return 'champions';
+    if (/europa league/.test(text)) return 'europa';
+    return '';
+  }
+  function standingsLegend() {
+    return '<div class="lp-legend" aria-label="Standings legend"><span><i class="lp-zone champions"></i>Champions League</span><span><i class="lp-zone europa"></i>Europa League</span><span><i class="lp-zone relegation"></i>Relegation</span><small>Row markers use API-Football qualification descriptions only; applicable zones vary by competition.</small></div>';
+  }
   function leagueStandings(name) {
     var groups = (DATA.standingsTables || {})[name] || [];
     if (!groups.length) return '<p class="empty">Standings are unavailable for this competition. Cups may not have a league table.</p>';
@@ -1431,7 +1458,7 @@ function leagueCode(l) {
       return '<h3>' + esc(label || (groups.length > 1 ? 'Group ' + (index + 1) : 'Overall table')) + '</h3><div class="lp-standings-scroll"><table class="lp-standings"><thead><tr><th>#</th><th>Team</th><th>Pts</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th></tr></thead><tbody>'
         + group.map(function (r) {
           var a = r.all || {};
-          return '<tr><td>' + val(r.rank) + '</td><td title="' + esc(r.description || '') + '">' + esc((r.team || {}).name) + '</td><td><b>' + val(r.points) + '</b></td><td>' + val(a.played) + '</td><td>' + val(a.win) + '</td><td>' + val(a.draw) + '</td><td>' + val(a.lose) + '</td><td>' + val(r.goalsDiff) + '</td></tr>';
+          return '<tr><td>' + (standingZone(r.description) ? '<i class="lp-zone ' + standingZone(r.description) + '" title="' + esc(r.description) + '"></i>' : '') + val(r.rank) + '</td><td title="' + esc(r.description || '') + '">' + esc((r.team || {}).name) + '</td><td><b>' + val(r.points) + '</b></td><td>' + val(a.played) + '</td><td>' + val(a.win) + '</td><td>' + val(a.draw) + '</td><td>' + val(a.lose) + '</td><td>' + val(r.goalsDiff) + '</td></tr>';
         }).join('') + '</tbody></table></div>';
     }).join('');
   }
@@ -1452,25 +1479,21 @@ function leagueCode(l) {
     var host = $('#leaguePage'), name = leaguePageState.name, lg = leagueByName(name);
     if (!host || !lg) return;
     var rows = leagueRows(name), upcoming = rows.filter(function (f) { return !leagueFinished(f) && ['CANC','ABD','AWD','WO'].indexOf(f.status) < 0; }), recent = rows.filter(leagueFinished);
-    var list = leaguePageState.tab === 'recent' ? recent : upcoming;
-    if (leaguePageState.date) list = list.filter(function (f) { return f.date.slice(0,10) === leaguePageState.date; });
-    list.sort(function (a,b) { return leaguePageState.tab === 'recent' ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date); });
-    var groups = [], keys = {}, ou = leaguePageState.market === 'ou', cols = ou ? 9 : 10;
-    list.slice(0,leaguePageState.limit).forEach(function (f) {
-      var key = f.round || f.date.slice(0,10);
-      if (keys[key] == null) { keys[key] = groups.length; groups.push({ title: key, rows: [] }); }
-      groups[keys[key]].rows.push(f);
-    });
+    var groups = leagueOverviewGroups(recent, upcoming, Date.now());
+    if (leaguePageState.date) groups = groups.map(function (g) {
+      return { title: g.title, rows: g.rows.filter(function (f) { return f.date.slice(0,10) === leaguePageState.date; }) };
+    }).filter(function (g) { return g.rows.length; });
+    var list = [].concat.apply([], groups.map(function (g) { return g.rows; }));
+    var ou = leaguePageState.market === 'ou', cols = ou ? 9 : 10;
     var body = groups.map(function (g) { return '<tr class="lp-round"><th scope="rowgroup" colspan="' + cols + '">' + esc(g.title) + '</th></tr>' + g.rows.map(leagueMatchRow).join(''); }).join('');
     var booknames = {};
     rows.forEach(function (r) { ((r.odds || {}).bookmakers || []).forEach(function (b) { booknames[b.id] = b.name; }); });
     host.innerHTML = '<header class="lp-title"><div><h1>' + esc(lg.displayName || name) + '</h1><p>' + esc(countryLabel(lg.country || '')) + ' · Season ' + esc((DATA.seasons || {})[name] || lg.season || '—') + '</p></div><button type="button" class="lp-button" data-lp-action="back">← Predictions</button></header>'
-      + '<div class="lp-grid"><div class="lp-main"><div class="lp-controls"><div class="lp-tabs" role="group" aria-label="Match list"><button class="lp-button' + (leaguePageState.tab === 'upcoming' ? ' active' : '') + '" data-lp-tab="upcoming">Upcoming / live (' + upcoming.length + ')</button><button class="lp-button' + (leaguePageState.tab === 'recent' ? ' active' : '') + '" data-lp-tab="recent">Recent results (' + recent.length + ')</button></div>'
+      + '<div class="lp-grid"><div class="lp-main"><div class="lp-controls"><p class="lp-round-summary">Latest results &amp; upcoming round · Full match lists</p>'
       + '<div class="lp-options"><label>Market<select data-lp-select="market"><option value="1x2"' + (!ou ? ' selected' : '') + '>1X2</option><option value="ou"' + (ou ? ' selected' : '') + '>Over/Under 2.5</option></select></label><label>Model<select data-lp-select="engine"><option value="poisson"' + (state.engine === 'poisson' ? ' selected' : '') + '>Poisson</option><option value="random"' + (state.engine === 'random' ? ' selected' : '') + '>KPI</option></select></label><label>Bookmaker<select data-lp-select="book"><option value="best">Best available</option>' + Object.keys(booknames).map(function (id) { return '<option value="' + esc(id) + '"' + (String(id) === selectedBookmaker ? ' selected' : '') + '>' + esc(booknames[id]) + '</option>'; }).join('') + '</select></label></div></div>'
-      + '<div class="table-wrap lp-table-wrap"><table class="pred-table lp-table"><thead><tr><th>Pick</th><th>Date</th><th>Match</th>' + (ou ? '<th>Over 2.5</th><th>Under 2.5</th>' : '<th>1</th><th>X</th><th>2</th>') + '<th>Tip</th><th>Pred.</th><th>Result</th><th>Coef.</th></tr></thead><tbody>' + body + '</tbody></table>' + (!list.length ? '<p class="empty">No ' + (leaguePageState.tab === 'recent' ? 'completed matches' : 'upcoming fixtures') + ' available' + (leaguePageState.date ? ' on this date' : '') + '.</p>' : '') + '</div>'
-      + (list.length > leaguePageState.limit ? '<button class="lp-button lp-more" data-lp-action="more">Show 50 more matches</button>' : '')
+      + '<div class="table-wrap lp-table-wrap"><table class="pred-table lp-table"><thead><tr><th>Pick</th><th>Date</th><th>Match</th>' + (ou ? '<th>Over 2.5</th><th>Under 2.5</th>' : '<th>1</th><th>X</th><th>2</th>') + '<th>Tip</th><th>Pred.</th><th>Result</th><th>Coef.</th></tr></thead><tbody>' + body + '</tbody></table>' + (!list.length ? '<p class="empty">No ' + (leaguePageState.tab === 'recent' ? 'completed matches' : 'matches in the latest and upcoming rounds') + ' available' + (leaguePageState.date ? ' on this date' : '') + '.</p>' : '') + '</div>'
       + '<p class="lp-note">Match times: ' + esc(DATA.timezone || 'UTC') + '. Updated: ' + esc(DATA.generatedAt || 'Not available') + '. Live scores are update snapshots. Completed matches show only forecasts saved before kickoff; — means unavailable. Odds and model estimates are not guarantees.</p></div>'
-      + '<aside class="lp-aside"><section class="lp-card"><h2>Match calendar</h2><label>Date<input type="date" data-lp-select="date" value="' + esc(leaguePageState.date) + '"></label><button class="lp-button" data-lp-action="clear-date">All dates</button><p class="lp-muted">Filters the selected match list.</p></section><section class="lp-card"><h2>Standings</h2>' + leagueStandings(name) + '</section></aside></div>';
+      + '<aside class="lp-aside"><section class="lp-card"><h2>Match calendar</h2><label>Date<input type="date" data-lp-select="date" value="' + esc(leaguePageState.date) + '"></label><button class="lp-button" data-lp-action="clear-date">All dates</button><p class="lp-muted">Filters these two round lists. Clear the date to see every match.</p></section><section class="lp-card"><h2>Standings</h2>' + leagueStandings(name) + '</section>' + standingsLegend() + '</aside></div>';
     $all('.pick-cb', host).forEach(function (cb) { cb.addEventListener('change', function () { var key = cb.getAttribute('data-key'); if (cb.checked) state.selection[key] = true; else delete state.selection[key]; updateSelBadges(); }); });
     updateSelBadges();
   }
