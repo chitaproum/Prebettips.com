@@ -129,42 +129,74 @@
     return { rows: rows, hp: hp, ap: ap, n: rows.length };
   }
 
-  /* ---------- KPI engine (PDF-style weighted confidence index) ---------- */
-  function predictKpi(home, away) {
-    var model = predictPoisson(home, away); // reused for score & expected goals
-    var hs = teamStat(home), as = teamStat(away);
-    var hv = venuePPG(home, 'H'), av = venuePPG(away, 'A');
-    var hh = h2h(home, away);
-    // normalised components in [0,1], higher favours that side
+  /* ---------- KPI engine: user-specified weights (sum = 1) ---------- */
+  var KPI_WEIGHTS = {
+    overallWin: 0.10, venueWin: 0.125, recent6: 0.10,
+    venueRecent6: 0.055, h2h: 0.035, net: 0.035,
+    overallAGF: 0.11, overallAGA: 0.15,
+    venueAGF: 0.13, venueAGA: 0.16
+  };
+  function kpiComponents(stat, venue, dominance) {
     function norm(x, lo, hi) { return clamp((x - lo) / (hi - lo), 0, 1); }
-    var hWin = hs ? hs.winRate : 0.45, aWin = as ? as.winRate : 0.40;
-    var hVen = hv ? hv.winRate : hWin, aVen = av ? av.winRate : aWin;
-    var hRec = hs ? norm(hs.ppg, 0, 3) : 0.5, aRec = as ? norm(as.ppg, 0, 3) : 0.45;
-    var hVR = hv ? norm(hv.ppg, 0, 3) : hRec, aVR = av ? norm(av.ppg, 0, 3) : aRec;
+    function form(games) {
+      if (!games.length) return 0.5;
+      return games.reduce(function (total, g) {
+        return total + (g.res === 'W' ? 3 : g.res === 'D' ? 1 : 0);
+      }, 0) / (3 * games.length);
+    }
+    var games = stat ? (venue === 'H' ? stat.raw.hGames : stat.raw.aGames) : [];
+    function venueAverage(key) {
+      if (!games.length) return null;
+      return games.reduce(function (total, g) { return total + g[key]; }, 0) / games.length;
+    }
+    var venueGF = venueAverage('gf'), venueGA = venueAverage('ga');
+    return {
+      overallWin: stat ? stat.winRate : 0.5,
+      venueWin: games.length ? games.filter(function (g) { return g.res === 'W'; }).length / games.length : 0.5,
+      recent6: form(stat ? stat.recent6 : []),
+      venueRecent6: form(games.slice(-6)),
+      h2h: dominance,
+      net: stat ? norm(stat.net, -2, 2) : 0.5,
+      overallAGF: stat ? norm(stat.aGF, 0, 4) : 0.5,
+      overallAGA: stat ? 1 - norm(stat.aGA, 0, 4) : 0.5,
+      venueAGF: venueGF === null ? 0.5 : norm(venueGF, 0, 4),
+      venueAGA: venueGA === null ? 0.5 : 1 - norm(venueGA, 0, 4)
+    };
+  }
+  function kpiConfidence(components) {
+    return Object.keys(KPI_WEIGHTS).reduce(function (total, key) {
+      return total + KPI_WEIGHTS[key] * components[key];
+    }, 0);
+  }
+  function predictKpi(home, away) {
+    var model = predictPoisson(home, away); // unchanged score and expected-goals model
+    var hs = teamStat(home), as = teamStat(away), hh = h2h(home, away);
     var h2hTot = hh.hp + hh.ap;
-    var hH2H = h2hTot ? hh.hp / h2hTot : 0.52, aH2H = h2hTot ? hh.ap / h2hTot : 0.48;
-    var hNet = norm(hs ? hs.net : 0, -2, 2), aNet = norm(as ? as.net : 0, -2, 2);
-    // weights: overallW .15 | venueW .15 | recent6 .20 | venue-recent .15 | H2H .20 | net .15
-    var hConf = 0.15 * hWin + 0.15 * hVen + 0.20 * hRec + 0.15 * hVR + 0.20 * hH2H + 0.15 * hNet;
-    var aConf = 0.15 * aWin + 0.15 * aVen + 0.20 * aRec + 0.15 * aVR + 0.20 * aH2H + 0.15 * aNet;
-    hConf += 0.06; // home advantage bump
+    var hH2H = h2hTot ? hh.hp / h2hTot : 0.5;
+    var aH2H = h2hTot ? hh.ap / h2hTot : 0.5;
+    var hComponents = kpiComponents(hs, 'H', hH2H);
+    var aComponents = kpiComponents(as, 'A', aH2H);
+    var hConf = kpiConfidence(hComponents), aConf = kpiConfidence(aComponents);
+    // Venue inputs already capture home/away strength; no extra unweighted home bump.
     var closeness = 1 - clamp(Math.abs(hConf - aConf) / 0.5, 0, 1);
     var pDraw = clamp(0.08 + (0.34 - 0.08) * closeness, 0.08, 0.34);
-    var rem = 1 - pDraw, tot = hConf + aConf || 1;
-    var pHome = rem * (hConf / tot), pAway = rem * (aConf / tot);
-    var sum = pHome + pDraw + pAway || 1;
-    pHome /= sum; pAway /= sum;
-    var pDraw2 = pDraw / sum;
+    var rem = 1 - pDraw, tot = hConf + aConf;
+    var pHome = rem * (tot > 0 ? hConf / tot : 0.5);
+    var pAway = rem * (tot > 0 ? aConf / tot : 0.5);
     // Over/Under KPI confidence: .45 Poisson + .35 historical over-rate + .20 expected-goals factor
     var histOver = ((hs ? hs.overRate : 0.5) + (as ? as.overRate : 0.5)) / 2;
     var expFactor = clamp(model.expTotal / 4, 0, 1);
     var pOver = clamp(0.45 * model.pOver + 0.35 * histOver + 0.20 * expFactor, 0.02, 0.98);
     return {
-      pHome: pHome, pDraw: pDraw2, pAway: pAway,
+      pHome: pHome, pDraw: pDraw, pAway: pAway,
       scoreH: model.scoreH, scoreA: model.scoreA,
       expH: model.expH, expA: model.expA, expTotal: model.expTotal,
       pOver: pOver,
-      _kpi: { hConf: hConf, aConf: aConf, hH2H: hH2H, aH2H: aH2H, h2hN: hh.n }
+      _kpi: {
+        version: 'kpi-v2-user-weights', weights: KPI_WEIGHTS,
+        hConf: hConf, aConf: aConf, hH2H: hH2H, aH2H: aH2H, h2hN: hh.n,
+        homeComponents: hComponents, awayComponents: aComponents
+      }
     };
   }
 
