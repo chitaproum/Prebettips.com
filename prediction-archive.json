@@ -90571,5 +90571,81 @@
       "expA": 1.328448050217288,
       "expTotal": 3.517626563369919
     }
+  },
+  "1644174": {
+    "savedAt": "2026-10-04T20:59:20.296912+00:00",
+    "kickoffUtc": "2026-10-16T15:00:00+00:00",
+    "home": "Etar Veliko Tarnovo",
+    "away": "Spartak Varna",
+    "league": "Cup · Bulgaria",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.48127601496261463,
+      "pDraw": 0.210299713172992,
+      "pAway": 0.3084242718643933,
+      "pOver": 0.7203518137612605,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.09235820248,
+      "expA": 1.6527800731,
+      "expTotal": 3.7451382755799996
+    }
+  },
+  "1644176": {
+    "savedAt": "2026-10-04T20:59:20.296912+00:00",
+    "kickoffUtc": "2026-10-16T15:00:00+00:00",
+    "home": "Spartak Pleven",
+    "away": "Levski Sofia",
+    "league": "Cup · Bulgaria",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.474364291457174,
+      "pDraw": 0.22236483535787133,
+      "pAway": 0.30327087318495466,
+      "pOver": 0.656755404857677,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.9006970840649997,
+      "expA": 1.4861182309999998,
+      "expTotal": 3.3868153150649993
+    }
+  },
+  "1644177": {
+    "savedAt": "2026-10-04T20:59:20.296912+00:00",
+    "kickoffUtc": "2026-10-16T15:00:00+00:00",
+    "home": "Vihren",
+    "away": "Lokomotiv Sofia",
+    "league": "Cup · Bulgaria",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.5544254571633437,
+      "pDraw": 0.19934282423641073,
+      "pAway": 0.24623171860024554,
+      "pOver": 0.7236074286553135,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.2840375292474997,
+      "expA": 1.4861182309999998,
+      "expTotal": 3.7701557602474995
+    }
+  },
+  "1644175": {
+    "savedAt": "2026-10-04T20:59:20.296912+00:00",
+    "kickoffUtc": "2026-10-16T15:00:00+00:00",
+    "home": "Fratria",
+    "away": "Botev Vratsa",
+    "league": "Cup · Bulgaria",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.5514484458318653,
+      "pDraw": 0.21020161408517396,
+      "pAway": 0.23834994008296073,
+      "pOver": 0.6610065950498875,
+      "scoreH": 2,
+      "scoreA": 1,
+      "expH": 2.09235820248,
+      "expA": 1.31944055555,
+      "expTotal": 3.4117987580299998
+    }
   }
 }
