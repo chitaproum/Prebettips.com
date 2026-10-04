@@ -284,12 +284,62 @@
       default: return null;
     }
   }
-  function setPeriod(period) { state.period = period; state.day = null; renderPredictions(); }
+  function setPeriod(period) { state.period = period; state.day = null; renderPredictions();
+
+    // Bind Settings UI (Timezone & Odds Format)
+    var tzSel = $('#tzSelect');
+    if (tzSel) {
+      tzSel.value = userSettings.timezone;
+      tzSel.addEventListener('change', function () {
+        userSettings.timezone = tzSel.value;
+        localStorage.setItem('pb_tz', tzSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+    var oddsSel = $('#oddsFormatSelect');
+    if (oddsSel) {
+      oddsSel.value = userSettings.oddsFormat;
+      oddsSel.addEventListener('change', function () {
+        userSettings.oddsFormat = oddsSel.value;
+        localStorage.setItem('pb_odds_fmt', oddsSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+ }
   function setDay(d) {
     if (d === REF) { setPeriod('today'); return; }
     if (d === addDays(REF, 1)) { setPeriod('tomorrow'); return; }
     if (d === addDays(REF, -1)) { setPeriod('yesterday'); return; }
     state.period = 'day'; state.day = d; renderPredictions();
+
+    // Bind Settings UI (Timezone & Odds Format)
+    var tzSel = $('#tzSelect');
+    if (tzSel) {
+      tzSel.value = userSettings.timezone;
+      tzSel.addEventListener('change', function () {
+        userSettings.timezone = tzSel.value;
+        localStorage.setItem('pb_tz', tzSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+    var oddsSel = $('#oddsFormatSelect');
+    if (oddsSel) {
+      oddsSel.value = userSettings.oddsFormat;
+      oddsSel.addEventListener('change', function () {
+        userSettings.oddsFormat = oddsSel.value;
+        localStorage.setItem('pb_odds_fmt', oddsSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+
   }
   var DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   function buildDayStrip() {
@@ -347,7 +397,26 @@
   }
 
   function fmtDate(d) {
-    var parts = String(d).split(' ');
+    if (!d) return '<span class="date-cell"><b>—</b></span>';
+    var str = String(d);
+    var dateObj = null;
+
+    if (userSettings.timezone !== 'default') {
+      try {
+        var isoStr = str.replace(' ', 'T') + 'Z';
+        var parsed = new Date(isoStr);
+        if (!isNaN(parsed.getTime())) {
+          var tzOpt = userSettings.timezone === 'local' ? undefined : userSettings.timezone;
+          var dFmt = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', timeZone: tzOpt });
+          var tFmt = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: tzOpt });
+          var datePart = dFmt.format(parsed);
+          var timePart = tFmt.format(parsed);
+          return '<span class="date-cell"><b>' + esc(datePart) + '</b><span class="time">' + esc(timePart) + '</span></span>';
+        }
+      } catch (e) {}
+    }
+
+    var parts = str.split(' ');
     var dd = parts[0] ? parts[0].slice(5) : '';
     return '<span class="date-cell"><b>' + esc(dd.split('-').reverse().join('/')) + '</b>'
       + (parts[1] ? '<span class="time">' + esc(parts[1]) + '</span>' : '') + '</span>';
@@ -392,6 +461,46 @@
     });
     return best;
   }
+  
+  var userSettings = {
+    timezone: localStorage.getItem('pb_tz') || 'default',
+    oddsFormat: localStorage.getItem('pb_odds_fmt') || 'decimal'
+  };
+
+  function decToFractional(dec) {
+    if (!dec || dec <= 1) return '—';
+    var val = dec - 1;
+    var bestN = 1, bestD = 1, minDiff = 999;
+    for (var d = 1; d <= 20; d++) {
+      var n = Math.round(val * d);
+      var diff = Math.abs(val - (n / d));
+      if (diff < minDiff) {
+        minDiff = diff;
+        bestN = n;
+        bestD = d;
+      }
+    }
+    return bestN + '/' + bestD;
+  }
+
+  function decToAmerican(dec) {
+    if (!dec || dec <= 1) return '—';
+    if (dec >= 2.0) {
+      return '+' + Math.round((dec - 1) * 100);
+    } else {
+      return '-' + Math.round(100 / (dec - 1));
+    }
+  }
+
+  function formatOddsVal(dec) {
+    if (dec == null || isNaN(dec) || dec <= 0) return '—';
+    var fmt = userSettings.oddsFormat;
+    if (fmt === 'fractional') return decToFractional(dec);
+    if (fmt === 'american') return decToAmerican(dec);
+    if (fmt === 'prob') return (100 / dec).toFixed(1) + '%';
+    return Number(dec).toFixed(2);
+  }
+
   function oddsCell(f, market, tip) {
     var q = oddsQuote(f, market, tip);
     if (!q) return '<td class="col-odds"><span class="odds-missing" title="No recent pre-match odds available from the selected bookmaker">—</span></td>';
@@ -410,7 +519,32 @@
     el.innerHTML = '<option value="best">Best available odds</option>' + Object.keys(names).sort(function (a,b) { return names[a].localeCompare(names[b]); }).map(function (id) { return '<option value="' + esc(id) + '">' + esc(names[id]) + '</option>'; }).join('');
     if (selectedBookmaker !== 'best' && !names[selectedBookmaker]) selectedBookmaker = 'best';
     el.value = selectedBookmaker;
-    el.addEventListener('change', function () { selectedBookmaker = el.value; renderPredictions(); });
+    el.addEventListener('change', function () { selectedBookmaker = el.value; renderPredictions();
+
+    // Bind Settings UI (Timezone & Odds Format)
+    var tzSel = $('#tzSelect');
+    if (tzSel) {
+      tzSel.value = userSettings.timezone;
+      tzSel.addEventListener('change', function () {
+        userSettings.timezone = tzSel.value;
+        localStorage.setItem('pb_tz', tzSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+    var oddsSel = $('#oddsFormatSelect');
+    if (oddsSel) {
+      oddsSel.value = userSettings.oddsFormat;
+      oddsSel.addEventListener('change', function () {
+        userSettings.oddsFormat = oddsSel.value;
+        localStorage.setItem('pb_odds_fmt', oddsSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+ });
   }
 
   /* ---------- row builders per mode ---------- */
@@ -882,13 +1016,63 @@ function leagueCode(l) {
     body.innerHTML = tools + rows;
     empty.hidden = true;
     var clr = $('#selClear');
-    if (clr) clr.addEventListener('click', function () { state.selection = {}; renderPredictions(); });
+    if (clr) clr.addEventListener('click', function () { state.selection = {}; renderPredictions();
+
+    // Bind Settings UI (Timezone & Odds Format)
+    var tzSel = $('#tzSelect');
+    if (tzSel) {
+      tzSel.value = userSettings.timezone;
+      tzSel.addEventListener('change', function () {
+        userSettings.timezone = tzSel.value;
+        localStorage.setItem('pb_tz', tzSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+    var oddsSel = $('#oddsFormatSelect');
+    if (oddsSel) {
+      oddsSel.value = userSettings.oddsFormat;
+      oddsSel.addEventListener('change', function () {
+        userSettings.oddsFormat = oddsSel.value;
+        localStorage.setItem('pb_odds_fmt', oddsSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+ });
     var pdf = $('#selPdf');
     if (pdf) pdf.addEventListener('click', downloadSelectionPdf);
     $all('.sel-remove').forEach(function (b) {
       b.addEventListener('click', function () {
         delete state.selection[b.getAttribute('data-key')];
         renderPredictions();
+
+    // Bind Settings UI (Timezone & Odds Format)
+    var tzSel = $('#tzSelect');
+    if (tzSel) {
+      tzSel.value = userSettings.timezone;
+      tzSel.addEventListener('change', function () {
+        userSettings.timezone = tzSel.value;
+        localStorage.setItem('pb_tz', tzSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+    var oddsSel = $('#oddsFormatSelect');
+    if (oddsSel) {
+      oddsSel.value = userSettings.oddsFormat;
+      oddsSel.addEventListener('change', function () {
+        userSettings.oddsFormat = oddsSel.value;
+        localStorage.setItem('pb_odds_fmt', oddsSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+
       });
     });
     updateSelBadges();
@@ -930,6 +1114,31 @@ function leagueCode(l) {
       b.classList.toggle('active', b.getAttribute('data-mode') === mode);
     });
     renderPredictions();
+
+    // Bind Settings UI (Timezone & Odds Format)
+    var tzSel = $('#tzSelect');
+    if (tzSel) {
+      tzSel.value = userSettings.timezone;
+      tzSel.addEventListener('change', function () {
+        userSettings.timezone = tzSel.value;
+        localStorage.setItem('pb_tz', tzSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+    var oddsSel = $('#oddsFormatSelect');
+    if (oddsSel) {
+      oddsSel.value = userSettings.oddsFormat;
+      oddsSel.addEventListener('change', function () {
+        userSettings.oddsFormat = oddsSel.value;
+        localStorage.setItem('pb_odds_fmt', oddsSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+
   }
   function setEngine(eng) {
     state.engine = eng;
@@ -939,6 +1148,31 @@ function leagueCode(l) {
       b.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
     renderPredictions();
+
+    // Bind Settings UI (Timezone & Odds Format)
+    var tzSel = $('#tzSelect');
+    if (tzSel) {
+      tzSel.value = userSettings.timezone;
+      tzSel.addEventListener('change', function () {
+        userSettings.timezone = tzSel.value;
+        localStorage.setItem('pb_tz', tzSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+    var oddsSel = $('#oddsFormatSelect');
+    if (oddsSel) {
+      oddsSel.value = userSettings.oddsFormat;
+      oddsSel.addEventListener('change', function () {
+        userSettings.oddsFormat = oddsSel.value;
+        localStorage.setItem('pb_odds_fmt', oddsSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+
   }
 
   /* ---------- sidebar ---------- */
@@ -1031,7 +1265,32 @@ function leagueCode(l) {
         if (sel) sel.value = 'all';
         $all('.side-item[data-country]').forEach(function(b){b.classList.toggle('active',b === cb);});
         $all('.side-item[data-league]').forEach(function(b){b.classList.remove('active');});
-        renderPredictions(); return;
+        renderPredictions();
+
+    // Bind Settings UI (Timezone & Odds Format)
+    var tzSel = $('#tzSelect');
+    if (tzSel) {
+      tzSel.value = userSettings.timezone;
+      tzSel.addEventListener('change', function () {
+        userSettings.timezone = tzSel.value;
+        localStorage.setItem('pb_tz', tzSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+    var oddsSel = $('#oddsFormatSelect');
+    if (oddsSel) {
+      oddsSel.value = userSettings.oddsFormat;
+      oddsSel.addEventListener('change', function () {
+        userSettings.oddsFormat = oddsSel.value;
+        localStorage.setItem('pb_odds_fmt', oddsSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+ return;
       }
       var btn = e.target.closest('.side-item[data-league]');
       if (!btn) return;
@@ -1042,7 +1301,32 @@ function leagueCode(l) {
       btn.classList.add('active');
       if (sel) sel.value = state.league;
       if (state.league !== 'all') openLeaguePage(state.league);
-      else { showView('predictions'); renderPredictions(); }
+      else { showView('predictions'); renderPredictions();
+
+    // Bind Settings UI (Timezone & Odds Format)
+    var tzSel = $('#tzSelect');
+    if (tzSel) {
+      tzSel.value = userSettings.timezone;
+      tzSel.addEventListener('change', function () {
+        userSettings.timezone = tzSel.value;
+        localStorage.setItem('pb_tz', tzSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+    var oddsSel = $('#oddsFormatSelect');
+    if (oddsSel) {
+      oddsSel.value = userSettings.oddsFormat;
+      oddsSel.addEventListener('change', function () {
+        userSettings.oddsFormat = oddsSel.value;
+        localStorage.setItem('pb_odds_fmt', oddsSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+ }
     });
     var cs = $('#countrySearch');
     if (cs) cs.addEventListener('input', function () {
@@ -1197,7 +1481,32 @@ function leagueCode(l) {
       if (tab) { leaguePageState.tab = tab.getAttribute('data-lp-tab'); leaguePageState.limit = 50; renderLeaguePage(); }
       if (action) {
         var a = action.getAttribute('data-lp-action');
-        if (a === 'back') { state.period = 'all'; showView('predictions'); renderPredictions(); }
+        if (a === 'back') { state.period = 'all'; showView('predictions'); renderPredictions();
+
+    // Bind Settings UI (Timezone & Odds Format)
+    var tzSel = $('#tzSelect');
+    if (tzSel) {
+      tzSel.value = userSettings.timezone;
+      tzSel.addEventListener('change', function () {
+        userSettings.timezone = tzSel.value;
+        localStorage.setItem('pb_tz', tzSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+    var oddsSel = $('#oddsFormatSelect');
+    if (oddsSel) {
+      oddsSel.value = userSettings.oddsFormat;
+      oddsSel.addEventListener('change', function () {
+        userSettings.oddsFormat = oddsSel.value;
+        localStorage.setItem('pb_odds_fmt', oddsSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+ }
         if (a === 'more') { leaguePageState.limit += 50; renderLeaguePage(); }
         if (a === 'clear-date') { leaguePageState.date = ''; leaguePageState.limit = 50; renderLeaguePage(); }
       }
@@ -1226,9 +1535,42 @@ function leagueCode(l) {
       if (DATA.generatedAt && Date.now() - new Date(DATA.generatedAt).getTime() > 7200000) info.textContent += ' · Data may be stale';
     }
     renderPredictions();
+
+    // Bind Settings UI (Timezone & Odds Format)
+    var tzSel = $('#tzSelect');
+    if (tzSel) {
+      tzSel.value = userSettings.timezone;
+      tzSel.addEventListener('change', function () {
+        userSettings.timezone = tzSel.value;
+        localStorage.setItem('pb_tz', tzSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+    var oddsSel = $('#oddsFormatSelect');
+    if (oddsSel) {
+      oddsSel.value = userSettings.oddsFormat;
+      oddsSel.addEventListener('change', function () {
+        userSettings.oddsFormat = oddsSel.value;
+        localStorage.setItem('pb_odds_fmt', oddsSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+
     renderResults();
-    var hm = $('#heroMatches'); if (hm) hm.textContent = FIXTURES.length;
-    var hl = $('#heroLeagues'); if (hl) hl.textContent = Object.keys(leagueCounts()).length;
+    var todayIso = todayStr();
+    var todayMatchesList = FIXTURES.filter(function (f) {
+      var d = String(f.date || '');
+      return d.indexOf(todayIso) === 0 || d.slice(0, 10) === todayIso;
+    });
+    var todayLeagueSet = {};
+    todayMatchesList.forEach(function (f) { if (f.league) todayLeagueSet[f.league] = true; });
+
+    var hm = $('#heroMatches'); if (hm) hm.textContent = todayMatchesList.length;
+    var hl = $('#heroLeagues'); if (hl) hl.textContent = Object.keys(todayLeagueSet).length;
     var tt = $('#themeToggle');
     if (tt) {
       var sync = function () {
@@ -1262,13 +1604,113 @@ function leagueCode(l) {
         b.classList.toggle('active', b.getAttribute('data-league') === state.league);
       });
       renderPredictions();
+
+    // Bind Settings UI (Timezone & Odds Format)
+    var tzSel = $('#tzSelect');
+    if (tzSel) {
+      tzSel.value = userSettings.timezone;
+      tzSel.addEventListener('change', function () {
+        userSettings.timezone = tzSel.value;
+        localStorage.setItem('pb_tz', tzSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+    var oddsSel = $('#oddsFormatSelect');
+    if (oddsSel) {
+      oddsSel.value = userSettings.oddsFormat;
+      oddsSel.addEventListener('change', function () {
+        userSettings.oddsFormat = oddsSel.value;
+        localStorage.setItem('pb_odds_fmt', oddsSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+
     });
     var tf = $('#tipFilter');
-    if (tf) tf.addEventListener('change', function () { state.tip = tf.value; renderPredictions(); });
+    if (tf) tf.addEventListener('change', function () { state.tip = tf.value; renderPredictions();
+
+    // Bind Settings UI (Timezone & Odds Format)
+    var tzSel = $('#tzSelect');
+    if (tzSel) {
+      tzSel.value = userSettings.timezone;
+      tzSel.addEventListener('change', function () {
+        userSettings.timezone = tzSel.value;
+        localStorage.setItem('pb_tz', tzSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+    var oddsSel = $('#oddsFormatSelect');
+    if (oddsSel) {
+      oddsSel.value = userSettings.oddsFormat;
+      oddsSel.addEventListener('change', function () {
+        userSettings.oddsFormat = oddsSel.value;
+        localStorage.setItem('pb_odds_fmt', oddsSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+ });
     var pf = $('#probFilter');
-    if (pf) pf.addEventListener('change', function () { state.minProb = parseInt(pf.value, 10) || 0; renderPredictions(); });
+    if (pf) pf.addEventListener('change', function () { state.minProb = parseInt(pf.value, 10) || 0; renderPredictions();
+
+    // Bind Settings UI (Timezone & Odds Format)
+    var tzSel = $('#tzSelect');
+    if (tzSel) {
+      tzSel.value = userSettings.timezone;
+      tzSel.addEventListener('change', function () {
+        userSettings.timezone = tzSel.value;
+        localStorage.setItem('pb_tz', tzSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+    var oddsSel = $('#oddsFormatSelect');
+    if (oddsSel) {
+      oddsSel.value = userSettings.oddsFormat;
+      oddsSel.addEventListener('change', function () {
+        userSettings.oddsFormat = oddsSel.value;
+        localStorage.setItem('pb_odds_fmt', oddsSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+ });
     var sb = $('#searchBox');
-    if (sb) sb.addEventListener('input', function () { state.search = sb.value.trim(); renderPredictions(); });
+    if (sb) sb.addEventListener('input', function () { state.search = sb.value.trim(); renderPredictions();
+
+    // Bind Settings UI (Timezone & Odds Format)
+    var tzSel = $('#tzSelect');
+    if (tzSel) {
+      tzSel.value = userSettings.timezone;
+      tzSel.addEventListener('change', function () {
+        userSettings.timezone = tzSel.value;
+        localStorage.setItem('pb_tz', tzSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+    var oddsSel = $('#oddsFormatSelect');
+    if (oddsSel) {
+      oddsSel.value = userSettings.oddsFormat;
+      oddsSel.addEventListener('change', function () {
+        userSettings.oddsFormat = oddsSel.value;
+        localStorage.setItem('pb_odds_fmt', oddsSel.value);
+        renderPredictions();
+        if (state.activeTab === 'results') renderResults();
+        if (leaguePageState.name) renderLeaguePage();
+      });
+    }
+ });
 
     var mt = $('#menuToggle');
     if (mt) mt.addEventListener('click', function () {

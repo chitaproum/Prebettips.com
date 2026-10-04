@@ -36,8 +36,8 @@
         <p>Win probabilities, correct scores and goal markets for every upcoming fixture. Statistical estimates, not guaranteed outcomes.</p>
       </div>
       <div class="hero-stats">
-        <div class="hero-stat"><b id="heroMatches">–</b><span>Upcoming matches</span></div>
-        <div class="hero-stat"><b id="heroLeagues">–</b><span>Leagues</span></div>
+        <div class="hero-stat"><b id="heroMatches">–</b><span>Today matches</span></div>
+        <div class="hero-stat"><b id="heroLeagues">–</b><span>Today leagues</span></div>
         <div class="hero-stat"><b id="heroAcc">–</b><span>1X2 hit rate</span></div>
       </div>
     </section>
@@ -56,6 +56,34 @@
       <div class="featured">
         <div class="day-strip" id="dayStrip" role="group" aria-label="Pick a day"><!-- built by app.js --></div>
         <p class="date-range" id="dateRange"></p>
+        <div class="site-settings" id="siteSettings" aria-label="Display settings">
+          <div class="settings-title">Settings</div>
+          <div class="settings-row">
+            <label for="tzSelect" class="settings-label"><span class="settings-icon">&#128338;</span> Time Zone</label>
+            <select id="tzSelect" class="settings-select" aria-label="Select Time Zone">
+              <option value="default" selected>BY DEFAULT</option>
+              <option value="local">LOCAL (Device)</option>
+              <option value="UTC">UTC (+00:00)</option>
+              <option value="Europe/London">London (GMT/BST)</option>
+              <option value="Europe/Paris">Paris / Berlin (CET)</option>
+              <option value="America/New_York">New York (EST/EDT)</option>
+              <option value="America/Los_Angeles">Los Angeles (PST)</option>
+              <option value="Asia/Bangkok">Bangkok (UTC+7)</option>
+              <option value="Asia/Tokyo">Tokyo (UTC+9)</option>
+              <option value="Asia/Riyadh">Riyadh (UTC+3)</option>
+              <option value="Australia/Sydney">Sydney (AEST)</option>
+            </select>
+          </div>
+          <div class="settings-row">
+            <label for="oddsFormatSelect" class="settings-label"><span class="settings-icon">%</span> % COEF</label>
+            <select id="oddsFormatSelect" class="settings-select" aria-label="Select Odds Format">
+              <option value="decimal" selected>Decimal (European)</option>
+              <option value="fractional">Fractional (UK)</option>
+              <option value="american">American (Moneyline)</option>
+              <option value="prob">Implied Probability (%)</option>
+            </select>
+          </div>
+        </div>
       </div>
       <p id="dataStatus" class="data-status" role="status"></p>
       <div class="toolbar">
