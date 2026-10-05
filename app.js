@@ -1,4 +1,4 @@
-/* PreBetTips - front-end logic with API-Football data.
+/* GoalPre - front-end logic with API-Football data.
    Two prediction engines:
    (1) Poisson model  : expected goals from att/def ratings -> score grid.
    (2) KPI framework  : stats-weighted confidence index (PDF-style method).
@@ -243,7 +243,11 @@
   function todayStr() { return REF; }
   function weekendRange() {
     var dow = parseDay(REF).getDay();            // 0 Sun .. 6 Sat
-    var sat = dow === 6 ? REF : (dow === 0 ? addDays(REF, -1) : addDays(REF, 6 - dow));
+    // Always the UPCOMING weekend, never the one that has already passed:
+    //   Mon–Fri -> this week's coming Saturday;
+    //   Saturday -> today (Sat) + tomorrow (Sun);
+    //   Sunday   -> NEXT week's Saturday (this weekend's Saturday is already over).
+    var sat = dow === 6 ? REF : (dow === 0 ? addDays(REF, 6) : addDays(REF, 6 - dow));
     return [sat, addDays(sat, 1)];
   }
   function allRange() {
@@ -1097,13 +1101,13 @@ function leagueCode(l) {
         + '<td>' + p.scoreH + '-' + p.scoreA + '</td>'
         + '<td>Over ' + pct(p.pOver) + '%</td></tr>';
     }).join('');
-    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>PreBetTips — My Selection</title>'
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>GoalPre — My Selection</title>'
       + '<style>body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:28px}'
       + 'h1{font-size:20px;margin:0 0 2px}.sub{color:#666;font-size:12px;margin:0 0 16px}'
       + 'table{width:100%;border-collapse:collapse;font-size:12px}'
       + 'th,td{border:1px solid #ccc;padding:7px 8px;text-align:left}'
       + 'th{background:#f0f3f7}.foot{margin-top:16px;color:#888;font-size:11px}</style></head><body>'
-      + '<h1>PreBetTips — My Selection</h1>'
+      + '<h1>GoalPre — My Selection</h1>'
       + '<p class="sub">' + fx.length + ' match(es) · ' + engName + ' engine · generated ' + new Date().toLocaleString() + '</p>'
       + '<table><thead><tr><th>Date</th><th>League</th><th>Match</th><th>1 X 2</th><th>Tip</th><th>Score</th><th>O/U</th></tr></thead>'
       + '<tbody>' + rows + '</tbody></table>'
@@ -1213,7 +1217,7 @@ function leagueCode(l) {
       var leagues = CATALOG.filter(function(lg) { return lg.country === co; });
       var isOpen = !!opened[co], id = 'country-leagues-' + i;
       return '<div class="country-group" data-country-group="' + esc(co) + '"><div class="country-heading">'
-        + '<button type="button" class="side-item country-select" data-country="' + esc(co) + '"><span class="ico">⚽</span>'
+        + '<button type="button" class="side-item country-select" data-country="' + esc(co) + '"><span class="ico">' + ((COUNTRY_DATA[co] && COUNTRY_DATA[co].flag) ? COUNTRY_DATA[co].flag : '⚽') + '</span>'
         + '<span class="lbl">' + esc(countryLabel(co)) + '</span></button>'
         + '<button type="button" class="country-expand" data-expand-country="' + esc(co) + '" aria-expanded="' + isOpen
         + '" aria-controls="' + id + '" aria-label="Show leagues in ' + esc(countryLabel(co)) + '"><span class="caret">›</span></button></div>'
@@ -1221,8 +1225,15 @@ function leagueCode(l) {
         + (leagues.length ? leagues.map(leagueItem).join('') : '<p class="country-empty">No current competitions returned by the API.</p>') + '</div></div>';
     }).join('');
     var periodBtns = [['today','Predictions for TODAY'],['live','LIVE predictions'],['tomorrow','Predictions for TOMORROW'],['weekend','Predictions for the WEEKEND'],['yesterday','Predictions from YESTERDAY'],['all','ALL predictions']].map(function (x) {
-      return '<button class="side-item side-period" data-period="' + x[0] + '"><span class="lbl">' + x[1]
-        + '</span><span class="cnt" hidden>0</span></button>';
+      // Each period is now an expandable group: clicking it reveals two sub-links
+      // (Predictions 1X2 / Under-Over 2.5 goals) that switch BOTH the period and the market mode.
+      return '<div class="side-period-group" data-period-group="' + x[0] + '">'
+        + '<button class="side-item side-period" data-period="' + x[0] + '" aria-expanded="false"><span class="lbl">' + x[1]
+        + '</span><span class="cnt" hidden>0</span><span class="period-caret" aria-hidden="true">\u203a</span></button>'
+        + '<div class="side-submenu" hidden>'
+        + '<button type="button" class="side-subitem" data-period="' + x[0] + '" data-submode="1x2">Predictions 1X2</button>'
+        + '<button type="button" class="side-subitem" data-period="' + x[0] + '" data-submode="ou">Under/Over 2.5 goals</button>'
+        + '</div></div>';
     }).join('') + '<button class="side-item side-period side-top" data-period="top"><span class="lbl">TOP predictions</span></button>';
     side.insertAdjacentHTML('beforeend',
       '<div class="side-group side-periods">' + periodBtns + '</div>'
@@ -1236,12 +1247,22 @@ function leagueCode(l) {
       + '<li><span class="vc-k">Today</span><span class="vc-v">–</span></li>'
       + '<li><span class="vc-k">This week</span><span class="vc-v">–</span></li></ul></div>');
 
-    // populate league filter dropdown
+    // populate league filter dropdown — mirror the sidebar exactly:
+    // only leagues that appear under a country group in the sidebar list (1).
     var sel = $('#leagueFilter');
     if (sel) {
-      CATALOG.forEach(function (lg) {
-        var o = document.createElement('option'); o.value = lg.name;
-        o.textContent = countryLabel(lg.country) + ' — ' + (lg.displayName || lg.name); sel.appendChild(o);
+      (DATA.countries || []).forEach(function (co) {
+        var leagues = CATALOG.filter(function (lg) { return lg.country === co; });
+        if (!leagues.length) return;
+        var og = document.createElement('optgroup');
+        og.label = countryLabel(co);
+        leagues.forEach(function (lg) {
+          var o = document.createElement('option');
+          o.value = lg.name;
+          o.textContent = lg.displayName || lg.name;
+          og.appendChild(o);
+        });
+        sel.appendChild(og);
       });
     }
     function persist() {
@@ -1261,8 +1282,32 @@ function leagueCode(l) {
         star.classList.toggle('starred', favorites[id]); star.setAttribute('aria-pressed', String(favorites[id]));
         star.textContent = favorites[id] ? '★' : '☆'; persist(); return;
       }
+      // Period sub-link: switch the period AND the market mode, then show predictions.
+      var sub = e.target.closest('.side-subitem[data-period]');
+      if (sub) {
+        showView('predictions');
+        setMode(sub.getAttribute('data-submode'));
+        setPeriod(sub.getAttribute('data-period'));
+        return;
+      }
       var pb = e.target.closest('.side-item[data-period]');
-      if (pb) { showView('predictions'); setPeriod(pb.getAttribute('data-period')); return; }
+      if (pb) {
+        var group = pb.closest('.side-period-group');
+        var submenu = group ? group.querySelector('.side-submenu') : null;
+        // Periods without a sub-menu (e.g. TOP predictions) switch directly.
+        if (!submenu) { showView('predictions'); setPeriod(pb.getAttribute('data-period')); return; }
+        var isOpen = pb.getAttribute('aria-expanded') === 'true';
+        // Collapse any other open period dropdowns so only one is open at a time.
+        $all('.side-period[aria-expanded="true"]', side).forEach(function (b) {
+          if (b === pb) return;
+          b.setAttribute('aria-expanded', 'false');
+          var g = b.closest('.side-period-group'), s = g ? g.querySelector('.side-submenu') : null;
+          if (s) s.hidden = true;
+        });
+        pb.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+        submenu.hidden = isOpen;
+        return;
+      }
       var cb = e.target.closest('.side-item[data-country]');
       if (cb) {
         showView('predictions'); state.country = cb.getAttribute('data-country'); state.league = 'all';
@@ -1385,9 +1430,139 @@ function leagueCode(l) {
     var ha = $('#heroAcc'); if (ha) ha.textContent = n ? pct(hit1x2 / n) + '%' : '–';
   }
 
+  /* ---------- Page loading indicator ----------
+     Gives instant visual feedback when the user switches menus, so the site
+     never feels "stuck" during the brief render. A thin top progress bar plus
+     a small corner spinner appear, then finish and fade out automatically. */
+  var pageLoader = (function () {
+    var barWrap = null, bar = null, spin = null, t1 = null, t2 = null;
+    function build() {
+      if (barWrap) return;
+      barWrap = document.createElement('div');
+      barWrap.className = 'page-loader';
+      barWrap.setAttribute('aria-hidden', 'true');
+      bar = document.createElement('div');
+      bar.className = 'page-loader-bar';
+      barWrap.appendChild(bar);
+      spin = document.createElement('div');
+      spin.className = 'page-loader-spin';
+      spin.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(barWrap);
+      document.body.appendChild(spin);
+    }
+    function run() {
+      build();
+      clearTimeout(t1); clearTimeout(t2);
+      // reset to the start without animating
+      barWrap.classList.remove('done');
+      barWrap.classList.add('active');
+      spin.classList.add('active');
+      bar.style.transition = 'none';
+      bar.style.width = '0%';
+      void bar.offsetWidth; // force reflow so the next width animates
+      bar.style.transition = 'width .4s ease';
+      bar.style.width = '85%';
+      t1 = setTimeout(function () {
+        bar.style.width = '100%';
+        barWrap.classList.add('done');
+        spin.classList.remove('active');
+        t2 = setTimeout(function () {
+          barWrap.classList.remove('active', 'done');
+          bar.style.transition = 'none';
+          bar.style.width = '0%';
+        }, 260);
+      }, 420);
+    }
+    return { run: run };
+  })();
+
+  /* ---------- Home: top prediction highlights (both engines) ---------- */
+  function tpTop1x2(p) {
+    var k = bestKey(p);
+    var v = k === '1' ? p.pHome : (k === '2' ? p.pAway : p.pDraw);
+    return { key: k, prob: v };
+  }
+  function tpTopOU(p) {
+    var over = p.pOver, under = 1 - p.pOver;
+    return over >= under ? { key: 'Over 2.5', prob: over, side: 'O' } : { key: 'Under 2.5', prob: under, side: 'U' };
+  }
+  function tpWhen(f) {
+    var parts = String(f.date || '').split(' ');
+    return parts[1] ? parts[1] : '';
+  }
+  function tpEngine(name, t, market) {
+    var cls = market === '1x2' ? ('pk' + t.key) : ('pk' + t.side);
+    return '<div class="tp-eng"><span class="tp-eng-name">' + name + '</span>'
+      + '<span class="tp-pick ' + cls + '">' + esc(t.key) + '</span>'
+      + '<span class="tp-prob">' + pct(t.prob) + '%</span></div>';
+  }
+  function tpItem(s, market) {
+    var f = s.f;
+    var po = market === '1x2' ? s.t1 : s.to;
+    var kp = market === '1x2' ? s.k1 : s.ko;
+    var agree = po.key === kp.key;
+    var when = tpWhen(f);
+    return '<a class="tp-item" href="#" data-tp-view="predictions">'
+      + '<div class="tp-match">'
+      +   '<span class="tp-teams">'
+      +     '<span class="tp-team"><span class="tp-crest" aria-hidden="true">' + esc(initials(f.home)) + '</span>' + esc(f.home) + '</span>'
+      +     '<span class="tp-team"><span class="tp-crest" aria-hidden="true">' + esc(initials(f.away)) + '</span>' + esc(f.away) + '</span>'
+      +   '</span>'
+      +   '<span class="tp-meta">' + esc(f.league || '') + (when ? ' &middot; ' + esc(when) : '') + '</span>'
+      + '</div>'
+      + '<div class="tp-engines">' + tpEngine('Poisson', po, market) + tpEngine('KPI', kp, market) + '</div>'
+      + (agree
+          ? '<span class="tp-flag tp-agree" title="Both engines pick the same outcome">&#10003; agree</span>'
+          : '<span class="tp-flag tp-split" title="The two engines differ">split</span>')
+      + '</a>';
+  }
+  function renderHomeTopPicks() {
+    var el1 = $('#tp1x2'), elO = $('#tpou');
+    if (!el1 && !elO) return;
+    var today = todayStr();
+    var pool = FIXTURES.filter(function (f) { return dayOf(f) === today; });
+    if (pool.length < 5) {
+      pool = FIXTURES.filter(function (f) { return dayOf(f) >= today; })
+        .sort(function (a, b) { return String(a.date) < String(b.date) ? -1 : 1; });
+    }
+    // Stage 1: cheap Poisson pass to shortlist candidates (keeps KPI work small).
+    var scored = pool.map(function (f) {
+      activeLeague = f.league || null;
+      var pois = (f.prediction && f.prediction.pHome != null) ? f.prediction : predictPoisson(f.home, f.away);
+      return { f: f, pois: pois, t1: tpTop1x2(pois), to: tpTopOU(pois) };
+    });
+    var short1 = scored.slice().sort(function (a, b) { return b.t1.prob - a.t1.prob; }).slice(0, 18);
+    var shortO = scored.slice().sort(function (a, b) { return b.to.prob - a.to.prob; }).slice(0, 18);
+    var seen = {}, union = [];
+    short1.concat(shortO).forEach(function (s) { var k = fxKey(s.f); if (!seen[k]) { seen[k] = true; union.push(s); } });
+    // Group by league so the KPI stats cache is rebuilt once per league, not per match.
+    union.sort(function (a, b) { return String(a.f.league || '') < String(b.f.league || '') ? -1 : 1; });
+    // Stage 2: compute KPI for the shortlist and a combined (both-engine) ranking score.
+    union.forEach(function (s) {
+      activeLeague = s.f.league || null;
+      s.kpi = predictKpi(s.f.home, s.f.away);
+      s.k1 = tpTop1x2(s.kpi);
+      s.ko = tpTopOU(s.kpi);
+      s.rank1 = (s.t1.prob + s.k1.prob) / 2;
+      s.rankO = (s.to.prob + s.ko.prob) / 2;
+    });
+    var best1 = union.slice().sort(function (a, b) { return b.rank1 - a.rank1; }).slice(0, 5);
+    var bestO = union.slice().sort(function (a, b) { return b.rankO - a.rankO; }).slice(0, 5);
+    if (el1) el1.innerHTML = best1.length
+      ? best1.map(function (s) { return tpItem(s, '1x2'); }).join('')
+      : '<p class="tp-empty">No upcoming fixtures to rank yet.</p>';
+    if (elO) elO.innerHTML = bestO.length
+      ? bestO.map(function (s) { return tpItem(s, 'ou'); }).join('')
+      : '<p class="tp-empty">No upcoming fixtures to rank yet.</p>';
+  }
+
   function showView(view) {
+    pageLoader.run();
     if (view !== 'league' && location.hash.indexOf('#league=') === 0) history.replaceState(null, '', location.pathname + location.search);
     $all('.view').forEach(function (v) { v.hidden = v.id !== 'view-' + view; });
+    // Gentle fade-in on the view that just became visible, so the switch feels responsive.
+    var shown = $('#view-' + view);
+    if (shown) { shown.classList.remove('pb-switching'); void shown.offsetWidth; shown.classList.add('pb-switching'); }
     $all('.nav-btn').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-view') === view); });
     var nav = $('#menuToggle');
     if (nav) nav.setAttribute('aria-expanded', 'false');
@@ -1601,6 +1776,7 @@ function leagueCode(l) {
 
     var hm = $('#heroMatches'); if (hm) hm.textContent = todayMatchesList.length;
     var hl = $('#heroLeagues'); if (hl) hl.textContent = Object.keys(todayLeagueSet).length;
+    renderHomeTopPicks();
     var tt = $('#themeToggle');
     if (tt) {
       var sync = function () {
@@ -1625,6 +1801,19 @@ function leagueCode(l) {
     });
     $all('.nav-btn').forEach(function (b) {
       b.addEventListener('click', function () { showView(b.getAttribute('data-view')); });
+    });
+    // Home page call-to-action buttons jump to the matching view.
+    $all('.home-cta[data-view]').forEach(function (b) {
+      b.addEventListener('click', function () { showView(b.getAttribute('data-view')); });
+    });
+    // Home top-pick cards jump to the full predictions table.
+    document.addEventListener('click', function (e) {
+      var node = e.target, hit = null;
+      while (node && node.nodeType === 1) {
+        if (node.classList && node.classList.contains('tp-item')) { hit = node; break; }
+        node = node.parentNode;
+      }
+      if (hit) { e.preventDefault(); showView('predictions'); }
     });
     var lf = $('#leagueFilter');
     if (lf) lf.addEventListener('change', function () {
@@ -1752,6 +1941,29 @@ function leagueCode(l) {
       var open = $('#sidebar').classList.toggle('open');
       st.classList.toggle('open', open);
     });
+    // Settings drop-list: click "Settings" to reveal Time Zone + % COEF.
+    var settingsToggle = $('#settingsToggle'), settingsPanel = $('#settingsPanel');
+    if (settingsToggle && settingsPanel) {
+      var closeSettings = function () {
+        settingsPanel.setAttribute('hidden', '');
+        settingsToggle.setAttribute('aria-expanded', 'false');
+      };
+      settingsToggle.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (settingsPanel.hasAttribute('hidden')) {
+          settingsPanel.removeAttribute('hidden');
+          settingsToggle.setAttribute('aria-expanded', 'true');
+        } else { closeSettings(); }
+      });
+      // Close when clicking anywhere outside the settings box.
+      document.addEventListener('click', function (e) {
+        if (!settingsPanel.hasAttribute('hidden') && !e.target.closest('#siteSettings')) closeSettings();
+      });
+      // Close on Escape for keyboard users.
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && !settingsPanel.hasAttribute('hidden')) { closeSettings(); settingsToggle.focus(); }
+      });
+    }
     initLeaguePages();
     var ac = $('#anchorAdClose');
     if (ac) ac.addEventListener('click', function () { document.body.classList.add('anchor-hidden'); });

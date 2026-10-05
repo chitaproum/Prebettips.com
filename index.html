@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PreBetTips — Football Predictions &amp; Betting Tips</title>
+  <title>GoalPre — Football Predictions &amp; Betting Tips</title>
   <meta name="description" content="Mathematical football predictions: 1X2 win probabilities, correct score, over/under and average goals, computed with a Poisson statistical model and a KPI framework." />
   <meta name="theme-color" content="#0c7a4d" />
   <script src="theme.js"></script>
@@ -13,15 +13,46 @@
   <header class="site-header">
     <div class="container header-inner">
       <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">&#9776;</button>
-      <a class="logo" href="#" aria-label="PreBetTips home"><span class="logo-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7l4 3-1.5 4.5h-5L8 10z"/></svg></span><span class="logo-tx">PreBet<span>Tips</span></span></a>
+      <a class="logo" href="#" aria-label="GoalPre home"><span class="logo-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7l4 3-1.5 4.5h-5L8 10z"/></svg></span><span class="logo-tx">Goal<span>Pre</span></span></a>
       <nav class="main-nav" aria-label="Main navigation">
-        <button class="nav-btn active" data-view="predictions">Predictions</button>
+        <button class="nav-btn active" data-view="home">Home</button>
+        <button class="nav-btn" data-view="predictions">Predictions</button>
         <button class="nav-btn" data-view="results">Results &amp; Accuracy</button>
         <button class="nav-btn" data-view="how">How it works</button>
       </nav>
       <div class="header-tools">
         <div class="header-search">
           <input type="search" id="searchBox" placeholder="Search team…" aria-label="Search team" />
+        </div>
+        <div class="site-settings" id="siteSettings" aria-label="Display settings">
+          <button type="button" class="settings-title" id="settingsToggle" aria-expanded="false" aria-controls="settingsPanel">Settings <span class="settings-caret" aria-hidden="true">&#9662;</span></button>
+          <div class="settings-panel" id="settingsPanel" hidden>
+          <div class="settings-row">
+            <label for="tzSelect" class="settings-label"><span class="settings-icon">&#128338;</span> Time Zone</label>
+            <select id="tzSelect" class="settings-select" aria-label="Select Time Zone">
+              <option value="default" selected>BY DEFAULT</option>
+              <option value="local">LOCAL (Device)</option>
+              <option value="UTC">UTC (+00:00)</option>
+              <option value="Europe/London">London (GMT/BST)</option>
+              <option value="Europe/Paris">Paris / Berlin (CET)</option>
+              <option value="America/New_York">New York (EST/EDT)</option>
+              <option value="America/Los_Angeles">Los Angeles (PST)</option>
+              <option value="Asia/Bangkok">Bangkok (UTC+7)</option>
+              <option value="Asia/Tokyo">Tokyo (UTC+9)</option>
+              <option value="Asia/Riyadh">Riyadh (UTC+3)</option>
+              <option value="Australia/Sydney">Sydney (AEST)</option>
+            </select>
+          </div>
+          <div class="settings-row">
+            <label for="oddsFormatSelect" class="settings-label"><span class="settings-icon">%</span> % COEF</label>
+            <select id="oddsFormatSelect" class="settings-select" aria-label="Select Odds Format">
+              <option value="decimal" selected>Decimal (European)</option>
+              <option value="fractional">Fractional (UK)</option>
+              <option value="american">American (Moneyline)</option>
+              <option value="prob">Implied Probability (%)</option>
+            </select>
+          </div>
+          </div>
         </div>
         <button type="button" class="theme-toggle" id="themeToggle" aria-label="Switch to dark theme" title="Toggle theme">&#9790;</button>
       </div>
@@ -51,47 +82,76 @@
     <div class="ad-slot ad-leaderboard" data-ad-placement="top" aria-label="Advertisement">
       <span class="ad-body">Your banner here<span class="ad-size">Leaderboard 728×90</span></span>
     </div>
+    <!-- HOME VIEW -->
+    <section id="view-home" class="view">
+      <div class="home-wrap">
+        <div class="home-intro">
+          <span class="home-eyebrow">Welcome to goalpre.com — the machine learning models for smarter football predictions</span>
+          <div class="home-actions">
+            <button type="button" class="home-cta primary" data-view="predictions">View today's predictions</button>
+            <button type="button" class="home-cta" data-view="results">Results &amp; accuracy</button>
+            <button type="button" class="home-cta" data-view="how">How it works</button>
+          </div>
+        </div>
+        <div class="home-features">
+          <div class="home-card">
+            <span class="home-card-ico" aria-hidden="true">&#9917;</span>
+            <h2>1X2 &amp; Over/Under</h2>
+            <p>Home, draw and away probabilities plus Over/Under 2.5 goals for each match, with the most likely correct score.</p>
+          </div>
+          <div class="home-card">
+            <span class="home-card-ico" aria-hidden="true">&#128202;</span>
+            <h2>Two prediction engines</h2>
+            <p>Compare a classic Poisson goal model with a KPI confidence index built from form, venue strength and head-to-head records.</p>
+          </div>
+          <div class="home-card">
+            <span class="home-card-ico" aria-hidden="true">&#128197;</span>
+            <h2>Today, weekend &amp; more</h2>
+            <p>Browse predictions by day — today, tomorrow, the weekend or any league — and track how past tips performed.</p>
+          </div>
+        </div>
+
+        <div class="home-toppicks">
+          <section class="tp-panel">
+            <div class="tp-panel-head">
+              <h2>Top 5 &middot; 1X2 high confidence</h2>
+              <p>Highest-probability match-winner tips for today, shown for both the Poisson and KPI engines.</p>
+            </div>
+            <div class="tp-list" id="tp1x2"><p class="tp-empty">Loading today&rsquo;s top tips&hellip;</p></div>
+          </section>
+          <section class="tp-panel">
+            <div class="tp-panel-head">
+              <h2>Top 5 &middot; Over/Under 2.5 high confidence</h2>
+              <p>Highest-probability goals-line tips for today, shown for both the Poisson and KPI engines.</p>
+            </div>
+            <div class="tp-list" id="tpou"><p class="tp-empty">Loading today&rsquo;s top tips&hellip;</p></div>
+          </section>
+        </div>
+      </div>
+    </section>
+
     <!-- PREDICTIONS VIEW -->
-    <section id="view-predictions" class="view">
+    <section id="view-predictions" class="view" hidden>
       <div class="featured">
         <div class="day-strip" id="dayStrip" role="group" aria-label="Pick a day"><!-- built by app.js --></div>
         <p class="date-range" id="dateRange"></p>
-        <div class="site-settings" id="siteSettings" aria-label="Display settings">
-          <div class="settings-title">Settings</div>
-          <div class="settings-row">
-            <label for="tzSelect" class="settings-label"><span class="settings-icon">&#128338;</span> Time Zone</label>
-            <select id="tzSelect" class="settings-select" aria-label="Select Time Zone">
-              <option value="default" selected>BY DEFAULT</option>
-              <option value="local">LOCAL (Device)</option>
-              <option value="UTC">UTC (+00:00)</option>
-              <option value="Europe/London">London (GMT/BST)</option>
-              <option value="Europe/Paris">Paris / Berlin (CET)</option>
-              <option value="America/New_York">New York (EST/EDT)</option>
-              <option value="America/Los_Angeles">Los Angeles (PST)</option>
-              <option value="Asia/Bangkok">Bangkok (UTC+7)</option>
-              <option value="Asia/Tokyo">Tokyo (UTC+9)</option>
-              <option value="Asia/Riyadh">Riyadh (UTC+3)</option>
-              <option value="Australia/Sydney">Sydney (AEST)</option>
-            </select>
-          </div>
-          <div class="settings-row">
-            <label for="oddsFormatSelect" class="settings-label"><span class="settings-icon">%</span> % COEF</label>
-            <select id="oddsFormatSelect" class="settings-select" aria-label="Select Odds Format">
-              <option value="decimal" selected>Decimal (European)</option>
-              <option value="fractional">Fractional (UK)</option>
-              <option value="american">American (Moneyline)</option>
-              <option value="prob">Implied Probability (%)</option>
-            </select>
-          </div>
-        </div>
       </div>
       <p id="dataStatus" class="data-status" role="status"></p>
       <div class="toolbar">
-        <div class="mode-switch" role="tablist" aria-label="Prediction type">
-          <button class="mode-btn m1x2 active" data-mode="1x2" role="tab">1 x 2</button>
-          <button class="mode-btn mou" data-mode="ou" role="tab">Over/Under 2.5</button>
-          <button class="mode-btn mstats" data-mode="stats" role="tab">Stats</button>
-          <button class="mode-btn msel" data-mode="selection" role="tab">Your Selection <span class="sel-count" id="selCount" hidden>0</span></button>
+        <div class="toolbar-top">
+          <div class="mode-switch" role="tablist" aria-label="Prediction type">
+            <button class="mode-btn m1x2 active" data-mode="1x2" role="tab">1 x 2</button>
+            <button class="mode-btn mou" data-mode="ou" role="tab">Over/Under 2.5</button>
+            <button class="mode-btn mstats" data-mode="stats" role="tab">Stats</button>
+            <button class="mode-btn msel" data-mode="selection" role="tab">Your Selection <span class="sel-count" id="selCount" hidden>0</span></button>
+          </div>
+          <div class="engine-toggle" role="group" aria-label="Prediction data source">
+            <span class="engine-label">Data</span>
+            <div class="engine-seg">
+              <button type="button" class="eng-btn active" data-engine="poisson" aria-pressed="true">Poisson</button>
+              <button type="button" class="eng-btn" data-engine="random" aria-pressed="false" title="KPI engine: prediction built from the teams' stats (avg goals for/against, PPG, win%, head-to-head)">KPI</button>
+            </div>
+          </div>
         </div>
         <div class="filters">
           <label>League
@@ -118,13 +178,6 @@
           <label>Bookmaker
             <select id="bookmakerFilter"><option value="best">Best available odds</option></select>
           </label>
-          <div class="engine-toggle" role="group" aria-label="Prediction data source">
-            <span class="engine-label">Data</span>
-            <div class="engine-seg">
-              <button type="button" class="eng-btn active" data-engine="poisson" aria-pressed="true">Poisson</button>
-              <button type="button" class="eng-btn" data-engine="random" aria-pressed="false" title="KPI engine: prediction built from the teams' stats (avg goals for/against, PPG, win%, head-to-head)">KPI</button>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -222,7 +275,7 @@
 
   <footer class="site-footer">
     <div class="container">
-      <p>PreBetTips &middot; Poisson-model &amp; KPI football predictions &middot; 18+ Please gamble responsibly.</p>
+      <p>GoalPre &middot; Poisson-model &amp; KPI football predictions &middot; 18+ Please gamble responsibly.</p>
     </div>
   </footer>
 
