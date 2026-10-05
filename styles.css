@@ -356,25 +356,13 @@ tr.detail-row>td{padding:0 !important;background:var(--bg)}
   .nav-btn{text-align:left;border-radius:var(--radius-sm)}
   .menu-toggle{display:block}
   .logo{flex:1}
-  .hero{padding:10px 14px;border-radius:12px;flex-wrap:wrap}
-  .hero h1{white-space:normal}
-  .hero-stats{width:100%}
-  .hero-stat{flex:1;min-width:0;padding:6px 8px}
-  .hero-stat b{font-size:16px}
-  .engine-toggle{margin-left:0}
+  /* hero, toolbar, table-card rules are in the MOBILE CARD LAYOUT block above */
 }
 @media(max-width:520px){
   .container{padding:0 12px}
-  .filters{flex-direction:column;align-items:stretch}
-  .filters label,.filters select{width:100%}
-  .engine-toggle{width:100%}
-  .engine-seg .eng-btn{flex:1}
-  .mode-switch{align-self:stretch;justify-content:space-between;border-radius:var(--radius)}
-  .mode-btn{flex:1;justify-content:center;padding:10px 6px;font-size:13px;white-space:normal;line-height:1.15;text-align:center}
+  /* Rules below already covered by the comprehensive 720px card block */
   .cards{gap:10px}
   .stat-num{font-size:26px}
-  .ad-leaderboard,.ad-inline,.ad-footer{height:60px}
-  .ad-slot .ad-size{display:none}
   .prose{padding:22px}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none !important}}
@@ -740,3 +728,311 @@ body.theme-dark .tp-pick.pkX{color:#e6cf5a;border-color:rgba(230,207,90,.3);back
 body.theme-dark .tp-pick.pkO{color:#5fcbe3;border-color:rgba(95,203,227,.3);background:rgba(95,203,227,.12)}
 body.theme-dark .tp-pick.pkU{color:#b79be6;border-color:rgba(183,155,230,.3);background:rgba(183,155,230,.12)}
 @media(max-width:820px){.home-toppicks{grid-template-columns:1fr}}
+
+/* ========================================================================
+   MOBILE CARD LAYOUT (max-width: 720px)
+   Transforms the prediction table into vertical match cards
+   matching the compact Forebet-style mobile feed.
+   ======================================================================== */
+@media(max-width:720px){
+  /* ---- Header ---- */
+  .header-inner{height:52px;gap:10px}
+  .logo{font-size:17px}
+  .logo-mark{width:26px;height:26px;flex:0 0 26px;border-radius:7px}
+  .header-tools{gap:6px}
+  .theme-toggle{width:32px;height:32px;font-size:14px}
+
+  /* ---- Hero ---- */
+  .hero{margin:6px 0 0;border-radius:10px;padding:8px 12px;gap:10px}
+  .hero-eyebrow{font-size:9px;padding:2px 6px}
+  .hero h1{font-size:14px}
+  .hero p{font-size:11px}
+  .hero-stats{gap:5px}
+  .hero-stat{padding:5px 7px;min-width:0;border-radius:8px}
+  .hero-stat b{font-size:14px}
+  .hero-stat span{font-size:9px}
+
+  /* ---- Layout: sidebar above content, full-width ---- */
+  .layout{margin-top:14px;gap:10px}
+  .sidebar{border-radius:10px}
+  .side-toggle{font-size:13px;padding:11px 14px}
+
+  /* ---- Featured day strip ---- */
+  .featured{padding:6px 8px;gap:6px;border-radius:10px}
+  .day-pill{padding:4px 9px;font-size:11px}
+
+  /* ---- Toolbar ---- */
+  .toolbar{gap:10px;margin:0 0 12px}
+  .toolbar-top{gap:8px}
+  .mode-switch{align-self:stretch;justify-content:space-between;border-radius:10px}
+  .mode-btn{flex:1;justify-content:center;padding:8px 4px;font-size:12px;white-space:normal;line-height:1.15;text-align:center}
+  .engine-toggle{width:100%;margin-left:0;border-radius:10px;padding:6px 10px}
+  .engine-seg .eng-btn{flex:1;font-size:12px;padding:6px 10px}
+
+  /* ---- Filters stack vertically ---- */
+  .filters{flex-direction:column;align-items:stretch;padding:10px 12px;border-radius:10px;gap:8px}
+  .filters label,.filters select{width:100%}
+
+  /* ================================================================
+     PREDICTION TABLE → CARD LAYOUT
+     Each <tr> becomes a standalone card with a flex row inside.
+     ================================================================ */
+  .table-wrap{
+    background:transparent;
+    border:0;
+    border-radius:0;
+    box-shadow:none;
+    overflow:visible;
+    padding:0;
+  }
+  .pred-table{
+    display:block;
+    min-width:0!important;
+    width:100%;
+  }
+  .pred-table thead{display:none}
+  .pred-table tbody{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .pred-table tbody tr{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:10px 12px;
+    box-shadow:0 1px 3px rgba(0,0,0,.04);
+    transition:transform .12s ease,box-shadow .12s ease;
+  }
+  .pred-table tbody tr:hover{
+    background:var(--surface);
+    transform:translateY(-1px);
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+  }
+  .pred-table tbody td{
+    display:flex;
+    align-items:center;
+    padding:0!important;
+    border:0!important;
+    text-align:left!important;
+    line-height:1.25;
+  }
+
+  /* ---- Card zones (left to right) ---- */
+
+  /* Zone 1: League badge (flag + code) */
+  .pred-table td.col-pick{
+    display:none!important;
+  }
+  .pred-table td.col-league{
+    display:flex!important;
+    flex:0 0 auto;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    padding-right:2px!important;
+  }
+  .league-badge{
+    flex-direction:column;
+    gap:2px;
+  }
+  .league-badge .lb-flag{font-size:18px}
+  .league-badge .lb-code{
+    font-size:9px;
+    padding:1px 4px;
+    letter-spacing:.3px;
+  }
+
+  /* Zone 2: Match info (teams + date) */
+  .pred-table td.col-match,
+  .pred-table td:nth-child(2){
+    flex:1 1 auto;
+    min-width:0;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:4px;
+  }
+  .match-cell{
+    gap:3px;
+  }
+  .mc-team{
+    font-size:13px;
+    gap:6px;
+    max-width:100%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .mc-team .crest{
+    width:18px;height:18px;flex:0 0 18px;font-size:7px;border-radius:5px;
+  }
+  .mc-league{display:block!important;font-size:10px;margin-top:1px}
+  .date-cell{
+    flex-direction:row!important;gap:5px;
+  }
+  .date-cell b{font-size:11px}
+  .date-cell .time{font-size:11px}
+
+  /* Zone 3: Probabilities (two stacked numbers) */
+  .pred-table td:nth-child(5),
+  .pred-table td:nth-child(6),
+  .pred-table td:nth-child(7){
+    flex:0 0 auto;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:1px;
+    min-width:28px;
+  }
+  .prob{
+    font-size:14px;
+    min-width:0;
+    font-weight:800;
+  }
+  .prob .bar{display:none}
+
+  /* Zone 4: Tip badge */
+  .pred-table td:nth-child(8){
+    flex:0 0 auto;
+  }
+  .tip{
+    font-size:11px;
+    padding:4px 9px;
+    border-radius:6px;
+    font-weight:800;
+  }
+  .ou{
+    font-size:11px;
+    padding:4px 9px;
+    border-radius:6px;
+    font-weight:800;
+  }
+
+  /* Zone 5: Score (compact) */
+  .pred-table td:nth-child(9){
+    flex:0 0 auto;
+  }
+  .score{
+    font-size:11px;
+    padding:3px 7px;
+  }
+
+  /* Zone 6: Odds badge */
+  .pred-table td.col-odds{
+    flex:0 0 auto;
+    min-width:0!important;
+  }
+  .odds-badge{
+    font-size:13px;
+    padding:5px 10px;
+    border-radius:7px;
+    font-weight:800;
+  }
+  .odds-book{display:none}
+  .odds-detail{display:none}
+
+  /* ---- O/U mode card tweaks ---- */
+  /* Exp. goals column: hide on mobile (info available in tip badge) */
+  .pred-table.ou-mode td:nth-child(5){
+    display:none!important;
+  }
+  /* Over / Under percentage cells */
+  .pred-table.ou-mode td:nth-child(6),
+  .pred-table.ou-mode td:nth-child(7){
+    flex:0 0 auto;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:1px;
+    min-width:28px;
+  }
+
+  /* ---- Stats mode: card layout ---- */
+  .pred-table tbody tr.stats-row{
+    cursor:pointer;
+  }
+  .pred-table tbody tr.detail-row{
+    flex-direction:column;
+    gap:0;
+  }
+  .pred-table tbody tr.detail-row>td{
+    width:100%!important;
+  }
+  .form-panel{padding:12px 14px 6px}
+  .form-table{min-width:0;font-size:12px}
+  .sr-match{font-size:13px}
+  .sr-num{font-size:12px}
+
+  /* ---- Selection mode: card layout ---- */
+  .pred-table tbody tr .sel-tools td{
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    gap:8px;
+    padding:10px 12px!important;
+  }
+  .sel-info{font-size:13px}
+  .sel-clear,.sel-pdf{font-size:12px;padding:7px 12px}
+  .col-prob .pp{font-size:12px;min-width:32px}
+  .sel-remove{width:26px;height:26px;font-size:14px}
+
+  /* ---- Results table cards ---- */
+  #view-results .pred-table tbody tr{
+    flex-wrap:wrap;
+    gap:6px 10px;
+  }
+  .verdict{font-size:11px}
+
+  /* ---- Odds note ---- */
+  .odds-note{font-size:10px;padding:8px 10px}
+
+  /* ---- Home view ---- */
+  .home-intro{padding:18px 14px;border-radius:10px}
+  .home-eyebrow{font-size:11px;padding:5px 10px;border-radius:8px;margin-bottom:10px}
+  .home-actions{gap:8px}
+  .home-cta{font-size:13px;padding:9px 16px}
+  .home-card{padding:16px 14px;border-radius:10px}
+  .home-card h2{font-size:15px}
+  .home-card p{font-size:13px}
+  .tp-panel{padding:14px 12px 8px;border-radius:10px}
+  .tp-panel-head h2{font-size:14px}
+  .tp-item{padding:8px 10px;gap:8px;border-radius:8px}
+  .tp-team{font-size:12px}
+  .tp-crest{width:16px;height:16px;flex:0 0 16px;font-size:8px}
+  .tp-prob{font-size:11px}
+
+  /* ---- Stat cards ---- */
+  .cards{grid-template-columns:repeat(2,1fr);gap:8px}
+  .stat-card{padding:14px 12px;border-radius:10px}
+  .stat-num{font-size:24px}
+  .stat-lbl{font-size:11px}
+
+  /* ---- Affiliate ---- */
+  .aff-grid{grid-template-columns:1fr;gap:10px}
+  .aff-card{padding:14px;border-radius:10px}
+  .aff-name{font-size:16px}
+
+  /* ---- Footer ---- */
+  .site-footer{padding:18px 0;font-size:12px}
+  .prose{padding:18px 14px;border-radius:10px}
+  .prose h1{font-size:20px}
+
+  /* ---- Ad slots ---- */
+  .ad-leaderboard,.ad-inline,.ad-footer{height:60px;border-radius:8px}
+  .ad-slot .ad-size{display:none}
+}
+
+/* ---- Extra-small phones (≤400px) ---- */
+@media(max-width:400px){
+  .container{padding:0 8px}
+  .pred-table tbody tr{padding:8px 10px;gap:6px}
+  .mc-team{font-size:12px}
+  .prob{font-size:13px}
+  .tip,.ou{font-size:10px;padding:3px 7px}
+  .odds-badge{font-size:12px;padding:4px 8px}
+  .league-badge .lb-flag{font-size:16px}
+  .league-badge .lb-code{font-size:8px}
+  .cards{grid-template-columns:1fr}
+  .stat-num{font-size:22px}
+}
