@@ -15,44 +15,13 @@
       <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">&#9776;</button>
       <a class="logo" href="#" aria-label="PreBetTips home"><span class="logo-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7l4 3-1.5 4.5h-5L8 10z"/></svg></span><span class="logo-tx">PreBet<span>Tips</span></span></a>
       <nav class="main-nav" aria-label="Main navigation">
-        <button class="nav-btn active" data-view="home">Home</button>
-        <button class="nav-btn" data-view="predictions">Predictions</button>
+        <button class="nav-btn active" data-view="predictions">Predictions</button>
         <button class="nav-btn" data-view="results">Results &amp; Accuracy</button>
         <button class="nav-btn" data-view="how">How it works</button>
       </nav>
       <div class="header-tools">
         <div class="header-search">
           <input type="search" id="searchBox" placeholder="Search team…" aria-label="Search team" />
-        </div>
-        <div class="site-settings" id="siteSettings" aria-label="Display settings">
-          <button type="button" class="settings-title" id="settingsToggle" aria-expanded="false" aria-controls="settingsPanel">Settings <span class="settings-caret" aria-hidden="true">&#9662;</span></button>
-          <div class="settings-panel" id="settingsPanel" hidden>
-          <div class="settings-row">
-            <label for="tzSelect" class="settings-label"><span class="settings-icon">&#128338;</span> Time Zone</label>
-            <select id="tzSelect" class="settings-select" aria-label="Select Time Zone">
-              <option value="default" selected>BY DEFAULT</option>
-              <option value="local">LOCAL (Device)</option>
-              <option value="UTC">UTC (+00:00)</option>
-              <option value="Europe/London">London (GMT/BST)</option>
-              <option value="Europe/Paris">Paris / Berlin (CET)</option>
-              <option value="America/New_York">New York (EST/EDT)</option>
-              <option value="America/Los_Angeles">Los Angeles (PST)</option>
-              <option value="Asia/Bangkok">Bangkok (UTC+7)</option>
-              <option value="Asia/Tokyo">Tokyo (UTC+9)</option>
-              <option value="Asia/Riyadh">Riyadh (UTC+3)</option>
-              <option value="Australia/Sydney">Sydney (AEST)</option>
-            </select>
-          </div>
-          <div class="settings-row">
-            <label for="oddsFormatSelect" class="settings-label"><span class="settings-icon">%</span> % COEF</label>
-            <select id="oddsFormatSelect" class="settings-select" aria-label="Select Odds Format">
-              <option value="decimal" selected>Decimal (European)</option>
-              <option value="fractional">Fractional (UK)</option>
-              <option value="american">American (Moneyline)</option>
-              <option value="prob">Implied Probability (%)</option>
-            </select>
-          </div>
-          </div>
         </div>
         <button type="button" class="theme-toggle" id="themeToggle" aria-label="Switch to dark theme" title="Toggle theme">&#9790;</button>
       </div>
@@ -82,44 +51,39 @@
     <div class="ad-slot ad-leaderboard" data-ad-placement="top" aria-label="Advertisement">
       <span class="ad-body">Your banner here<span class="ad-size">Leaderboard 728×90</span></span>
     </div>
-    <!-- HOME VIEW -->
-    <section id="view-home" class="view">
-      <div class="home-wrap">
-        <div class="home-intro">
-          <span class="home-eyebrow">Welcome to PreBetTips</span>
-          <h1>Football predictions, backed by the numbers.</h1>
-          <p>Win probabilities, correct scores and goal markets for every upcoming fixture, computed with a Poisson statistical model and a stats-weighted KPI framework. Statistical estimates, not guaranteed outcomes.</p>
-          <div class="home-actions">
-            <button type="button" class="home-cta primary" data-view="predictions">View today's predictions</button>
-            <button type="button" class="home-cta" data-view="results">Results &amp; accuracy</button>
-            <button type="button" class="home-cta" data-view="how">How it works</button>
-          </div>
-        </div>
-        <div class="home-features">
-          <div class="home-card">
-            <span class="home-card-ico" aria-hidden="true">&#9917;</span>
-            <h2>1X2 &amp; Over/Under</h2>
-            <p>Home, draw and away probabilities plus Over/Under 2.5 goals for each match, with the most likely correct score.</p>
-          </div>
-          <div class="home-card">
-            <span class="home-card-ico" aria-hidden="true">&#128202;</span>
-            <h2>Two prediction engines</h2>
-            <p>Compare a classic Poisson goal model with a KPI confidence index built from form, venue strength and head-to-head records.</p>
-          </div>
-          <div class="home-card">
-            <span class="home-card-ico" aria-hidden="true">&#128197;</span>
-            <h2>Today, weekend &amp; more</h2>
-            <p>Browse predictions by day — today, tomorrow, the weekend or any league — and track how past tips performed.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- PREDICTIONS VIEW -->
-    <section id="view-predictions" class="view" hidden>
+    <section id="view-predictions" class="view">
       <div class="featured">
         <div class="day-strip" id="dayStrip" role="group" aria-label="Pick a day"><!-- built by app.js --></div>
         <p class="date-range" id="dateRange"></p>
+        <div class="site-settings" id="siteSettings" aria-label="Display settings">
+          <div class="settings-title">Settings</div>
+          <div class="settings-row">
+            <label for="tzSelect" class="settings-label"><span class="settings-icon">&#128338;</span> Time Zone</label>
+            <select id="tzSelect" class="settings-select" aria-label="Select Time Zone">
+              <option value="default" selected>BY DEFAULT</option>
+              <option value="local">LOCAL (Device)</option>
+              <option value="UTC">UTC (+00:00)</option>
+              <option value="Europe/London">London (GMT/BST)</option>
+              <option value="Europe/Paris">Paris / Berlin (CET)</option>
+              <option value="America/New_York">New York (EST/EDT)</option>
+              <option value="America/Los_Angeles">Los Angeles (PST)</option>
+              <option value="Asia/Bangkok">Bangkok (UTC+7)</option>
+              <option value="Asia/Tokyo">Tokyo (UTC+9)</option>
+              <option value="Asia/Riyadh">Riyadh (UTC+3)</option>
+              <option value="Australia/Sydney">Sydney (AEST)</option>
+            </select>
+          </div>
+          <div class="settings-row">
+            <label for="oddsFormatSelect" class="settings-label"><span class="settings-icon">%</span> % COEF</label>
+            <select id="oddsFormatSelect" class="settings-select" aria-label="Select Odds Format">
+              <option value="decimal" selected>Decimal (European)</option>
+              <option value="fractional">Fractional (UK)</option>
+              <option value="american">American (Moneyline)</option>
+              <option value="prob">Implied Probability (%)</option>
+            </select>
+          </div>
+        </div>
       </div>
       <p id="dataStatus" class="data-status" role="status"></p>
       <div class="toolbar">

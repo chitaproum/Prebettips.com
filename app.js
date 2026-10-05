@@ -243,11 +243,7 @@
   function todayStr() { return REF; }
   function weekendRange() {
     var dow = parseDay(REF).getDay();            // 0 Sun .. 6 Sat
-    // Always the UPCOMING weekend, never the one that has already passed:
-    //   Mon–Fri -> this week's coming Saturday;
-    //   Saturday -> today (Sat) + tomorrow (Sun);
-    //   Sunday   -> NEXT week's Saturday (this weekend's Saturday is already over).
-    var sat = dow === 6 ? REF : (dow === 0 ? addDays(REF, 6) : addDays(REF, 6 - dow));
+    var sat = dow === 6 ? REF : (dow === 0 ? addDays(REF, -1) : addDays(REF, 6 - dow));
     return [sat, addDays(sat, 1)];
   }
   function allRange() {
@@ -1217,7 +1213,7 @@ function leagueCode(l) {
       var leagues = CATALOG.filter(function(lg) { return lg.country === co; });
       var isOpen = !!opened[co], id = 'country-leagues-' + i;
       return '<div class="country-group" data-country-group="' + esc(co) + '"><div class="country-heading">'
-        + '<button type="button" class="side-item country-select" data-country="' + esc(co) + '"><span class="ico">' + ((COUNTRY_DATA[co] && COUNTRY_DATA[co].flag) ? COUNTRY_DATA[co].flag : '⚽') + '</span>'
+        + '<button type="button" class="side-item country-select" data-country="' + esc(co) + '"><span class="ico">⚽</span>'
         + '<span class="lbl">' + esc(countryLabel(co)) + '</span></button>'
         + '<button type="button" class="country-expand" data-expand-country="' + esc(co) + '" aria-expanded="' + isOpen
         + '" aria-controls="' + id + '" aria-label="Show leagues in ' + esc(countryLabel(co)) + '"><span class="caret">›</span></button></div>'
@@ -1225,15 +1221,8 @@ function leagueCode(l) {
         + (leagues.length ? leagues.map(leagueItem).join('') : '<p class="country-empty">No current competitions returned by the API.</p>') + '</div></div>';
     }).join('');
     var periodBtns = [['today','Predictions for TODAY'],['live','LIVE predictions'],['tomorrow','Predictions for TOMORROW'],['weekend','Predictions for the WEEKEND'],['yesterday','Predictions from YESTERDAY'],['all','ALL predictions']].map(function (x) {
-      // Each period is now an expandable group: clicking it reveals two sub-links
-      // (Predictions 1X2 / Under-Over 2.5 goals) that switch BOTH the period and the market mode.
-      return '<div class="side-period-group" data-period-group="' + x[0] + '">'
-        + '<button class="side-item side-period" data-period="' + x[0] + '" aria-expanded="false"><span class="lbl">' + x[1]
-        + '</span><span class="cnt" hidden>0</span><span class="period-caret" aria-hidden="true">\u203a</span></button>'
-        + '<div class="side-submenu" hidden>'
-        + '<button type="button" class="side-subitem" data-period="' + x[0] + '" data-submode="1x2">Predictions 1X2</button>'
-        + '<button type="button" class="side-subitem" data-period="' + x[0] + '" data-submode="ou">Under/Over 2.5 goals</button>'
-        + '</div></div>';
+      return '<button class="side-item side-period" data-period="' + x[0] + '"><span class="lbl">' + x[1]
+        + '</span><span class="cnt" hidden>0</span></button>';
     }).join('') + '<button class="side-item side-period side-top" data-period="top"><span class="lbl">TOP predictions</span></button>';
     side.insertAdjacentHTML('beforeend',
       '<div class="side-group side-periods">' + periodBtns + '</div>'
@@ -1272,32 +1261,8 @@ function leagueCode(l) {
         star.classList.toggle('starred', favorites[id]); star.setAttribute('aria-pressed', String(favorites[id]));
         star.textContent = favorites[id] ? '★' : '☆'; persist(); return;
       }
-      // Period sub-link: switch the period AND the market mode, then show predictions.
-      var sub = e.target.closest('.side-subitem[data-period]');
-      if (sub) {
-        showView('predictions');
-        setMode(sub.getAttribute('data-submode'));
-        setPeriod(sub.getAttribute('data-period'));
-        return;
-      }
       var pb = e.target.closest('.side-item[data-period]');
-      if (pb) {
-        var group = pb.closest('.side-period-group');
-        var submenu = group ? group.querySelector('.side-submenu') : null;
-        // Periods without a sub-menu (e.g. TOP predictions) switch directly.
-        if (!submenu) { showView('predictions'); setPeriod(pb.getAttribute('data-period')); return; }
-        var isOpen = pb.getAttribute('aria-expanded') === 'true';
-        // Collapse any other open period dropdowns so only one is open at a time.
-        $all('.side-period[aria-expanded="true"]', side).forEach(function (b) {
-          if (b === pb) return;
-          b.setAttribute('aria-expanded', 'false');
-          var g = b.closest('.side-period-group'), s = g ? g.querySelector('.side-submenu') : null;
-          if (s) s.hidden = true;
-        });
-        pb.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
-        submenu.hidden = isOpen;
-        return;
-      }
+      if (pb) { showView('predictions'); setPeriod(pb.getAttribute('data-period')); return; }
       var cb = e.target.closest('.side-item[data-country]');
       if (cb) {
         showView('predictions'); state.country = cb.getAttribute('data-country'); state.league = 'all';
@@ -1420,59 +1385,9 @@ function leagueCode(l) {
     var ha = $('#heroAcc'); if (ha) ha.textContent = n ? pct(hit1x2 / n) + '%' : '–';
   }
 
-  /* ---------- Page loading indicator ----------
-     Gives instant visual feedback when the user switches menus, so the site
-     never feels "stuck" during the brief render. A thin top progress bar plus
-     a small corner spinner appear, then finish and fade out automatically. */
-  var pageLoader = (function () {
-    var barWrap = null, bar = null, spin = null, t1 = null, t2 = null;
-    function build() {
-      if (barWrap) return;
-      barWrap = document.createElement('div');
-      barWrap.className = 'page-loader';
-      barWrap.setAttribute('aria-hidden', 'true');
-      bar = document.createElement('div');
-      bar.className = 'page-loader-bar';
-      barWrap.appendChild(bar);
-      spin = document.createElement('div');
-      spin.className = 'page-loader-spin';
-      spin.setAttribute('aria-hidden', 'true');
-      document.body.appendChild(barWrap);
-      document.body.appendChild(spin);
-    }
-    function run() {
-      build();
-      clearTimeout(t1); clearTimeout(t2);
-      // reset to the start without animating
-      barWrap.classList.remove('done');
-      barWrap.classList.add('active');
-      spin.classList.add('active');
-      bar.style.transition = 'none';
-      bar.style.width = '0%';
-      void bar.offsetWidth; // force reflow so the next width animates
-      bar.style.transition = 'width .4s ease';
-      bar.style.width = '85%';
-      t1 = setTimeout(function () {
-        bar.style.width = '100%';
-        barWrap.classList.add('done');
-        spin.classList.remove('active');
-        t2 = setTimeout(function () {
-          barWrap.classList.remove('active', 'done');
-          bar.style.transition = 'none';
-          bar.style.width = '0%';
-        }, 260);
-      }, 420);
-    }
-    return { run: run };
-  })();
-
   function showView(view) {
-    pageLoader.run();
     if (view !== 'league' && location.hash.indexOf('#league=') === 0) history.replaceState(null, '', location.pathname + location.search);
     $all('.view').forEach(function (v) { v.hidden = v.id !== 'view-' + view; });
-    // Gentle fade-in on the view that just became visible, so the switch feels responsive.
-    var shown = $('#view-' + view);
-    if (shown) { shown.classList.remove('pb-switching'); void shown.offsetWidth; shown.classList.add('pb-switching'); }
     $all('.nav-btn').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-view') === view); });
     var nav = $('#menuToggle');
     if (nav) nav.setAttribute('aria-expanded', 'false');
@@ -1711,10 +1626,6 @@ function leagueCode(l) {
     $all('.nav-btn').forEach(function (b) {
       b.addEventListener('click', function () { showView(b.getAttribute('data-view')); });
     });
-    // Home page call-to-action buttons jump to the matching view.
-    $all('.home-cta[data-view]').forEach(function (b) {
-      b.addEventListener('click', function () { showView(b.getAttribute('data-view')); });
-    });
     var lf = $('#leagueFilter');
     if (lf) lf.addEventListener('change', function () {
       state.league = lf.value; state.country = 'all';
@@ -1841,29 +1752,6 @@ function leagueCode(l) {
       var open = $('#sidebar').classList.toggle('open');
       st.classList.toggle('open', open);
     });
-    // Settings drop-list: click "Settings" to reveal Time Zone + % COEF.
-    var settingsToggle = $('#settingsToggle'), settingsPanel = $('#settingsPanel');
-    if (settingsToggle && settingsPanel) {
-      var closeSettings = function () {
-        settingsPanel.setAttribute('hidden', '');
-        settingsToggle.setAttribute('aria-expanded', 'false');
-      };
-      settingsToggle.addEventListener('click', function (e) {
-        e.stopPropagation();
-        if (settingsPanel.hasAttribute('hidden')) {
-          settingsPanel.removeAttribute('hidden');
-          settingsToggle.setAttribute('aria-expanded', 'true');
-        } else { closeSettings(); }
-      });
-      // Close when clicking anywhere outside the settings box.
-      document.addEventListener('click', function (e) {
-        if (!settingsPanel.hasAttribute('hidden') && !e.target.closest('#siteSettings')) closeSettings();
-      });
-      // Close on Escape for keyboard users.
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && !settingsPanel.hasAttribute('hidden')) { closeSettings(); settingsToggle.focus(); }
-      });
-    }
     initLeaguePages();
     var ac = $('#anchorAdClose');
     if (ac) ac.addEventListener('click', function () { document.body.classList.add('anchor-hidden'); });
