@@ -253,8 +253,11 @@ def discover_leagues(config, api, now, catalog_cache, warnings):
     selected = {x['id']:dict(x) for x in configured}
     # Running per-country tally avoids rescanning `selected` on every country.
     used_by_country = Counter(x['country'] for x in selected.values())
-    limit = max(1, min(10, int(opts.get('maxLeaguesPerCountry',10))))
+    base_limit = max(1, min(30, int(opts.get('maxLeaguesPerCountry',10))))
+    rules_by_country = opts.get('allowedLeaguesByCountry', {})
     for country in opts.get('countries', []):
+        # A curated allow-list may legitimately exceed the generic cap.
+        limit = min(30, len(rules_by_country[country])) if country in rules_by_country else base_limit
         entry = catalog_cache.get(country)
         fresh = entry and 0 <= (now-stamp(entry['at'])).total_seconds() < opts.get('cacheHours',168)*3600
         if not fresh:

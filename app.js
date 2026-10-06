@@ -1,6 +1,6 @@
 /* GoalPre - front-end logic with API-Football data.
    Two prediction engines:
-   (1) Poisson model  : expected goals from att/def ratings -> score grid.
+   (1) Poisson model (Dixon-Coles corrected) : expected goals from att/def ratings -> score grid with tau adjustment + normalization.
    (2) KPI framework  : stats-weighted confidence index (PDF-style method).
    Model estimates and market odds are not guarantees. No inline event handlers are used;
    everything is wired with addEventListener. */
@@ -28,9 +28,25 @@
   function pct(x) { return Math.round(x * 100); }
   function clamp(x, lo, hi) { return Math.max(lo, Math.min(hi, x)); }
 
-  /* ---------- Poisson engine ---------- */
+  /* ---------- Poisson engine (Dixon-Coles corrected) ---------- */
+  var DC_RHO = -0.13;   // low-score dependency parameter
+  var DC_XI  = 0.003;   // time-decay per day (for future parameter fitting)
+
   function factorial(n) { var f = 1; for (var i = 2; i <= n; i++) f *= i; return f; }
   function poissonPmf(k, lambda) { return Math.pow(lambda, k) * Math.exp(-lambda) / factorial(k); }
+
+  // Dixon-Coles tau correction for low scorelines
+  function dcTau(x, y, lambda, mu, rho) {
+    if (x === 0 && y === 0) return 1.0 - (lambda * mu * rho);
+    if (x === 0 && y === 1) return 1.0 + (lambda * rho);
+    if (x === 1 && y === 0) return 1.0 + (mu * rho);
+    if (x === 1 && y === 1) return 1.0 - rho;
+    return 1.0; // x >= 2 or y >= 2
+  }
+
+  // Exponential time-decay weight (for future parameter fitting from historical matches)
+  // days = days elapsed since match; xi = decay rate per day
+  function dcTimeWeight(days, xi) { return Math.exp(-xi * days); }
 
   function lambdas(home, away) {
     var h = teamRating(home) || { att: 1, def: 1 };
@@ -42,18 +58,33 @@
   }
 
   function predictPoisson(home, away) {
-    var L = lambdas(home, away), N = 7;
-    var pH = 0, pD = 0, pA = 0, pOver = 0, best = 0, bh = 0, ba = 0;
+    var L = lambdas(home, away), N = 7, rho = DC_RHO;
+    var pH = 0, pD = 0, pA = 0, pOver = 0, total = 0;
+    // Track the most likely exact scoreline WITHIN each outcome bucket, so the
+    // displayed "predicted score" matches the 1X2 tip instead of always
+    // collapsing onto the global mode (which is 1-1 for most balanced games).
+    var bHp = 0, bHh = 1, bHa = 0;   // best home-win score
+    var bDp = 0, bDh = 1, bDa = 1;   // best draw score
+    var bAp = 0, bAh = 0, bAa = 1;   // best away-win score
     for (var i = 0; i <= N; i++) {
       for (var j = 0; j <= N; j++) {
-        var p = poissonPmf(i, L.lh) * poissonPmf(j, L.la);
-        if (i > j) pH += p; else if (i === j) pD += p; else pA += p;
+        var p = dcTau(i, j, L.lh, L.la, rho) * poissonPmf(i, L.lh) * poissonPmf(j, L.la);
+        // tau can push (0,0) slightly negative for large rho*lambda*mu — clamp to 0
+        if (p < 0) p = 0;
+        total += p;
+        if (i > j) { pH += p; if (p > bHp) { bHp = p; bHh = i; bHa = j; } }
+        else if (i === j) { pD += p; if (p > bDp) { bDp = p; bDh = i; bDa = j; } }
+        else { pA += p; if (p > bAp) { bAp = p; bAh = i; bAa = j; } }
         if (i + j > 2) pOver += p;
-        if (p > best) { best = p; bh = i; ba = j; }
       }
     }
-    var s = pH + pD + pA;
-    pH /= s; pD /= s; pA /= s;
+    // Normalize so all outcome probabilities sum strictly to 1.0
+    if (total > 0) { pH /= total; pD /= total; pA /= total; pOver /= total; }
+    // Pick the predicted scoreline from the most likely outcome's bucket.
+    var bh, ba;
+    if (pH >= pD && pH >= pA) { bh = bHh; ba = bHa; }
+    else if (pA >= pH && pA >= pD) { bh = bAh; ba = bAa; }
+    else { bh = bDh; ba = bDa; }
     return {
       pHome: pH, pDraw: pD, pAway: pA,
       scoreH: bh, scoreA: ba,
@@ -388,13 +419,13 @@
 
   /* ---------- table headers per mode ---------- */
   var HEADS = {
-    '1x2': '<tr><th class="col-pick">Pick</th><th>Date</th><th class="col-league">League</th>'
-      + '<th class="col-match">Match</th><th>1</th><th>X</th><th>2</th><th>Tip</th><th>Score</th><th title="Decimal bookmaker odds for the displayed tip">Coef.</th></tr>',
-    'ou': '<tr><th class="col-pick">Pick</th><th>Date</th><th class="col-league">League</th>'
-      + '<th class="col-match">Match</th><th>Exp. goals</th><th>Over 2.5</th><th>Under 2.5</th><th>Tip</th><th title="Decimal bookmaker odds for the displayed tip">Coef.</th></tr>',
+    '1x2': '<tr><th class="col-pick">Pick</th><th class="col-date">Date</th><th class="col-league">League</th>'
+      + '<th class="col-match">Match</th><th class="col-live">Result/Live</th><th>1</th><th>X</th><th>2</th><th>Tip</th><th>Score</th><th title="Decimal bookmaker odds for the displayed tip">Coef.</th></tr>',
+    'ou': '<tr><th class="col-pick">Pick</th><th class="col-date">Date</th><th class="col-league">League</th>'
+      + '<th class="col-match">Match</th><th class="col-live">Result/Live</th><th>Exp. goals</th><th>Over 2.5</th><th>Under 2.5</th><th>Tip</th><th title="Decimal bookmaker odds for the displayed tip">Coef.</th></tr>',
     'stats': '<tr><th>Date</th><th class="col-league">League</th><th class="col-match">Match</th>'
       + '<th>Exp. H</th><th>Exp. A</th><th>Exp. total</th><th>Score</th><th>Over 2.5</th></tr>',
-    'selection': '<tr><th>Date</th><th class="col-league">League</th><th class="col-match">Match</th>'
+    'selection': '<tr><th class="col-date">Date</th><th class="col-league">League</th><th class="col-match">Match</th>'
       + '<th class="col-prob">Probabilities</th><th>Tip</th><th>Score</th><th></th></tr>'
   };
 
@@ -437,8 +468,23 @@
     return '<div class="match-cell">'
       + '<span class="mc-team"><span class="crest" aria-hidden="true">' + esc(initials(f.home)) + '</span>' + esc(f.home) + '</span>'
       + '<span class="mc-team"><span class="crest" aria-hidden="true">' + esc(initials(f.away)) + '</span>' + esc(f.away) + '</span>'
-      + '<span class="mc-league">' + esc(f.league) + '</span>'
-      + (f.status ? '<span class="match-status">' + esc(f.status) + (f.live && f.elapsed != null ? ' ' + esc(f.elapsed) + ' min' : '') + (f.currentHome != null && f.currentAway != null ? ' · ' + esc(f.currentHome) + '–' + esc(f.currentAway) : '') + '</span>' : '') + '</div>';
+      + '<span class="mc-meta"><span class="mc-date">' + fmtDate(f.date) + '</span></span>'
+      + '<span class="mc-league">' + esc(f.league) + '</span></div>';
+  }
+  // Result / Live cell: final score for finished games, live score + clock for
+  // in-play games, and a neutral dash for matches that have not kicked off.
+  function resultLiveCell(f) {
+    var hasScore = f && f.currentHome != null && f.currentAway != null;
+    if (f && f.live && hasScore) {
+      var el = f.elapsed != null ? ' ' + esc(f.elapsed) + "'" : '';
+      return '<span class="rl rl-live"><span class="rl-score">' + esc(f.currentHome) + '\u2013' + esc(f.currentAway) + '</span>'
+        + '<span class="rl-clk">' + (f.status ? esc(f.status) : 'LIVE') + el + '</span></span>';
+    }
+    if (f && f.status && f.status !== 'NS' && hasScore) {
+      return '<span class="rl rl-final"><span class="rl-score">' + esc(f.currentHome) + '\u2013' + esc(f.currentAway) + '</span>'
+        + '<span class="rl-clk">' + esc(f.status) + '</span></span>';
+    }
+    return '<span class="rl rl-pending">\u2013</span>';
   }
   function bestKey(p) {
     if (p.pHome >= p.pDraw && p.pHome >= p.pAway) return '1';
@@ -446,7 +492,7 @@
     return 'X';
   }
   function probCell(val, key, best) {
-    return '<span class="prob ' + (key === best ? 'best-' + best : '') + '">' + pct(val) + '%'
+    return '<span class="prob ' + (key === best ? 'best-' + best : '') + '">' + pct(val) + '<span class="pct-sym">%</span>'
       + '<span class="bar" style="width:' + Math.max(6, pct(val)) + '%"></span></span>';
   }
   function tipBadge(key) {
@@ -560,9 +606,10 @@
     var best = bestKey(p), k = fxKey(f), checked = state.selection[k] ? ' checked' : '';
     return '<tr>'
       + '<td class="col-pick"><input type="checkbox" class="pick-cb" data-key="' + esc(k) + '"' + checked + ' aria-label="Add to selection"></td>'
-      + '<td>' + fmtDate(f.date) + '</td>'
+      + '<td class="col-date">' + fmtDate(f.date) + '</td>'
       + '<td class="col-league">' + renderLeagueBadge(f) + '</td>'
       + '<td class="col-match">' + matchCell(f) + '</td>'
+      + '<td class="col-live">' + resultLiveCell(f) + '</td>'
       + '<td>' + probCell(p.pHome, '1', best) + '</td>'
       + '<td>' + probCell(p.pDraw, 'X', best) + '</td>'
       + '<td>' + probCell(p.pAway, '2', best) + '</td>'
@@ -576,19 +623,20 @@
     var tip = over >= 0.5 ? 'over' : 'under';
     return '<tr>'
       + '<td class="col-pick"><input type="checkbox" class="pick-cb" data-key="' + esc(k) + '"' + checked + ' aria-label="Add to selection"></td>'
-      + '<td>' + fmtDate(f.date) + '</td>'
+      + '<td class="col-date">' + fmtDate(f.date) + '</td>'
       + '<td class="col-league">' + renderLeagueBadge(f) + '</td>'
       + '<td class="col-match">' + matchCell(f) + '</td>'
+      + '<td class="col-live">' + resultLiveCell(f) + '</td>'
       + '<td><span class="score">' + p.expTotal.toFixed(2) + '</span></td>'
-      + '<td><span class="ou over">' + pct(over) + '%</span></td>'
-      + '<td><span class="ou under">' + pct(under) + '%</span></td>'
+      + '<td><span class="ou over">' + pct(over) + '<span class="pct-sym">%</span></span></td>'
+      + '<td><span class="ou under">' + pct(under) + '<span class="pct-sym">%</span></span></td>'
       + '<td><span class="ou ' + tip + '">' + (tip === 'over' ? 'Over 2.5' : 'Under 2.5') + '</span></td>'
       + oddsCell(f, 'ou', tip)
       + '</tr>';
   }
   function rowStats(f, p, idx) {
     return '<tr class="stats-row" data-idx="' + idx + '" tabindex="0" aria-expanded="false">'
-      + '<td>' + fmtDate(f.date) + '</td>'
+      + '<td class="col-date">' + fmtDate(f.date) + '</td>'
       + '<td class="col-league">' + renderLeagueBadge(f) + '</td>'
       + '<td class="col-match"><span class="exp-caret">&#9662;</span><span class="sr-match">' + esc(f.home) + ' v ' + esc(f.away) + '</span></td>'
       + '<td><span class="sr-num">' + p.expH.toFixed(2) + '</span></td>'
@@ -701,6 +749,30 @@
     return (prefix || '') + raw.slice(0, 2).toUpperCase();
   }
 
+  // Render a real flag IMAGE (flagcdn) from an ISO code so flags show on every
+  // platform. Windows desktop has no flag-emoji glyphs, so emoji flags fall
+  // back to the two ISO letters there; an <img> fixes that everywhere.
+  function flagImgIso(iso, altName) {
+    if (!iso) return '';
+    iso = String(iso).toLowerCase();
+    var alt = esc(altName || iso.toUpperCase());
+    return '<img class="flag-img" src="https://flagcdn.com/24x18/' + iso + '.png"'
+      + ' srcset="https://flagcdn.com/48x36/' + iso + '.png 2x" width="24" height="18"'
+      + ' alt="' + alt + '" loading="lazy" decoding="async">';
+  }
+  // Resolve a country ISO code from a league name via the CATALOG + COUNTRY_DATA.
+  function isoForLeagueName(name) {
+    if (typeof CATALOG !== 'undefined' && CATALOG.length) {
+      for (var i = 0; i < CATALOG.length; i++) {
+        if (CATALOG[i].name === name && CATALOG[i].country) {
+          var c = COUNTRY_DATA[CATALOG[i].country];
+          if (c && c.iso) return c.iso;
+        }
+      }
+    }
+    return '';
+  }
+
   function renderLeagueBadge(f) {
     if (!f) return '';
     var leagueName = typeof f === 'string' ? f : (f.league || '');
@@ -722,7 +794,7 @@
     }
 
     var cInfo = COUNTRY_DATA[countryName] || {};
-    var flag = cInfo.flag || '⚽';
+    var flag = cInfo.iso ? flagImgIso(cInfo.iso, countryName) : (cInfo.flag || '⚽');
     var shortCode = getLeagueShortCode(leagueName, countryName);
     var fullName = leagueName + (countryName ? ' · ' + countryLabel(countryName) : '');
 
@@ -942,7 +1014,7 @@ function leagueCode(l) {
     if (state.mode === 'selection') { renderSelection(head, body, empty); return; }
     head.innerHTML = HEADS[state.mode];
     _rendered = [];
-    var rows = [], cols = state.mode === 'ou' ? 9 : (state.mode === 'stats' ? 8 : 10);
+    var rows = [], cols = state.mode === 'ou' ? 10 : (state.mode === 'stats' ? 8 : 11);
     FIXTURES.forEach(function (f) {
       var p = (state.engine === 'poisson' && f.prediction ? f.prediction : predict(f.home, f.away, f.league));
       if (!passesFilters(f, p)) return;
@@ -954,6 +1026,8 @@ function leagueCode(l) {
       if (idx === 3) rows.push(adRowHtml(cols)); // inline ad after 4th row
     });
     body.innerHTML = rows.join('');
+    var tbl = document.querySelector('#view-predictions .pred-table');
+    if (tbl) { tbl.classList.toggle('ou-mode', state.mode === 'ou'); tbl.classList.toggle('stats-mode', state.mode === 'stats'); }
     empty.hidden = rows.length > 0;
     bindRowEvents();
     updateSelBadges();
@@ -1012,7 +1086,7 @@ function leagueCode(l) {
     var rows = fx.map(function (f) {
       var p = (state.engine === 'poisson' && f.prediction ? f.prediction : predict(f.home, f.away, f.league)), k = fxKey(f);
       return '<tr>'
-        + '<td>' + fmtDate(f.date) + '</td>'
+        + '<td class="col-date">' + fmtDate(f.date) + '</td>'
         + '<td class="col-league">' + renderLeagueBadge(f) + '</td>'
         + '<td class="col-match">' + matchCell(f) + '</td>'
         + '<td class="col-prob">' + selProbHtml(p) + '</td>'
@@ -1195,8 +1269,10 @@ function leagueCode(l) {
     var counts = leagueCounts();
     var pl = (DATA.popularLeagues || []).map(function (lg) {
       var n = counts[lg.name] || 0;
+      var iso = isoForLeagueName(lg.name);
+      var ic = iso ? flagImgIso(iso, lg.name) : esc(lg.icon || '');
       return '<button class="side-item" data-league="' + esc(lg.name) + '">'
-        + '<span class="ico">' + lg.icon + '</span><span class="lbl">' + esc(lg.name) + '</span>'
+        + '<span class="ico">' + ic + '</span><span class="lbl">' + esc(lg.name) + '</span>'
         + (n ? '<span class="cnt">' + n + '</span>' : '') + '</button>';
     }).join('');
     var allBtn = '<button class="side-item active" data-league="all"><span class="ico">★</span>'
@@ -1217,7 +1293,7 @@ function leagueCode(l) {
       var leagues = CATALOG.filter(function(lg) { return lg.country === co; });
       var isOpen = !!opened[co], id = 'country-leagues-' + i;
       return '<div class="country-group" data-country-group="' + esc(co) + '"><div class="country-heading">'
-        + '<button type="button" class="side-item country-select" data-country="' + esc(co) + '"><span class="ico">' + ((COUNTRY_DATA[co] && COUNTRY_DATA[co].flag) ? COUNTRY_DATA[co].flag : '⚽') + '</span>'
+        + '<button type="button" class="side-item country-select" data-country="' + esc(co) + '"><span class="ico">' + ((COUNTRY_DATA[co] && COUNTRY_DATA[co].iso) ? flagImgIso(COUNTRY_DATA[co].iso, co) : ((COUNTRY_DATA[co] && COUNTRY_DATA[co].flag) ? COUNTRY_DATA[co].flag : '⚽')) + '</span>'
         + '<span class="lbl">' + esc(countryLabel(co)) + '</span></button>'
         + '<button type="button" class="country-expand" data-expand-country="' + esc(co) + '" aria-expanded="' + isOpen
         + '" aria-controls="' + id + '" aria-label="Show leagues in ' + esc(countryLabel(co)) + '"><span class="caret">›</span></button></div>'
@@ -1241,11 +1317,7 @@ function leagueCode(l) {
       + '<div class="side-group"><div class="side-title">Countries</div>'
       + '<div class="side-search"><span class="ico">⚲</span><input type="search" id="countrySearch" placeholder="Search country…" aria-label="Search country"></div>'
       + '<div class="country-list">' + countries + '</div></div>'
-      + '<div class="ad-slot ad-mpu" data-ad-placement="sidebar" aria-label="Advertisement"><span class="ad-body">Your ad here<span class="ad-size">MPU 300×250</span></span></div>'
-      + '<div class="visitors"><div class="vc-head"><span class="vc-icon">◉</span>Traffic analytics not connected</div>'
-      + '<ul class="vc-list"><li class="online"><span class="vc-k">Online now</span><span class="vc-v">–</span></li>'
-      + '<li><span class="vc-k">Today</span><span class="vc-v">–</span></li>'
-      + '<li><span class="vc-k">This week</span><span class="vc-v">–</span></li></ul></div>');
+      + '<div class="ad-slot ad-mpu" data-ad-placement="sidebar" aria-label="Advertisement"><span class="ad-body">Your ad here<span class="ad-size">MPU 300×250</span></span></div>');
 
     // populate league filter dropdown — mirror the sidebar exactly:
     // only leagues that appear under a country group in the sidebar list (1).
@@ -1397,37 +1469,89 @@ function leagueCode(l) {
 
   /* ---------- Results & Accuracy ---------- */
   function renderResults() {
-    var body = $('#resultsBody');
-    if (!body) return;
+    var body1x2 = $('#resultsBody1x2');
+    var bodyOu = $('#resultsBodyOu');
+    if (!body1x2 && !bodyOu) return;
+
     var records = DATA.demo === false ? (DATA.recentResults || []) : HISTORY;
+
+    // Keep popular leagues only.
+    var popular = {};
+    (DATA.popularLeagues || []).forEach(function (lg) { popular[lg.name] = true; });
+    var inPopular = records.filter(function (m) { return popular[m.league]; });
+
+    // Keep only the latest 2 rounds per popular league. A "round" is grouped
+    // by league + round label; its recency is the newest kickoff date in it.
+    var roundDate = {}; // league -> round -> newest date string
+    inPopular.forEach(function (m) {
+      var rd = m.round || m.date.slice(0, 10);
+      var byLeague = roundDate[m.league] || (roundDate[m.league] = {});
+      if (!byLeague[rd] || m.date > byLeague[rd]) byLeague[rd] = m.date;
+    });
+    var latestRounds = {}; // league -> { round: true } for the 2 newest rounds
+    Object.keys(roundDate).forEach(function (lg) {
+      var rounds = Object.keys(roundDate[lg]).sort(function (a, b) {
+        return roundDate[lg][b].localeCompare(roundDate[lg][a]);
+      }).slice(0, 2);
+      var keep = latestRounds[lg] = {};
+      rounds.forEach(function (r) { keep[r] = true; });
+    });
+    var shown = inPopular.filter(function (m) {
+      var rd = m.round || m.date.slice(0, 10);
+      return latestRounds[m.league] && latestRounds[m.league][rd];
+    });
+
+    // Newest matches first.
+    shown.sort(function (a, b) { return b.date.localeCompare(a.date); });
+
     var hit1x2 = 0, hitScore = 0, hitOu = 0, n = 0;
-    body.innerHTML = records.slice().reverse().map(function (m) {
-      // Keep showing a prediction even after a match ends: prefer the forecast
-      // saved before kickoff, and fall back to the model so the Tip / Pred.
-      // score never collapse to "—" once a result is in.
+    var rows1x2 = [], rowsOu = [];
+    shown.forEach(function (m) {
+      // Prefer the forecast saved before kickoff, fall back to the model so
+      // the Tip / Pred. score never collapse to "–" once a result is in.
       var p = (DATA.demo === false ? m.prediction : null) || predictPoisson(m.home, m.away);
-      var predTip = p ? bestKey(p) : null;
+      if (!p) return;
+      n++;
+
+      var dateCell = esc(m.date.slice(0, 10).split('-').reverse().join('/'));
+      var leagueCell = '<td class="col-league">' + renderLeagueBadge(m) + '</td>';
+      var matchCellTxt = '<td class="col-match">' + esc(m.home + ' v ' + m.away) + '</td>';
+      var resultTotal = m.fh + m.fa;
+
+      // --- 1X2 ---
+      var predTip = bestKey(p);
       var actual = m.fh > m.fa ? '1' : (m.fh < m.fa ? '2' : 'X');
-      var okTip = p && predTip === actual;
-      if (p) {
-        n++;
-        if (okTip) hit1x2++;
-        if (p.scoreH === m.fh && p.scoreA === m.fa) hitScore++;
-        if ((p.pOver >= 0.5) === (m.fh + m.fa > 2.5)) hitOu++;
-      }
-      return '<tr><td>' + esc(m.date.slice(0,10).split('-').reverse().join('/')) + '</td>'
-        + '<td class="col-league">' + renderLeagueBadge(m) + '</td>'
-        + '<td class="col-match">' + esc(m.home + ' v ' + m.away) + '</td>'
-        + '<td>' + (p ? tipBadge(predTip) : '–') + '</td>'
-        + '<td><span class="score">' + (p ? p.scoreH + '-' + p.scoreA : '–') + '</span></td>'
+      var okTip = predTip === actual;
+      if (okTip) hit1x2++;
+      if (p.scoreH === m.fh && p.scoreA === m.fa) hitScore++;
+      rows1x2.push('<tr><td>' + dateCell + '</td>' + leagueCell + matchCellTxt
+        + '<td>' + tipBadge(predTip) + '</td>'
+        + '<td><span class="score">' + p.scoreH + '-' + p.scoreA + '</span></td>'
         + '<td><span class="score">' + m.fh + '-' + m.fa + '</span></td>'
-        + '<td>' + (p ? '<span class="verdict ' + (okTip ? 'win' : 'miss') + '">' + (okTip ? 'Hit' : 'Miss') + '</span>' : 'Not tracked before kickoff') + '</td></tr>';
-    }).join('');
+        + '<td><span class="verdict ' + (okTip ? 'win' : 'miss') + '">' + (okTip ? 'Hit' : 'Miss') + '</span></td></tr>');
+
+      // --- Over/Under 2.50 ---
+      var over = p.pOver >= 0.5;
+      var ouTip = over ? 'over' : 'under';
+      var ouActual = resultTotal > 2.5;
+      var okOu = over === ouActual;
+      if (okOu) hitOu++;
+      rowsOu.push('<tr><td>' + dateCell + '</td>' + leagueCell + matchCellTxt
+        + '<td><span class="ou ' + ouTip + '">' + (over ? 'Over 2.5' : 'Under 2.5') + '</span></td>'
+        + '<td><span class="score">' + p.expTotal.toFixed(2) + '</span></td>'
+        + '<td><span class="score">' + m.fh + '-' + m.fa + '</span></td>'
+        + '<td><span class="verdict ' + (okOu ? 'win' : 'miss') + '">' + (okOu ? 'Hit' : 'Miss') + '</span></td></tr>');
+    });
+
+    if (body1x2) body1x2.innerHTML = rows1x2.join('') || '<tr><td colspan="7" class="empty">No recent results from popular leagues.</td></tr>';
+    if (bodyOu) bodyOu.innerHTML = rowsOu.join('') || '<tr><td colspan="7" class="empty">No recent results from popular leagues.</td></tr>';
+
     $('#accOverall').textContent = n ? pct(hit1x2 / n) + '%' : '–';
     $('#accScore').textContent = n ? pct(hitScore / n) + '%' : '–';
     $('#accOu').textContent = n ? pct(hitOu / n) + '%' : '–';
     $('#settled').textContent = n;
     var ha = $('#heroAcc'); if (ha) ha.textContent = n ? pct(hit1x2 / n) + '%' : '–';
+    var hou = $('#heroAccOu'); if (hou) hou.textContent = n ? pct(hitOu / n) + '%' : '–';
   }
 
   /* ---------- Page loading indicator ----------
@@ -1525,7 +1649,7 @@ function leagueCode(l) {
       pool = FIXTURES.filter(function (f) { return dayOf(f) >= today; })
         .sort(function (a, b) { return String(a.date) < String(b.date) ? -1 : 1; });
     }
-    // Stage 1: cheap Poisson pass to shortlist candidates (keeps KPI work small).
+    // Stage 1: cheap Dixon-Coles pass to shortlist candidates (keeps KPI work small).
     var scored = pool.map(function (f) {
       activeLeague = f.league || null;
       var pois = (f.prediction && f.prediction.pHome != null) ? f.prediction : predictPoisson(f.home, f.away);

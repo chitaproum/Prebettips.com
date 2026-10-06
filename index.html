@@ -6,6 +6,8 @@
   <title>GoalPre — Football Predictions &amp; Betting Tips</title>
   <meta name="description" content="Mathematical football predictions: 1X2 win probabilities, correct score, over/under and average goals, computed with a Poisson statistical model and a KPI framework." />
   <meta name="theme-color" content="#0c7a4d" />
+  <!-- Google AdSense (auto ads) -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9008412771233110" crossorigin="anonymous"></script>
   <script src="theme.js"></script>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -70,6 +72,7 @@
         <div class="hero-stat"><b id="heroMatches">–</b><span>Today matches</span></div>
         <div class="hero-stat"><b id="heroLeagues">–</b><span>Today leagues</span></div>
         <div class="hero-stat"><b id="heroAcc">–</b><span>1X2 hit rate</span></div>
+        <div class="hero-stat"><b id="heroAccOu">–</b><span>Over/Under hit rate</span></div>
       </div>
     </section>
   </div>
@@ -89,9 +92,23 @@
           <span class="home-eyebrow">Welcome to goalpre.com — the machine learning models for smarter football predictions</span>
           <div class="home-actions">
             <button type="button" class="home-cta primary" data-view="predictions">View today's predictions</button>
-            <button type="button" class="home-cta" data-view="results">Results &amp; accuracy</button>
-            <button type="button" class="home-cta" data-view="how">How it works</button>
           </div>
+        </div>
+        <div class="home-toppicks">
+          <section class="tp-panel">
+            <div class="tp-panel-head">
+              <h2>Top 5 &middot; 1X2 high confidence</h2>
+              <p>Highest-probability match-winner tips for today, shown for both the Poisson and KPI engines.</p>
+            </div>
+            <div class="tp-list" id="tp1x2"><p class="tp-empty">Loading today&rsquo;s top tips&hellip;</p></div>
+          </section>
+          <section class="tp-panel">
+            <div class="tp-panel-head">
+              <h2>Top 5 &middot; Over/Under 2.5 high confidence</h2>
+              <p>Highest-probability goals-line tips for today, shown for both the Poisson and KPI engines.</p>
+            </div>
+            <div class="tp-list" id="tpou"><p class="tp-empty">Loading today&rsquo;s top tips&hellip;</p></div>
+          </section>
         </div>
         <div class="home-features">
           <div class="home-card">
@@ -109,23 +126,6 @@
             <h2>Today, weekend &amp; more</h2>
             <p>Browse predictions by day — today, tomorrow, the weekend or any league — and track how past tips performed.</p>
           </div>
-        </div>
-
-        <div class="home-toppicks">
-          <section class="tp-panel">
-            <div class="tp-panel-head">
-              <h2>Top 5 &middot; 1X2 high confidence</h2>
-              <p>Highest-probability match-winner tips for today, shown for both the Poisson and KPI engines.</p>
-            </div>
-            <div class="tp-list" id="tp1x2"><p class="tp-empty">Loading today&rsquo;s top tips&hellip;</p></div>
-          </section>
-          <section class="tp-panel">
-            <div class="tp-panel-head">
-              <h2>Top 5 &middot; Over/Under 2.5 high confidence</h2>
-              <p>Highest-probability goals-line tips for today, shown for both the Poisson and KPI engines.</p>
-            </div>
-            <div class="tp-list" id="tpou"><p class="tp-empty">Loading today&rsquo;s top tips&hellip;</p></div>
-          </section>
         </div>
       </div>
     </section>
@@ -238,12 +238,25 @@
         <div class="stat-card"><span class="stat-num" id="accOu">–</span><span class="stat-lbl">Over/Under hit rate</span></div>
         <div class="stat-card"><span class="stat-num" id="settled">–</span><span class="stat-lbl">Tracked settled predictions</span></div>
       </div>
+      <p class="results-note">Latest 2 rounds of results from popular leagues only.</p>
+
+      <h2 class="results-heading">1X2 results</h2>
       <div class="table-wrap">
         <table class="pred-table">
           <thead>
             <tr><th>Date</th><th class="col-league">League</th><th class="col-match">Match</th><th>Tip</th><th>Pred. score</th><th>Result</th><th>Verdict</th></tr>
           </thead>
-          <tbody id="resultsBody"></tbody>
+          <tbody id="resultsBody1x2"></tbody>
+        </table>
+      </div>
+
+      <h2 class="results-heading">Over/Under 2.50 results</h2>
+      <div class="table-wrap">
+        <table class="pred-table">
+          <thead>
+            <tr><th>Date</th><th class="col-league">League</th><th class="col-match">Match</th><th>Tip</th><th>Exp. goals</th><th>Result</th><th>Verdict</th></tr>
+          </thead>
+          <tbody id="resultsBodyOu"></tbody>
         </table>
       </div>
     </section>
@@ -276,6 +289,7 @@
   <footer class="site-footer">
     <div class="container">
       <p>GoalPre &middot; Poisson-model &amp; KPI football predictions &middot; 18+ Please gamble responsibly.</p>
+      <p class="footer-links"><a href="terms.html">Terms &amp; Conditions and Disclaimer</a> &middot; <a href="privacy.html">Privacy &amp; Cookie Policy</a></p>
     </div>
   </footer>
 
