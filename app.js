@@ -1139,7 +1139,7 @@ function leagueCode(l) {
   function downloadSelectionPdf() {
     var fx = selectedFixtures();
     if (!fx.length) return;
-    var engName = state.engine === 'random' ? 'KPI' : 'Dixon-Coles';
+    var engName = state.engine === 'random' ? 'KPI' : 'Poisson';
     var w = window.open('', '_blank');
     if (!w) return;
     var rows = fx.map(function (f) {
@@ -1611,7 +1611,7 @@ function leagueCode(l) {
       +   '</span>'
       +   '<span class="tp-meta">' + esc(f.league || '') + (when ? ' &middot; ' + esc(when) : '') + '</span>'
       + '</div>'
-      + '<div class="tp-engines">' + tpEngine('Dixon-Coles', po, market) + tpEngine('KPI', kp, market) + '</div>'
+      + '<div class="tp-engines">' + tpEngine('Poisson', po, market) + tpEngine('KPI', kp, market) + '</div>'
       + (agree
           ? '<span class="tp-flag tp-agree" title="Both engines pick the same outcome">&#10003; agree</span>'
           : '<span class="tp-flag tp-split" title="The two engines differ">split</span>')
@@ -1773,7 +1773,7 @@ function leagueCode(l) {
     rows.forEach(function (r) { ((r.odds || {}).bookmakers || []).forEach(function (b) { booknames[b.id] = b.name; }); });
     host.innerHTML = '<header class="lp-title"><div><h1>' + esc(lg.displayName || name) + '</h1><p>' + esc(countryLabel(lg.country || '')) + ' · Season ' + esc((DATA.seasons || {})[name] || lg.season || '—') + '</p></div><button type="button" class="lp-button" data-lp-action="back">← Predictions</button></header>'
       + '<div class="lp-grid"><div class="lp-main"><div class="lp-controls"><p class="lp-round-summary">Latest results &amp; upcoming round · Full match lists</p>'
-      + '<div class="lp-options"><label>Market<select data-lp-select="market"><option value="1x2"' + (!ou ? ' selected' : '') + '>1X2</option><option value="ou"' + (ou ? ' selected' : '') + '>Over/Under 2.5</option></select></label><label>Model<select data-lp-select="engine"><option value="poisson"' + (state.engine === 'poisson' ? ' selected' : '') + '>Dixon-Coles</option><option value="random"' + (state.engine === 'random' ? ' selected' : '') + '>KPI</option></select></label><label>Bookmaker<select data-lp-select="book"><option value="best">Best available</option>' + Object.keys(booknames).map(function (id) { return '<option value="' + esc(id) + '"' + (String(id) === selectedBookmaker ? ' selected' : '') + '>' + esc(booknames[id]) + '</option>'; }).join('') + '</select></label></div></div>'
+      + '<div class="lp-options"><label>Market<select data-lp-select="market"><option value="1x2"' + (!ou ? ' selected' : '') + '>1X2</option><option value="ou"' + (ou ? ' selected' : '') + '>Over/Under 2.5</option></select></label><label>Model<select data-lp-select="engine"><option value="poisson"' + (state.engine === 'poisson' ? ' selected' : '') + '>Poisson</option><option value="random"' + (state.engine === 'random' ? ' selected' : '') + '>KPI</option></select></label><label>Bookmaker<select data-lp-select="book"><option value="best">Best available</option>' + Object.keys(booknames).map(function (id) { return '<option value="' + esc(id) + '"' + (String(id) === selectedBookmaker ? ' selected' : '') + '>' + esc(booknames[id]) + '</option>'; }).join('') + '</select></label></div></div>'
       + '<div class="table-wrap lp-table-wrap"><table class="pred-table lp-table"><thead><tr><th>Pick</th><th>Date</th><th>Match</th>' + (ou ? '<th>Over 2.5</th><th>Under 2.5</th>' : '<th>1</th><th>X</th><th>2</th>') + '<th>Tip</th><th>Pred.</th><th>Result</th><th>Coef.</th></tr></thead><tbody>' + body + '</tbody></table>' + (!list.length ? '<p class="empty">No ' + (leaguePageState.tab === 'recent' ? 'completed matches' : 'matches in the latest and upcoming rounds') + ' available' + (leaguePageState.date ? ' on this date' : '') + '.</p>' : '') + '</div>'
       + '<p class="lp-note">Match times: ' + esc(DATA.timezone || 'UTC') + '. Updated: ' + esc(DATA.generatedAt || 'Not available') + '. Live scores are update snapshots. Completed matches show only forecasts saved before kickoff; — means unavailable. Odds and model estimates are not guarantees.</p></div>'
       + '<aside class="lp-aside"><section class="lp-card"><h2>Match calendar</h2><label>Date<input type="date" data-lp-select="date" value="' + esc(leaguePageState.date) + '"></label><button class="lp-button" data-lp-action="clear-date">All dates</button><p class="lp-muted">Filters these two round lists. Clear the date to see every match.</p></section><section class="lp-card"><h2>Standings</h2>' + leagueStandings(name) + '</section>' + standingsLegend() + '</aside></div>';
