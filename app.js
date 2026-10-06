@@ -492,7 +492,7 @@
     return 'X';
   }
   function probCell(val, key, best) {
-    return '<span class="prob ' + (key === best ? 'best-' + best : '') + '">' + pct(val) + '%'
+    return '<span class="prob ' + (key === best ? 'best-' + best : '') + '">' + pct(val) + '<span class="pct-sym">%</span>'
       + '<span class="bar" style="width:' + Math.max(6, pct(val)) + '%"></span></span>';
   }
   function tipBadge(key) {
@@ -628,8 +628,8 @@
       + '<td class="col-match">' + matchCell(f) + '</td>'
       + '<td class="col-live">' + resultLiveCell(f) + '</td>'
       + '<td><span class="score">' + p.expTotal.toFixed(2) + '</span></td>'
-      + '<td><span class="ou over">' + pct(over) + '%</span></td>'
-      + '<td><span class="ou under">' + pct(under) + '%</span></td>'
+      + '<td><span class="ou over">' + pct(over) + '<span class="pct-sym">%</span></span></td>'
+      + '<td><span class="ou under">' + pct(under) + '<span class="pct-sym">%</span></span></td>'
       + '<td><span class="ou ' + tip + '">' + (tip === 'over' ? 'Over 2.5' : 'Under 2.5') + '</span></td>'
       + oddsCell(f, 'ou', tip)
       + '</tr>';
