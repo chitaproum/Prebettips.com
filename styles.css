@@ -974,23 +974,30 @@ body.theme-dark .tp-pick.pkU{color:#b79be6;border-color:rgba(183,155,230,.3);bac
   /* Hide the percentage symbol on mobile (desktop keeps it). */
   .pct-sym{display:none}
   /* Allow the card to wrap onto a second line. */
-  .pred-table:not(.stats-mode) tbody tr{flex-wrap:wrap;row-gap:7px}
-  /* Line 1: league badge + teams/date + result/live (same row). */
+  .pred-table:not(.stats-mode) tbody tr{flex-wrap:wrap;row-gap:6px}
+  /* Line 1: league badge + teams + result/live (top-right corner). */
   .pred-table:not(.stats-mode) td.col-league{order:1}
   .pred-table:not(.stats-mode) td.col-match{order:2}
   .pred-table:not(.stats-mode) td.col-live{order:3}
   /* Forced flex line-break AFTER the result/live chip. */
   .pred-table:not(.stats-mode) tbody tr::after{content:"";flex-basis:100%;height:0;order:4}
-  /* Line 2: probabilities + tip + score + odds. */
+  /* Line 2: date/time (left) on the SAME line as the prediction stats. */
+  .pred-table:not(.stats-mode) tbody tr:has(td.col-live) td.col-date{
+    display:flex!important;order:5;flex:1 1 auto;min-width:0;
+    align-items:center;color:var(--faint);font-size:11px;font-weight:600;white-space:nowrap;
+  }
+  /* Date now lives on line 2, so drop the duplicate under the team names. */
+  .pred-table:not(.stats-mode) tbody tr:has(td.col-live) .mc-date{display:none!important}
+  /* Line 2 continued: probabilities + tip + score + odds. */
   .pred-table:not(.stats-mode) td:nth-child(6),
   .pred-table:not(.stats-mode) td:nth-child(7),
-  .pred-table:not(.stats-mode) td:nth-child(8){order:5}
-  .pred-table:not(.stats-mode) td:nth-child(9){order:6}
-  .pred-table:not(.stats-mode) td:nth-child(10){order:7}
-  .pred-table:not(.stats-mode) td.col-odds{order:8}
-  /* Keep the result/live chip aligned to the date line on row 1. */
-  .pred-table:not(.stats-mode) td.col-live{align-self:flex-end}
-  /* Give the second line a little breathing room under the teams. */
+  .pred-table:not(.stats-mode) td:nth-child(8){order:6}
+  .pred-table:not(.stats-mode) td:nth-child(9){order:7}
+  .pred-table:not(.stats-mode) td:nth-child(10){order:8}
+  .pred-table:not(.stats-mode) td.col-odds{order:9}
+  /* Lift the result/live chip to the top-right corner on row 1. */
+  .pred-table:not(.stats-mode) td.col-live{align-self:flex-start}
+  /* Keep the second line vertically centred. */
   .pred-table:not(.stats-mode) td:nth-child(6),
   .pred-table:not(.stats-mode) td:nth-child(7),
   .pred-table:not(.stats-mode) td:nth-child(8),
@@ -1098,6 +1105,11 @@ body.theme-dark .tp-pick.pkU{color:#b79be6;border-color:rgba(183,155,230,.3);bac
   /* ---- Ad slots ---- */
   .ad-leaderboard,.ad-inline,.ad-footer{height:60px;border-radius:8px}
   .ad-slot .ad-size{display:none}
+  /* In-table banner ad must span the full card width (not shrink to text). */
+  .pred-table tbody tr.ad-row{display:block;width:100%;padding:0;border:0;background:transparent;box-shadow:none}
+  .pred-table tbody tr.ad-row:hover{transform:none;box-shadow:none}
+  .pred-table tbody tr.ad-row>td{display:block;width:100%!important}
+  .pred-table tbody tr.ad-row .ad-slot{width:100%}
 }
 
 /* ---- Extra-small phones (≤400px) ---- */
