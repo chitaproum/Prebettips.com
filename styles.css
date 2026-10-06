@@ -256,6 +256,9 @@ tr.detail-row>td{background:var(--surface2);padding:0 !important;border-bottom:1
 /* ---------- Footer ---------- */
 .site-footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0;color:var(--muted);font-size:13px;text-align:center;background:var(--surface)}
 .site-footer p{margin:0 auto;max-width:720px}
+.site-footer .footer-links{margin-top:8px}
+.site-footer .footer-links a{color:var(--brand);text-decoration:none}
+.site-footer .footer-links a:hover{text-decoration:underline}
 
 /* ---------- Visitors widget ---------- */
 .visitors{margin:12px;background:linear-gradient(135deg,var(--hero-a),var(--hero-b));border-radius:12px;padding:14px 16px;color:#fff}
