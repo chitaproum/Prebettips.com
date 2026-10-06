@@ -110,96 +110,44 @@
       "Cyprus",
       "Belarus"
     ],
-    "maxLeaguesPerCountry": 10,
+    "maxLeaguesPerCountry": 20,
     "cacheHours": 168,
     "includeCups": true,
     "allowedLeaguesByCountry": {
-      "Argentina": [
-        "Liga Profesional Argentina",
-        "Primera Nacional",
-        "Primera B Metropolitana",
-        "Primera C",
-        "Copa de la Liga Profesional",
-        "Copa Argentina",
-        "Copa de la Superliga"
-      ],
-      "Austria": [
-        "Bundesliga",
-        "2. Liga",
-        "Regionalliga - Ost",
-        "Regionalliga - Mitte",
-        "Regionalliga - West"
-      ],
-      "Belarus": [
+      "England": [
         "Premier League",
-        "1. Division",
-        "Coppa",
-        "Super Cup"
+        "Championship",
+        "League One",
+        "League Two",
+        "National League",
+        "National League - North",
+        "National League - South",
+        "FA WSL",
+        "FA Cup",
+        "EFL Trophy",
+        "League Cup",
+        "National League Cup",
+        "Non League Premier - Isthmian",
+        "Non League Premier - Northern",
+        "Non League Premier - Southern Central",
+        "Non League Premier - Southern South",
+        "Non League Div One - Isthmian North",
+        "Non League Div One - Isthmian South Central",
+        "Professional Development League"
       ],
-      "Belgium": [
-        "Jupiler Pro League",
-        "Challenger Pro League",
-        "Super League Women",
-        "Second Amateur Division - ACFF",
-        "Second Amateur Division - VFV A",
-        "Second Amateur Division - VFV B"
-      ],
-      "Brazil": [
-        "Serie A",
-        "Serie B",
-        "Brasileiro Women",
-        "Serie C",
-        "Serie D",
-        "Paulista - A1",
-        "Paulista - A2"
-      ],
-      "Bulgaria": [
-        "First League",
-        "Second League",
-        "Cup",
-        "Super Cup"
-      ],
-      "Canada": [
-        "Canadian Premier League"
-      ],
-      "Croatia": [
-        "HNL",
-        "First NL",
-        "Second NL",
-        "Cup",
-        "Super Cup"
-      ],
-      "Cyprus": [
-        "1. Division",
-        "2. Division",
-        "Cup",
-        "Super Cup"
-      ],
-      "Czech-Republic": [
-        "Czech Liga",
-        "FNL",
-        "3. liga - CFL A",
-        "3. liga - MSFL",
-        "1. Liga Women"
-      ],
-      "Denmark": [
-        "Superliga",
-        "1. Division",
-        "2. Division"
-      ],
-      "France": [
-        "Ligue 1",
-        "Ligue 2",
-        "Ligue 3",
-        "Feminine Division 1",
-        "National 2 - Group A",
-        "National 2 - Group B"
-      ],
-      "Greece": [
-        "Super League 1",
-        "Super League 2",
-        "Gamma Ethniki - Group 1",
-        "Gamma Ethniki - Group 2"
+      "Spain": [
+        "La Liga",
+        "Segunda División",
+        "Primera División Femenina",
+        "Primera División RFEF - Group 1",
+        "Primera División RFEF - Group 2",
+        "Primera División RFEF - Group 3",
+        "Primera División RFEF - Group 4",
+        "Tercera División RFEF - Group 1",
+        "Tercera División RFEF - Group 2",
+        "Copa del Rey",
+        "Super Cup",
+        "Copa Federacion"
       ],
       "Italy": [
         "Serie A",
@@ -207,7 +155,134 @@
         "Serie C - Girone A",
         "Serie A Women",
         "Serie D - Girone A",
-        "Serie D - Girone B"
+        "Serie D - Girone B",
+        "Serie D - Girone C",
+        "Serie D - Girone D",
+        "Serie D - Girone E",
+        "Coppa Italia",
+        "Super Cup",
+        "Coppa Italia Primavera"
+      ],
+      "Germany": [
+        "Bundesliga",
+        "2. Bundesliga",
+        "3. Liga",
+        "Frauen Bundesliga",
+        "Regionalliga - Bayern",
+        "Regionalliga - Nord",
+        "Regionalliga - Nordost",
+        "Regionalliga - SudWest",
+        "Regionalliga - West",
+        "DFB Pokal",
+        "Super Cup",
+        "DFB Junioren Pokal"
+      ],
+      "France": [
+        "Ligue 1",
+        "Ligue 2",
+        "Ligue 3",
+        "Feminine Division 1",
+        "National 2 - Group A",
+        "National 2 - Group B",
+        "National 2 - Group C",
+        "National 2 - Group D",
+        "National 3 - Group A",
+        "Coupe de la Ligue",
+        "Coupe de France",
+        "Trophée des Champions"
+      ],
+      "Netherlands": [
+        "Eredivisie",
+        "Eerste Divisie",
+        "Eredivisie Women",
+        "Derde Divisie",
+        "Tweede Divisie",
+        "Derde Divisie - Relegation Round",
+        "KNVB Beker",
+        "Super Cup",
+        "Super Cup Women"
+      ],
+      "Portugal": [
+        "Primeira Liga",
+        "Segunda Liga",
+        "Campeonato de Portugal Prio - Group A",
+        "Campeonato de Portugal Prio - Group B",
+        "Campeonato de Portugal Prio - Group C",
+        "Campeonato de Portugal Prio - Group D",
+        "Campeonato de Portugal Prio - Group E",
+        "Campeonato de Portugal Prio - Group F",
+        "Campeonato de Portugal Prio - Group G",
+        "Taça de Portugal",
+        "Taça da Liga",
+        "Super Cup"
+      ],
+      "Australia": [
+        "A-League",
+        "Capital Territory NPL",
+        "A-League Women",
+        "Brisbane Premier League",
+        "New South Wales NPL",
+        "Northern Territory Premier League",
+        "South Australia NPL",
+        "Victoria NPL",
+        "Western Australia NPL",
+        "Northern NSW NPL",
+        "Australia Cup",
+        "Australian Championship"
+      ],
+      "Austria": [
+        "Bundesliga",
+        "2. Liga",
+        "Regionalliga - Ost",
+        "Regionalliga - Mitte",
+        "Regionalliga - West",
+        "Landesliga - Burgenland",
+        "Landesliga - Karnten",
+        "Landesliga - Niederosterreich",
+        "Landesliga - Oberosterreich",
+        "Landesliga - Salzburg",
+        "Landesliga - Steiermark",
+        "Cup"
+      ],
+      "Japan": [
+        "J1 League",
+        "J2 League",
+        "J3 League",
+        "Japan Football League",
+        "WE League",
+        "J2/J3 League",
+        "J-League Cup",
+        "Emperor Cup",
+        "Super Cup"
+      ],
+      "Israel": [
+        "Liga Leumit",
+        "Ligat Ha'al",
+        "Liga Alef",
+        "State Cup",
+        "Toto Cup Ligat Al",
+        "Super Cup"
+      ],
+      "Estonia": [
+        "Esiliiga A",
+        "Meistriliiga",
+        "Esiliiga B",
+        "Cup"
+      ],
+      "China": [
+        "Super League",
+        "League One",
+        "League Two",
+        "FA Cup",
+        "Super Cup"
+      ],
+      "South-Korea": [
+        "K League 1",
+        "K League 2",
+        "K3 League",
+        "WK-League",
+        "K4 League",
+        "FA Cup"
       ],
       "Norway": [
         "Eliteserien",
@@ -216,70 +291,297 @@
         "2. Division - Group 2",
         "Toppserien",
         "3. Division - Girone 1",
-        "3. Division - Girone 2"
+        "3. Division - Girone 2",
+        "3. Division - Girone 3",
+        "3. Division - Girone 4",
+        "NM Cupen",
+        "Super Cup",
+        "Obos Supercup"
       ],
-      "Poland": [
-        "Ekstraklasa",
-        "I Liga",
-        "II Liga - East",
-        "III Liga - Group 1",
-        "III Liga - Group 2",
-        "Ekstraliga Women",
+      "Denmark": [
+        "Superliga",
+        "1. Division",
+        "2. Division",
+        "Denmark Series - Group 1",
+        "Denmark Series - Group 2",
+        "Denmark Series - Group 3",
+        "Denmark Series - Group 4",
+        "Kvindeliga",
+        "3. Division",
+        "Denmark Series - Promotion Round",
+        "Denmark Series - Relegation Round",
+        "DBU Pokalen"
+      ],
+      "Greece": [
+        "Super League 1",
+        "Football League",
+        "Super League 2",
+        "Gamma Ethniki - Group 1",
+        "Gamma Ethniki - Group 2",
+        "Gamma Ethniki - Group 3",
+        "Gamma Ethniki - Group 4",
+        "Gamma Ethniki - Group 5",
+        "Gamma Ethniki - Group 6",
+        "Gamma Ethniki - Group 7",
         "Cup",
         "Super Cup"
       ],
-      "Portugal": [
-        "Primeira Liga",
-        "Segunda Liga",
-        "Campeonato de Portugal Prio - Group A",
-        "Campeonato de Portugal Prio - Group B"
+      "Mexico": [
+        "Liga MX",
+        "Liga de Expansión MX",
+        "Liga MX Femenil",
+        "Liga Premier Serie A",
+        "Liga Premier Serie B",
+        "Primera Premier",
+        "Copa MX",
+        "Copa por México",
+        "Campeón de Campeones"
+      ],
+      "USA": [
+        "Major League Soccer",
+        "NWSL Women",
+        "USL Championship",
+        "USL League Two",
+        "USL League One",
+        "NISA",
+        "MLS Next Pro",
+        "USL League One Cup",
+        "WPSL",
+        "US Open Cup",
+        "NWSL Women - Challenge Cup",
+        "MLS All-Star"
+      ],
+      "Brazil": [
+        "Serie A",
+        "Serie B",
+        "Brasileiro Women",
+        "Serie C",
+        "Serie D",
+        "Paulista - A1",
+        "Paulista - A2",
+        "Gaúcho - 1",
+        "Gaúcho - 2",
+        "Copa Do Brasil",
+        "Alagoano",
+        "Copa do Nordeste"
+      ],
+      "Argentina": [
+        "Liga Profesional Argentina",
+        "Primera Nacional",
+        "Primera B Metropolitana",
+        "Primera C",
+        "Primera D",
+        "Torneo Federal A",
+        "Copa de la Liga Profesional",
+        "Torneo Promocional Amateur",
+        "Copa Argentina",
+        "Copa de la Superliga",
+        "Trofeo de Campeones de la Superliga",
+        "Super Copa"
+      ],
+      "Ireland": [
+        "Premier Division",
+        "First Division",
+        "FAI Cup",
+        "League Cup",
+        "FAI President's Cup",
+        "Women's President's Cup"
+      ],
+      "Hungary": [
+        "NB I",
+        "NB II",
+        "NB III - Northeast",
+        "NB III - Southwest",
+        "NB III - Northwest",
+        "NB III - Southeast",
+        "Magyar Kupa"
+      ],
+      "Finland": [
+        "Veikkausliiga",
+        "Ykkönen",
+        "Kakkonen - Lohko A",
+        "Kakkonen - Lohko B",
+        "Kakkonen - Lohko C",
+        "Kansallinen Liiga",
+        "Ykkösliiga",
+        "Suomen Cup",
+        "Kakkosen Cup",
+        "League Cup",
+        "Ykköscup"
+      ],
+      "Czech-Republic": [
+        "Czech Liga",
+        "FNL",
+        "3. liga - CFL A",
+        "3. liga - MSFL",
+        "4. liga - Divizie A",
+        "4. liga - Divizie B",
+        "4. liga - Divizie C",
+        "4. liga - Divizie D",
+        "4. liga - Divizie E",
+        "1. Liga Women",
+        "Cup",
+        "Super Cup"
+      ],
+      "Chile": [
+        "Primera División",
+        "Primera B",
+        "Segunda División",
+        "Copa Chile",
+        "Super Cup",
+        "Copa De La Liga"
+      ],
+      "Canada": [
+        "Canadian Soccer League",
+        "Pacific Coast Soccer League",
+        "Canadian Premier League",
+        "League 1 Ontario",
+        "Northern Super League",
+        "Canadian Championship"
+      ],
+      "Belgium": [
+        "Jupiler Pro League",
+        "Challenger Pro League",
+        "Super League Women",
+        "Second Amateur Division - ACFF",
+        "Second Amateur Division - VFV A",
+        "Second Amateur Division - VFV B",
+        "Third Amateur Division - VFV A",
+        "Third Amateur Division - VFV B",
+        "Provincial - Antwerpen",
+        "Provincial - Brabant VFV",
+        "Cup",
+        "Super Cup"
+      ],
+      "Russia": [
+        "Premier League",
+        "First League",
+        "Supreme Division Women",
+        "Second League - Group 3",
+        "Second League - Group 1",
+        "Second League - Group 2",
+        "Second League - Group 4",
+        "Second League A - Division A Gold",
+        "Second League A - Division A Silver",
+        "Cup",
+        "Super Cup",
+        "Super Cup Women"
+      ],
+      "Iceland": [
+        "Úrvalsdeild",
+        "1. Deild",
+        "2. Deild",
+        "Úrvalsdeild Women",
+        "Cup",
+        "League Cup",
+        "Super Cup",
+        "Reykjavik Cup",
+        "Fotbolti.net Cup A"
       ],
       "Romania": [
         "Liga I",
         "Liga II",
         "Liga 1 Feminin",
         "Liga III - Serie 1",
-        "Liga III - Serie 2"
+        "Liga III - Serie 2",
+        "Liga III - Serie 3",
+        "Liga III - Serie 4",
+        "Liga III - Serie 5",
+        "Liga III - Serie 6",
+        "Liga III - Serie 7",
+        "Cupa României",
+        "Supercupa"
       ],
-      "Russia": [
-        "Premier League",
+      "Bulgaria": [
         "First League",
-        "Supreme Division Women",
-        "Second League - Group 1",
-        "Second League - Group 2"
-      ],
-      "Saudi-Arabia": [
-        "Pro League",
-        "Division 1",
-        "Premier League Women",
-        "King's Cup",
+        "Second League",
+        "Third League - Northeast",
+        "Third League - Northwest",
+        "Third League - Southeast",
+        "Third League - Southwest",
+        "Cup",
         "Super Cup"
       ],
-      "Serbia": [
-        "Super Liga",
-        "Prva Liga",
+      "Croatia": [
+        "HNL",
+        "First NL",
+        "Third NL - Istok",
+        "Third NL - Jug",
+        "Third NL - Sjever",
+        "Third NL - Sredite",
+        "Third NL - Zapad",
+        "Second NL",
         "Cup",
-        "U19 league"
+        "Super Cup"
+      ],
+      "Slovenia": [
+        "1. SNL",
+        "2. SNL",
+        "3. SNL - East",
+        "3. SNL - West",
+        "Cup"
       ],
       "Slovakia": [
         "Super Liga",
         "2. liga",
         "3. liga - Bratislava",
+        "3. liga - West",
+        "3. liga - East",
+        "3. liga - Center",
         "I Liga - Women",
-        "3. liga - Play-offs",
         "Cup"
       ],
-      "Slovenia": [
-        "1. SNL",
-        "2. SNL",
-        "Cup"
+      "Turkey": [
+        "Süper Lig",
+        "1. Lig",
+        "2. Lig",
+        "3. Lig - Group 1",
+        "3. Lig - Group 2",
+        "3. Lig - Group 3",
+        "3. Lig - Group 4",
+        "Türkiye Kupası",
+        "Super Cup"
       ],
-      "South-Korea": [
-        "K League 1",
-        "K League 2",
-        "K3 League",
-        "WK-League",
-        "FA Cup"
+      "Uruguay": [
+        "Primera División",
+        "Segunda División",
+        "Super Copa",
+        "Copa Uruguay",
+        "Copa De La Liga Auf"
+      ],
+      "Wales": [
+        "Premier League",
+        "FAW Championship",
+        "Welsh Cup",
+        "League Cup"
+      ],
+      "Sweden": [
+        "Allsvenskan",
+        "Superettan",
+        "Damallsvenskan",
+        "Ettan - Norra",
+        "Ettan - Södra",
+        "Division 2 - Norra Götaland",
+        "Division 2 - Norra Svealand",
+        "Division 2 - Norrland",
+        "Division 2 - Södra Svealand",
+        "Division 2 - Västra Götaland",
+        "Svenska Cupen",
+        "Svenska Cupen - Women"
+      ],
+      "Scotland": [
+        "Premiership",
+        "Championship",
+        "League One",
+        "League Two",
+        "Football League - Highland League",
+        "Football League - Lowland League",
+        "Football League - Championship",
+        "FA Cup",
+        "Challenge Cup",
+        "League Cup",
+        "SWPL Cup",
+        "SWF Scottish Cup"
       ],
       "Switzerland": [
         "Super League",
@@ -288,22 +590,63 @@
         "1. Liga Classic - Group 1",
         "1. Liga Classic - Group 2",
         "1. Liga Classic - Group 3",
-        "AXA Women's Super League"
+        "AXA Women’s Super League",
+        "2. Liga Interregional - Group 1",
+        "2. Liga Interregional - Group 2",
+        "2. Liga Interregional - Group 3",
+        "Schweizer Cup",
+        "Erste Liga Cup"
       ],
-      "Turkey": [
-        "Süper Lig",
-        "1. Lig",
-        "2. Lig",
-        "3. Lig - Group 1",
-        "3. Lig - Group 2",
-        "3. Lig - Play-offs",
-        "Türkiye Kupası",
-        "Super Cup"
+      "Saudi-Arabia": [
+        "Pro League",
+        "Division 1",
+        "Division 2",
+        "Premier League Women",
+        "King's Cup",
+        "Super Cup",
+        "Crown Prince Cup"
       ],
       "Ukraine": [
         "Premier League",
         "Persha Liga",
+        "Druha Liga",
+        "Druha Liga - Group B",
         "Cup",
+        "Super Cup"
+      ],
+      "Serbia": [
+        "Super Liga",
+        "Prva Liga",
+        "Srpska Liga - Belgrade",
+        "Srpska Liga - Vojvodina",
+        "Srpska Liga - East",
+        "Srpska Liga - West",
+        "Cup"
+      ],
+      "Poland": [
+        "Ekstraklasa",
+        "I Liga",
+        "II Liga - East",
+        "III Liga - Group 1",
+        "III Liga - Group 2",
+        "III Liga - Group 3",
+        "III Liga - Group 4",
+        "Ekstraliga Women",
+        "Cup",
+        "Super Cup"
+      ],
+      "Cyprus": [
+        "1. Division",
+        "2. Division",
+        "3. Division",
+        "Cup",
+        "Super Cup"
+      ],
+      "Belarus": [
+        "Premier League",
+        "1. Division",
+        "2. Division",
+        "Coppa",
         "Super Cup"
       ]
     }
