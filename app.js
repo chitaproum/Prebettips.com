@@ -749,6 +749,30 @@
     return (prefix || '') + raw.slice(0, 2).toUpperCase();
   }
 
+  // Render a real flag IMAGE (flagcdn) from an ISO code so flags show on every
+  // platform. Windows desktop has no flag-emoji glyphs, so emoji flags fall
+  // back to the two ISO letters there; an <img> fixes that everywhere.
+  function flagImgIso(iso, altName) {
+    if (!iso) return '';
+    iso = String(iso).toLowerCase();
+    var alt = esc(altName || iso.toUpperCase());
+    return '<img class="flag-img" src="https://flagcdn.com/24x18/' + iso + '.png"'
+      + ' srcset="https://flagcdn.com/48x36/' + iso + '.png 2x" width="24" height="18"'
+      + ' alt="' + alt + '" loading="lazy" decoding="async">';
+  }
+  // Resolve a country ISO code from a league name via the CATALOG + COUNTRY_DATA.
+  function isoForLeagueName(name) {
+    if (typeof CATALOG !== 'undefined' && CATALOG.length) {
+      for (var i = 0; i < CATALOG.length; i++) {
+        if (CATALOG[i].name === name && CATALOG[i].country) {
+          var c = COUNTRY_DATA[CATALOG[i].country];
+          if (c && c.iso) return c.iso;
+        }
+      }
+    }
+    return '';
+  }
+
   function renderLeagueBadge(f) {
     if (!f) return '';
     var leagueName = typeof f === 'string' ? f : (f.league || '');
@@ -770,7 +794,7 @@
     }
 
     var cInfo = COUNTRY_DATA[countryName] || {};
-    var flag = cInfo.flag || '⚽';
+    var flag = cInfo.iso ? flagImgIso(cInfo.iso, countryName) : (cInfo.flag || '⚽');
     var shortCode = getLeagueShortCode(leagueName, countryName);
     var fullName = leagueName + (countryName ? ' · ' + countryLabel(countryName) : '');
 
@@ -1245,8 +1269,10 @@ function leagueCode(l) {
     var counts = leagueCounts();
     var pl = (DATA.popularLeagues || []).map(function (lg) {
       var n = counts[lg.name] || 0;
+      var iso = isoForLeagueName(lg.name);
+      var ic = iso ? flagImgIso(iso, lg.name) : esc(lg.icon || '');
       return '<button class="side-item" data-league="' + esc(lg.name) + '">'
-        + '<span class="ico">' + lg.icon + '</span><span class="lbl">' + esc(lg.name) + '</span>'
+        + '<span class="ico">' + ic + '</span><span class="lbl">' + esc(lg.name) + '</span>'
         + (n ? '<span class="cnt">' + n + '</span>' : '') + '</button>';
     }).join('');
     var allBtn = '<button class="side-item active" data-league="all"><span class="ico">★</span>'
@@ -1267,7 +1293,7 @@ function leagueCode(l) {
       var leagues = CATALOG.filter(function(lg) { return lg.country === co; });
       var isOpen = !!opened[co], id = 'country-leagues-' + i;
       return '<div class="country-group" data-country-group="' + esc(co) + '"><div class="country-heading">'
-        + '<button type="button" class="side-item country-select" data-country="' + esc(co) + '"><span class="ico">' + ((COUNTRY_DATA[co] && COUNTRY_DATA[co].flag) ? COUNTRY_DATA[co].flag : '⚽') + '</span>'
+        + '<button type="button" class="side-item country-select" data-country="' + esc(co) + '"><span class="ico">' + ((COUNTRY_DATA[co] && COUNTRY_DATA[co].iso) ? flagImgIso(COUNTRY_DATA[co].iso, co) : ((COUNTRY_DATA[co] && COUNTRY_DATA[co].flag) ? COUNTRY_DATA[co].flag : '⚽')) + '</span>'
         + '<span class="lbl">' + esc(countryLabel(co)) + '</span></button>'
         + '<button type="button" class="country-expand" data-expand-country="' + esc(co) + '" aria-expanded="' + isOpen
         + '" aria-controls="' + id + '" aria-label="Show leagues in ' + esc(countryLabel(co)) + '"><span class="caret">›</span></button></div>'
@@ -1525,6 +1551,7 @@ function leagueCode(l) {
     $('#accOu').textContent = n ? pct(hitOu / n) + '%' : '–';
     $('#settled').textContent = n;
     var ha = $('#heroAcc'); if (ha) ha.textContent = n ? pct(hit1x2 / n) + '%' : '–';
+    var hou = $('#heroAccOu'); if (hou) hou.textContent = n ? pct(hitOu / n) + '%' : '–';
   }
 
   /* ---------- Page loading indicator ----------

@@ -452,6 +452,14 @@ tr.detail-row>td{padding:0 !important;background:var(--bg)}
   line-height: 1;
   filter: drop-shadow(0 1px 1px rgba(0,0,0,0.15));
 }
+/* Real flag images (flagcdn) — render on every OS, incl. Windows desktop */
+.flag-img{
+  width:20px;height:15px;object-fit:cover;display:inline-block;
+  border-radius:2px;vertical-align:middle;
+  box-shadow:0 0 0 1px rgba(0,0,0,0.08);
+}
+.league-badge .lb-flag .flag-img{width:22px;height:16px;}
+.side-item .ico .flag-img{width:20px;height:15px;}
 .league-badge .lb-code {
   font-size: 11px;
   font-weight: 700;
