@@ -1291,11 +1291,7 @@ function leagueCode(l) {
       + '<div class="side-group"><div class="side-title">Countries</div>'
       + '<div class="side-search"><span class="ico">⚲</span><input type="search" id="countrySearch" placeholder="Search country…" aria-label="Search country"></div>'
       + '<div class="country-list">' + countries + '</div></div>'
-      + '<div class="ad-slot ad-mpu" data-ad-placement="sidebar" aria-label="Advertisement"><span class="ad-body">Your ad here<span class="ad-size">MPU 300×250</span></span></div>'
-      + '<div class="visitors"><div class="vc-head"><span class="vc-icon">◉</span>Traffic analytics not connected</div>'
-      + '<ul class="vc-list"><li class="online"><span class="vc-k">Online now</span><span class="vc-v">–</span></li>'
-      + '<li><span class="vc-k">Today</span><span class="vc-v">–</span></li>'
-      + '<li><span class="vc-k">This week</span><span class="vc-v">–</span></li></ul></div>');
+      + '<div class="ad-slot ad-mpu" data-ad-placement="sidebar" aria-label="Advertisement"><span class="ad-body">Your ad here<span class="ad-size">MPU 300×250</span></span></div>');
 
     // populate league filter dropdown — mirror the sidebar exactly:
     // only leagues that appear under a country group in the sidebar list (1).
