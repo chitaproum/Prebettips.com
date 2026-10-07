@@ -252,6 +252,21 @@ tr.detail-row>td{background:var(--surface2);padding:0 !important;border-bottom:1
 .prose code{background:var(--surface2);padding:2px 7px;border-radius:6px;font-size:13px}
 .prose .muted,.muted{color:var(--muted)}
 .prose li{margin:10px 0}
+.prose h2{margin-top:28px;font-size:20px;font-weight:800;letter-spacing:-.2px}
+.prose ul{padding-left:20px}
+.prose ul li{margin:6px 0}
+
+/* ---------- Method Comparison Table ---------- */
+.method-table-wrap{overflow-x:auto;margin:16px 0 24px;-webkit-overflow-scrolling:touch}
+.method-table{width:100%;border-collapse:collapse;font-size:13px;line-height:1.55;text-align:left;min-width:780px}
+.method-table thead{border-bottom:2px solid var(--line)}
+.method-table th{padding:12px 14px 10px;font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);white-space:nowrap;vertical-align:bottom}
+.method-table td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+.method-table td:first-child{white-space:nowrap;font-weight:700}
+.method-table tbody tr:last-child td{border-bottom:none}
+.method-table .row-benchmark{background:var(--brand-soft)}
+.method-table .row-benchmark td{font-weight:600}
+@media(max-width:720px){.method-table{font-size:11.5px}.method-table th,.method-table td{padding:8px 10px}}
 
 /* ---------- Footer ---------- */
 .site-footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0;color:var(--muted);font-size:13px;text-align:center;background:var(--surface)}
