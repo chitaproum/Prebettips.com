@@ -45,10 +45,12 @@ jobs:
       - name: Prepare public website only
         run: |
           mkdir -p _site
-          cp index.html styles.css theme.js app.js ads.js data.js _site/
+          cp *.html styles.css theme.js app.js ads.js data.js _site/
           for folder in images assets; do
             if [ -d "$folder" ]; then cp -r "$folder" _site/; fi
           done
+          # Include ads.txt if present
+          if [ -f ads.txt ]; then cp ads.txt _site/; fi
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
