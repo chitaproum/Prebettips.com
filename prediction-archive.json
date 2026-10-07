@@ -102769,5 +102769,252 @@
       "expA": 0.881070443924112,
       "expTotal": 2.5684327948797754
     }
+  },
+  "1644698": {
+    "savedAt": "2026-10-07T16:31:56.847304+00:00",
+    "kickoffUtc": "2026-10-16T22:00:00+00:00",
+    "home": "Cerro",
+    "away": "Cerro Largo",
+    "league": "Primera División · Uruguay",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.2858831951334212,
+      "pDraw": 0.29969296558841113,
+      "pAway": 0.41442383927816784,
+      "pOver": 0.33998248117017826,
+      "scoreH": 0,
+      "scoreA": 1,
+      "expH": 0.9061991889516974,
+      "expA": 1.1554905222261571,
+      "expTotal": 2.0616897111778547
+    }
+  },
+  "1644699": {
+    "savedAt": "2026-10-07T16:31:56.847304+00:00",
+    "kickoffUtc": "2026-10-17T13:00:00+00:00",
+    "home": "Progreso",
+    "away": "Juventud",
+    "league": "Primera División · Uruguay",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.30056009264571204,
+      "pDraw": 0.2678509401154809,
+      "pAway": 0.4315889672388072,
+      "pOver": 0.45238975372488155,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.1052085933116584,
+      "expA": 1.3804677503808862,
+      "expTotal": 2.4856763436925444
+    }
+  },
+  "1645118": {
+    "savedAt": "2026-10-07T16:31:56.847304+00:00",
+    "kickoffUtc": "2026-10-17T14:00:00+00:00",
+    "home": "Macclesfield",
+    "away": "Anstey Nomads",
+    "league": "FA Cup · England",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.3159519859809571,
+      "pDraw": 0.21546584755817527,
+      "pAway": 0.46858216646086764,
+      "pOver": 0.6983859321983497,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.6165937627113296,
+      "expA": 1.9975685064111184,
+      "expTotal": 3.614162269122448
+    }
+  },
+  "1645117": {
+    "savedAt": "2026-10-07T16:31:56.847304+00:00",
+    "kickoffUtc": "2026-10-17T14:00:00+00:00",
+    "home": "Gateshead",
+    "away": "Stafford Rangers",
+    "league": "FA Cup · England",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.31719311788365284,
+      "pDraw": 0.22112692688579558,
+      "pAway": 0.4616799552305516,
+      "pOver": 0.6704682273482953,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5529781630999997,
+      "expA": 1.9059599898000001,
+      "expTotal": 3.4589381529
+    }
+  },
+  "1645115": {
+    "savedAt": "2026-10-07T16:31:56.847304+00:00",
+    "kickoffUtc": "2026-10-17T14:00:00+00:00",
+    "home": "AFC Fylde",
+    "away": "Atherton Collieries",
+    "league": "FA Cup · England",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.29916865261748743,
+      "pDraw": 0.2150959147735193,
+      "pAway": 0.48573543260899316,
+      "pOver": 0.6905459966699253,
+      "scoreH": 1,
+      "scoreA": 2,
+      "expH": 1.5529781630999997,
+      "expA": 2.0170786134,
+      "expTotal": 3.5700567764999995
+    }
+  },
+  "1645116": {
+    "savedAt": "2026-10-07T16:31:56.847304+00:00",
+    "kickoffUtc": "2026-10-17T14:00:00+00:00",
+    "home": "Bedford Town",
+    "away": "Cray Wanderers",
+    "league": "FA Cup · England",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.35719025593563686,
+      "pDraw": 0.23876948211463253,
+      "pAway": 0.4040402619497307,
+      "pOver": 0.5958107614085938,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.4899270488280478,
+      "expA": 1.5980608819836604,
+      "expTotal": 3.087987930811708
+    }
+  },
+  "1645119": {
+    "savedAt": "2026-10-07T16:31:56.847304+00:00",
+    "kickoffUtc": "2026-10-17T14:00:00+00:00",
+    "home": "Spalding United",
+    "away": "Alvechurch",
+    "league": "FA Cup · England",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.4609070933025726,
+      "pDraw": 0.2376571672977469,
+      "pAway": 0.30143573939968055,
+      "pOver": 0.5818184103122973,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.6954109421507808,
+      "expA": 1.32907852405197,
+      "expTotal": 3.024489466202751
+    }
+  },
+  "1644700": {
+    "savedAt": "2026-10-07T16:31:56.847304+00:00",
+    "kickoffUtc": "2026-10-17T16:00:00+00:00",
+    "home": "Racing Montevideo",
+    "away": "Wanderers",
+    "league": "Primera División · Uruguay",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.48963760956736496,
+      "pDraw": 0.26874231006986865,
+      "pAway": 0.24162008036276625,
+      "pOver": 0.41636977232999595,
+      "scoreH": 1,
+      "scoreA": 0,
+      "expH": 1.4300376035016298,
+      "expA": 0.9173924044585265,
+      "expTotal": 2.347430007960156
+    }
+  },
+  "1644701": {
+    "savedAt": "2026-10-07T16:31:56.847304+00:00",
+    "kickoffUtc": "2026-10-17T19:00:00+00:00",
+    "home": "Boston River",
+    "away": "Defensor Sporting",
+    "league": "Primera División · Uruguay",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.36195544426572573,
+      "pDraw": 0.2952657283624751,
+      "pAway": 0.34277882737179916,
+      "pOver": 0.3639204955443192,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.094063379927874,
+      "expA": 1.0563232740410384,
+      "expTotal": 2.1503866539689125
+    }
+  },
+  "1644702": {
+    "savedAt": "2026-10-07T16:31:56.847304+00:00",
+    "kickoffUtc": "2026-10-18T13:00:00+00:00",
+    "home": "Albion FC",
+    "away": "Atletico Torque",
+    "league": "Primera División · Uruguay",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.3237879359627722,
+      "pDraw": 0.22754482703330078,
+      "pAway": 0.44866723700392697,
+      "pOver": 0.6414347195049737,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5047954298611579,
+      "expA": 1.803195514941419,
+      "expTotal": 3.307990944802577
+    }
+  },
+  "1644703": {
+    "savedAt": "2026-10-07T16:31:56.847304+00:00",
+    "kickoffUtc": "2026-10-18T18:00:00+00:00",
+    "home": "Danubio",
+    "away": "Central Espanol",
+    "league": "Primera División · Uruguay",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.3601030831907775,
+      "pDraw": 0.2855732792329289,
+      "pAway": 0.3543236375762936,
+      "pOver": 0.3971977117502977,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.1431875747428926,
+      "expA": 1.131540346431524,
+      "expTotal": 2.2747279211744162
+    }
+  },
+  "1644704": {
+    "savedAt": "2026-10-07T16:31:56.847304+00:00",
+    "kickoffUtc": "2026-10-18T21:30:00+00:00",
+    "home": "Liverpool Montevideo",
+    "away": "Penarol",
+    "league": "Primera División · Uruguay",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.30191665794763634,
+      "pDraw": 0.26731839599469015,
+      "pAway": 0.4307649460576735,
+      "pOver": 0.4549680861506313,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.1122964082804458,
+      "expA": 1.383422001273955,
+      "expTotal": 2.495718409554401
+    }
+  },
+  "1644705": {
+    "savedAt": "2026-10-07T16:31:56.847304+00:00",
+    "kickoffUtc": "2026-10-19T23:00:00+00:00",
+    "home": "Club Nacional",
+    "away": "Deportivo Maldonado",
+    "league": "Primera División · Uruguay",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.31726689801542923,
+      "pDraw": 0.24691843556142087,
+      "pAway": 0.43581466642315,
+      "pOver": 0.5465637418414163,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.3019279564368889,
+      "expA": 1.5671824811706958,
+      "expTotal": 2.869110437607585
+    }
   }
 }
