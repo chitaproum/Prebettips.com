@@ -92,22 +92,25 @@
           <span class="home-eyebrow">Welcome to goalpre.com — the machine learning models for smarter football predictions</span>
           <div class="home-actions">
             <button type="button" class="home-cta primary" data-view="predictions">View today's predictions</button>
+            <button type="button" class="home-cta" data-view="top">TOP 20 predictions</button>
           </div>
         </div>
         <div class="home-toppicks">
           <section class="tp-panel">
             <div class="tp-panel-head">
-              <h2>Top 5 &middot; 1X2 high confidence</h2>
+              <h2>Today&rsquo;s Best Choice &middot; 1X2 high confidence</h2>
               <p>Highest-probability match-winner tips for today, shown for both the Poisson and KPI engines.</p>
             </div>
             <div class="tp-list" id="tp1x2"><p class="tp-empty">Loading today&rsquo;s top tips&hellip;</p></div>
+            <button type="button" class="share-btn" id="shareHome" title="Share this page"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share</button>
           </section>
           <section class="tp-panel">
             <div class="tp-panel-head">
-              <h2>Top 5 &middot; Over/Under 2.5 high confidence</h2>
+              <h2>Today&rsquo;s Best Choice &middot; Over/Under 2.5 high confidence</h2>
               <p>Highest-probability goals-line tips for today, shown for both the Poisson and KPI engines.</p>
             </div>
             <div class="tp-list" id="tpou"><p class="tp-empty">Loading today&rsquo;s top tips&hellip;</p></div>
+            <button type="button" class="share-btn" id="shareHomeOu" title="Share this page"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share</button>
           </section>
         </div>
         <div class="home-features">
@@ -126,6 +129,36 @@
             <h2>Today, weekend &amp; more</h2>
             <p>Browse predictions by day — today, tomorrow, the weekend or any league — and track how past tips performed.</p>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TOP 20 VIEW -->
+    <section id="view-top" class="view" hidden>
+      <div class="home-wrap">
+        <div class="tp-page-head">
+          <h1>TOP 20 predictions</h1>
+          <p id="top20Range"></p>
+          <p>The 20 highest-confidence tips across the full week, shown for both the Poisson and KPI engines.</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+          <button type="button" class="share-btn" id="shareTop20" title="Share this page"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share</button>
+        </div>
+        <div class="home-toppicks">
+          <section class="tp-panel">
+            <div class="tp-panel-head">
+              <h2>Top 20 &middot; 1X2 high confidence</h2>
+              <p>Highest-probability match-winner tips for the full week.</p>
+            </div>
+            <div class="tp-list" id="top20_1x2"><p class="tp-empty">Loading TOP 20 tips&hellip;</p></div>
+          </section>
+          <section class="tp-panel">
+            <div class="tp-panel-head">
+              <h2>Top 20 &middot; Over/Under 2.5 high confidence</h2>
+              <p>Highest-probability goals-line tips for the full week.</p>
+            </div>
+            <div class="tp-list" id="top20_ou"><p class="tp-empty">Loading TOP 20 tips&hellip;</p></div>
+          </section>
         </div>
       </div>
     </section>

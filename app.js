@@ -1310,7 +1310,7 @@ function leagueCode(l) {
         + '<button type="button" class="side-subitem" data-period="' + x[0] + '" data-submode="1x2">Predictions 1X2</button>'
         + '<button type="button" class="side-subitem" data-period="' + x[0] + '" data-submode="ou">Under/Over 2.5 goals</button>'
         + '</div></div>';
-    }).join('') + '<button class="side-item side-period side-top" data-period="top"><span class="lbl">TOP predictions</span></button>';
+    }).join('') + '<button class="side-item side-period side-top" data-period="top"><span class="lbl">TOP 20 predictions</span></button>';
     side.insertAdjacentHTML('beforeend',
       '<div class="side-group side-periods">' + periodBtns + '</div>'
       + '<div class="side-group"><div class="side-title">Popular leagues</div>' + allBtn + pl + '</div>'
@@ -1367,7 +1367,7 @@ function leagueCode(l) {
         var group = pb.closest('.side-period-group');
         var submenu = group ? group.querySelector('.side-submenu') : null;
         // Periods without a sub-menu (e.g. TOP predictions) switch directly.
-        if (!submenu) { showView('predictions'); setPeriod(pb.getAttribute('data-period')); return; }
+        if (!submenu) { if (pb.getAttribute('data-period') === 'top') { showView('top'); } else { showView('predictions'); setPeriod(pb.getAttribute('data-period')); } return; }
         var isOpen = pb.getAttribute('aria-expanded') === 'true';
         // Collapse any other open period dropdowns so only one is open at a time.
         $all('.side-period[aria-expanded="true"]', side).forEach(function (b) {
@@ -1626,13 +1626,14 @@ function leagueCode(l) {
     var kp = market === '1x2' ? s.k1 : s.ko;
     var agree = po.key === kp.key;
     var when = tpWhen(f);
+    var dateStr = fmtFull(f.date);
     return '<a class="tp-item" href="#" data-tp-view="predictions">'
       + '<div class="tp-match">'
       +   '<span class="tp-teams">'
       +     '<span class="tp-team"><span class="tp-crest" aria-hidden="true">' + esc(initials(f.home)) + '</span>' + esc(f.home) + '</span>'
       +     '<span class="tp-team"><span class="tp-crest" aria-hidden="true">' + esc(initials(f.away)) + '</span>' + esc(f.away) + '</span>'
       +   '</span>'
-      +   '<span class="tp-meta">' + esc(f.league || '') + (when ? ' &middot; ' + esc(when) : '') + '</span>'
+      +   '<span class="tp-meta">' + esc(dateStr) + (when ? ' &middot; ' + esc(when) : '') + ' &middot; ' + esc(f.league || '') + '</span>'
       + '</div>'
       + '<div class="tp-engines">' + tpEngine('Poisson', po, market) + tpEngine('KPI', kp, market) + '</div>'
       + (agree
@@ -1644,9 +1645,9 @@ function leagueCode(l) {
     var el1 = $('#tp1x2'), elO = $('#tpou');
     if (!el1 && !elO) return;
     var today = todayStr();
-    var pool = FIXTURES.filter(function (f) { return dayOf(f) === today; });
+    var pool = FIXTURES.filter(function (f) { return dayOf(f) === today && !matchFinished(f); });
     if (pool.length < 5) {
-      pool = FIXTURES.filter(function (f) { return dayOf(f) >= today; })
+      pool = FIXTURES.filter(function (f) { return dayOf(f) >= today && !matchFinished(f); })
         .sort(function (a, b) { return String(a.date) < String(b.date) ? -1 : 1; });
     }
     // Stage 1: cheap Dixon-Coles pass to shortlist candidates (keeps KPI work small).
@@ -1680,6 +1681,76 @@ function leagueCode(l) {
       : '<p class="tp-empty">No upcoming fixtures to rank yet.</p>';
   }
 
+  /* ---------- Top 20 predictions (full week, dedicated view) ---------- */
+
+  /* Compute the current "active week" for the Top 20 view.
+     The week always starts on Monday and ends on Sunday.
+     If today is Mon-Sun, the week is [this Monday .. this Sunday].
+     When every fixture in that window is finished, the week auto-advances
+     to the NEXT Monday-Sunday so the Top 20 resets for the new week. */
+  function top20Week() {
+    var today = todayStr();
+    var dow = parseDay(today).getDay(); // 0=Sun 1=Mon … 6=Sat
+    var mondayOff = dow === 0 ? -6 : 1 - dow;          // days back to Monday
+    var monday = addDays(today, mondayOff);
+    var sunday = addDays(monday, 6);
+    // Check if all fixtures Mon-Sun are finished; if so, jump to next week
+    var inWindow = FIXTURES.filter(function (f) {
+      var d = dayOf(f); return d >= monday && d <= sunday;
+    });
+    var allDone = inWindow.length > 0 && inWindow.every(matchFinished);
+    if (allDone) {
+      monday = addDays(monday, 7);
+      sunday = addDays(sunday, 7);
+    }
+    return { start: monday, end: sunday };
+  }
+
+  function renderTop20() {
+    var el1 = $('#top20_1x2'), elO = $('#top20_ou');
+    if (!el1 && !elO) return;
+    var wk = top20Week();
+    // Set the date range header
+    var rangeEl = $('#top20Range');
+    if (rangeEl) {
+      rangeEl.textContent = fmtFull(wk.start) + ' \u2013 ' + fmtFull(wk.end);
+    }
+    // Use all upcoming (not-finished) fixtures in the active week
+    var pool = FIXTURES.filter(function (f) {
+      var d = dayOf(f); return d >= wk.start && d <= wk.end && !matchFinished(f);
+    });
+    // Stage 1: cheap Poisson pass to shortlist candidates
+    var scored = pool.map(function (f) {
+      activeLeague = f.league || null;
+      var pois = (f.prediction && f.prediction.pHome != null) ? f.prediction : predictPoisson(f.home, f.away);
+      return { f: f, pois: pois, t1: tpTop1x2(pois), to: tpTopOU(pois) };
+    });
+    var short1 = scored.slice().sort(function (a, b) { return b.t1.prob - a.t1.prob; }).slice(0, 50);
+    var shortO = scored.slice().sort(function (a, b) { return b.to.prob - a.to.prob; }).slice(0, 50);
+    var seen = {}, union = [];
+    short1.concat(shortO).forEach(function (s) { var k = fxKey(s.f); if (!seen[k]) { seen[k] = true; union.push(s); } });
+    // Group by league so the KPI stats cache is rebuilt once per league
+    union.sort(function (a, b) { return String(a.f.league || '') < String(b.f.league || '') ? -1 : 1; });
+    // Stage 2: compute KPI for the shortlist
+    union.forEach(function (s) {
+      activeLeague = s.f.league || null;
+      s.kpi = predictKpi(s.f.home, s.f.away);
+      s.k1 = tpTop1x2(s.kpi);
+      s.ko = tpTopOU(s.kpi);
+      s.rank1 = (s.t1.prob + s.k1.prob) / 2;
+      s.rankO = (s.to.prob + s.ko.prob) / 2;
+    });
+    var best1 = union.slice().sort(function (a, b) { return b.rank1 - a.rank1; }).slice(0, 20);
+    var bestO = union.slice().sort(function (a, b) { return b.rankO - a.rankO; }).slice(0, 20);
+    // Both panels always visible, side by side
+    if (el1) el1.innerHTML = best1.length
+      ? best1.map(function (s) { return tpItem(s, '1x2'); }).join('')
+      : '<p class="tp-empty">No upcoming fixtures to rank yet.</p>';
+    if (elO) elO.innerHTML = bestO.length
+      ? bestO.map(function (s) { return tpItem(s, 'ou'); }).join('')
+      : '<p class="tp-empty">No upcoming fixtures to rank yet.</p>';
+  }
+
   function showView(view) {
     pageLoader.run();
     if (view !== 'league' && location.hash.indexOf('#league=') === 0) history.replaceState(null, '', location.pathname + location.search);
@@ -1687,6 +1758,8 @@ function leagueCode(l) {
     // Gentle fade-in on the view that just became visible, so the switch feels responsive.
     var shown = $('#view-' + view);
     if (shown) { shown.classList.remove('pb-switching'); void shown.offsetWidth; shown.classList.add('pb-switching'); }
+    // Render Top 20 when that view is shown
+    if (view === 'top') renderTop20();
     $all('.nav-btn').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-view') === view); });
     var nav = $('#menuToggle');
     if (nav) nav.setAttribute('aria-expanded', 'false');
@@ -1728,6 +1801,15 @@ function leagueCode(l) {
     return Object.keys(found).map(function (key) { return found[key]; });
   }
   function leagueFinished(f) { return ['FT', 'AET', 'PEN'].indexOf(f.status) >= 0 || (!f.status && f.fh != null && f.fa != null); }
+
+  /* True when a match is completed (FT/AET/PEN) or cancelled/postponed permanently.
+     Used by Top 20 and Top 5 to skip fixtures that are no longer upcoming. */
+  function matchFinished(f) {
+    if (['FT','AET','PEN'].indexOf(f.status) >= 0) return true;
+    if (['CANC','ABD','AWD','WO'].indexOf(f.status) >= 0) return true;
+    if (!f.status && f.fh != null && f.fa != null) return true; // old data without status but has full-time score
+    return false;
+  }
   // Keep the full latest-results round and next/live round, without pagination.
   function leagueRoundKey(f) { return f.round || f.date.slice(0, 10); }
   function leagueOverviewGroups(recent, upcoming, now) {
@@ -1930,6 +2012,10 @@ function leagueCode(l) {
     $all('.home-cta[data-view]').forEach(function (b) {
       b.addEventListener('click', function () { showView(b.getAttribute('data-view')); });
     });
+    // Home page period buttons (e.g. TOP 20) jump to predictions with that period.
+    $all('.home-cta[data-period]').forEach(function (b) {
+      b.addEventListener('click', function () { showView('predictions'); setPeriod(b.getAttribute('data-period')); });
+    });
     // Home top-pick cards jump to the full predictions table.
     document.addEventListener('click', function (e) {
       var node = e.target, hit = null;
@@ -2089,6 +2175,37 @@ function leagueCode(l) {
       });
     }
     initLeaguePages();
+    // Share buttons: copy the current page URL to clipboard (or native share on mobile)
+    var shareToast = null;
+    function showShareToast(msg) {
+      if (!shareToast) {
+        shareToast = document.createElement('div');
+        shareToast.className = 'share-toast';
+        document.body.appendChild(shareToast);
+      }
+      shareToast.textContent = msg || 'Link copied!';
+      shareToast.classList.add('show');
+      setTimeout(function () { shareToast.classList.remove('show'); }, 2000);
+    }
+    function sharePage(e) {
+      var url = location.href;
+      if (navigator.share) {
+        navigator.share({ title: document.title, url: url }).catch(function () {});
+      } else if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function () { showShareToast('Link copied!'); });
+      } else {
+        // Fallback: create a temporary textarea to copy
+        var ta = document.createElement('textarea');
+        ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); showShareToast('Link copied!'); } catch (err) { showShareToast('Could not copy'); }
+        document.body.removeChild(ta);
+      }
+    }
+    ['shareHome','shareHomeOu','shareTop20'].forEach(function (id) {
+      var btn = $('#' + id);
+      if (btn) btn.addEventListener('click', sharePage);
+    });
     var ac = $('#anchorAdClose');
     if (ac) ac.addEventListener('click', function () { document.body.classList.add('anchor-hidden'); });
   }
