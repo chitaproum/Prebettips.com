@@ -102636,5 +102636,138 @@
       "expA": 2.94616094135168,
       "expTotal": 4.560387021037565
     }
+  },
+  "1644547": {
+    "savedAt": "2026-10-07T08:32:07.575013+00:00",
+    "kickoffUtc": "2026-10-16T23:00:00+00:00",
+    "home": "Colón",
+    "away": "Sportivo Huracan",
+    "league": "Segunda División · Uruguay",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.4241809472411623,
+      "pDraw": 0.2765267752128348,
+      "pAway": 0.29929227754600285,
+      "pOver": 0.4196447031237816,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.3080612568520205,
+      "expA": 1.051633739605968,
+      "expTotal": 2.3596949964579883
+    }
+  },
+  "1644548": {
+    "savedAt": "2026-10-07T08:32:07.575013+00:00",
+    "kickoffUtc": "2026-10-17T17:00:00+00:00",
+    "home": "Fenix",
+    "away": "Paysandu",
+    "league": "Segunda División · Uruguay",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.5422653768541676,
+      "pDraw": 0.23130269981751067,
+      "pAway": 0.2264319233283217,
+      "pOver": 0.5490901106302154,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.8010141319991844,
+      "expA": 1.080173097576693,
+      "expTotal": 2.881187229575877
+    }
+  },
+  "1644549": {
+    "savedAt": "2026-10-07T08:32:07.575013+00:00",
+    "kickoffUtc": "2026-10-17T20:00:00+00:00",
+    "home": "Tacuarembo",
+    "away": "La Luz",
+    "league": "Segunda División · Uruguay",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.3348305248286228,
+      "pDraw": 0.31977754267928965,
+      "pAway": 0.34539193249208755,
+      "pOver": 0.2921717185221567,
+      "scoreH": 0,
+      "scoreA": 0,
+      "expH": 0.9325714576588919,
+      "expA": 0.9522558117281971,
+      "expTotal": 1.884827269387089
+    }
+  },
+  "1644550": {
+    "savedAt": "2026-10-07T08:32:07.575013+00:00",
+    "kickoffUtc": "2026-10-17T23:00:00+00:00",
+    "home": "Miramar",
+    "away": "Cerrito",
+    "league": "Segunda División · Uruguay",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.3253881574391696,
+      "pDraw": 0.2684166519378148,
+      "pAway": 0.4061951906230156,
+      "pOver": 0.45798266269580484,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.1686903536267488,
+      "expA": 1.3387421229262741,
+      "expTotal": 2.507432476553023
+    }
+  },
+  "1644551": {
+    "savedAt": "2026-10-07T08:32:07.575013+00:00",
+    "kickoffUtc": "2026-10-18T17:00:00+00:00",
+    "home": "Plaza Colonia",
+    "away": "CA River Plate",
+    "league": "Segunda División · Uruguay",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.5459755178145981,
+      "pDraw": 0.23316610670929847,
+      "pAway": 0.22085837547610346,
+      "pOver": 0.5347594859293302,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.7778535900957608,
+      "expA": 1.042110660060774,
+      "expTotal": 2.8199642501565347
+    }
+  },
+  "1644552": {
+    "savedAt": "2026-10-07T08:32:07.575013+00:00",
+    "kickoffUtc": "2026-10-18T20:00:00+00:00",
+    "home": "Rentistas",
+    "away": "Atenas",
+    "league": "Segunda División · Uruguay",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.3906245867154056,
+      "pDraw": 0.2730791859961826,
+      "pAway": 0.33629622728841185,
+      "pOver": 0.44194707589835885,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.2790642521594993,
+      "expA": 1.166058732643398,
+      "expTotal": 2.4451229848028975
+    }
+  },
+  "1644553": {
+    "savedAt": "2026-10-07T08:32:07.575013+00:00",
+    "kickoffUtc": "2026-10-18T23:00:00+00:00",
+    "home": "Oriental",
+    "away": "Uruguay Montevideo",
+    "league": "Segunda División · Uruguay",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.5642205016870421,
+      "pDraw": 0.2407520904616391,
+      "pAway": 0.19502740785131883,
+      "pOver": 0.47324366908911386,
+      "scoreH": 1,
+      "scoreA": 0,
+      "expH": 1.6873623509556634,
+      "expA": 0.881070443924112,
+      "expTotal": 2.5684327948797754
+    }
   }
 }
