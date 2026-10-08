@@ -103320,5 +103320,62 @@
       "expA": 0.84199248461965,
       "expTotal": 3.0811642233687313
     }
+  },
+  "1645141": {
+    "savedAt": "2026-10-08T08:31:54.818847+00:00",
+    "kickoffUtc": "2026-10-11T18:00:00+00:00",
+    "home": "Defensores Glew",
+    "away": "SAT Moreno",
+    "league": "Torneo Promocional Amateur · Argentina",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.6111150682716583,
+      "pDraw": 0.22304925199527845,
+      "pAway": 0.1658356797330633,
+      "pOver": 0.5007351330557441,
+      "scoreH": 1,
+      "scoreA": 0,
+      "expH": 1.8423646330571506,
+      "expA": 0.8373362695037729,
+      "expTotal": 2.6797009025609233
+    }
+  },
+  "1597370": {
+    "savedAt": "2026-10-08T08:31:54.818847+00:00",
+    "kickoffUtc": "2026-10-17T14:00:00+00:00",
+    "home": "Hanwell Town",
+    "away": "Bath City",
+    "league": "Non League Premier - Southern South · England",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.2704223990643559,
+      "pDraw": 0.28119034712079427,
+      "pAway": 0.4483872538148499,
+      "pOver": 0.39147312556860286,
+      "scoreH": 0,
+      "scoreA": 1,
+      "expH": 0.9469883743881833,
+      "expA": 1.306332393397115,
+      "expTotal": 2.253320767785298
+    }
+  },
+  "1645142": {
+    "savedAt": "2026-10-08T08:31:54.818847+00:00",
+    "kickoffUtc": "2026-10-18T18:00:00+00:00",
+    "home": "SAT Moreno",
+    "away": "Defensores Glew",
+    "league": "Torneo Promocional Amateur · Argentina",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.22704302739719548,
+      "pDraw": 0.25006380157080016,
+      "pAway": 0.5228931710320044,
+      "pOver": 0.4724765398739927,
+      "scoreH": 0,
+      "scoreA": 1,
+      "expH": 0.9629367099293388,
+      "expA": 1.602056202658392,
+      "expTotal": 2.564992912587731
+    }
   }
 }
