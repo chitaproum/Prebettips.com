@@ -197,7 +197,12 @@ def update_odds(fixtures, config, api, cache, now, warnings, coverage):
             del cache[key]
 
 
-COUNTRY_LABELS = {'South-Korea':'South Korea', 'Czech-Republic':'Czech Republic', 'Saudi-Arabia':'Saudi Arabia'}
+COUNTRY_LABELS = {'South-Korea':'South Korea', 'Czech-Republic':'Czech Republic', 'Saudi-Arabia':'Saudi Arabia', 'Costa-Rica':'Costa Rica', 'Faroe-Islands':'Faroe Islands', 'Northern-Ireland':'Northern Ireland', 'South-Africa':'South Africa'}
+
+# Pseudo-countries used only to group international club competitions (e.g. the
+# UEFA cups live under API country "World"). They are configured as popular
+# leagues but must NOT appear as a selectable country group in the sidebar.
+NON_COUNTRY_GROUPS = {'World'}
 
 class CachedClient:
     """Persistent server-side request cache. Never published in the Pages artifact."""
@@ -452,7 +457,7 @@ def run(root, api=None, now=None):
         'matches':results,'h2h':h2h,'standings':standings,'seasons':seasons,
         'leagueFixtures':league_fixtures,'standingsTables':standings_tables,
         'popularLeagues':[x for x in league_catalog if x['id'] in {v['id'] for v in config.get('leagues',[])}],
-        'leagues':league_catalog,'countries':sorted(set(config.get('countryDiscovery',{}).get('countries',[])) | {x['country'] for x in configured_leagues}),
+        'leagues':league_catalog,'countries':sorted((set(config.get('countryDiscovery',{}).get('countries',[])) | {x['country'] for x in configured_leagues}) - NON_COUNTRY_GROUPS),
         'oddsConfig':config.get('odds',{}),'warnings':warnings,'apiRequestsThisRun':api.calls,'apiRequestsRemaining':api.remaining}
     # Reject accidentally leaked keys anywhere in public output; write only after success.
     output='/* Generated from API-Football. No API key. */\nwindow.DATA = '+json.dumps(data,ensure_ascii=False,separators=(',',':'))+';\n'

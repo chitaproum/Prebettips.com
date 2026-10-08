@@ -49,6 +49,24 @@
       "name": "Primeira Liga",
       "country": "Portugal",
       "icon": "PT"
+    },
+    {
+      "id": 2,
+      "name": "UEFA Champions League",
+      "country": "World",
+      "icon": "EU"
+    },
+    {
+      "id": 3,
+      "name": "UEFA Europa League",
+      "country": "World",
+      "icon": "EU"
+    },
+    {
+      "id": 848,
+      "name": "UEFA Europa Conference League",
+      "country": "World",
+      "icon": "EU"
     }
   ],
   "odds": {
@@ -108,7 +126,36 @@
       "Serbia",
       "Poland",
       "Cyprus",
-      "Belarus"
+      "Belarus",
+      "Armenia",
+      "Azerbaijan",
+      "Bahrain",
+      "Bolivia",
+      "Cambodia",
+      "Colombia",
+      "Costa-Rica",
+      "Ecuador",
+      "Egypt",
+      "Faroe-Islands",
+      "Georgia",
+      "Indonesia",
+      "Kazakhstan",
+      "Kuwait",
+      "Laos",
+      "Latvia",
+      "Lithuania",
+      "Malaysia",
+      "Malta",
+      "Northern-Ireland",
+      "Paraguay",
+      "Peru",
+      "Qatar",
+      "Singapore",
+      "South-Africa",
+      "Thailand",
+      "Uzbekistan",
+      "Venezuela",
+      "Vietnam"
     ],
     "maxLeaguesPerCountry": 20,
     "cacheHours": 168,

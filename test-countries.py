@@ -8,10 +8,11 @@ now=dt.datetime(2026,10,3,12,tzinfo=m.UTC)
 config=json.loads((Path(__file__).parent/'api-config.json').read_text())
 countries=config['countryDiscovery']['countries']
 rules=config['countryDiscovery']['allowedLeaguesByCountry']
-LIMIT=max(1,min(10,int(config['countryDiscovery'].get('maxLeaguesPerCountry',10))))
-assert len(countries)==47
-assert len(set(countries))==47
+LIMIT=max(1,min(30,int(config['countryDiscovery'].get('maxLeaguesPerCountry',10))))
+assert len(countries)==76
+assert len(set(countries))==76
 assert all(c in countries for c in ['Switzerland','Saudi-Arabia','Ukraine','Serbia','Poland','Cyprus','Belarus','Portugal'])
+assert all(c in countries for c in ['Armenia','Colombia','Costa-Rica','Northern-Ireland','Vietnam','Qatar','South-Africa'])
 assert countries.count('Portugal')==1
 assert m.COUNTRY_LABELS['Saudi-Arabia']=='Saudi Arabia'
 # Every allowlisted competition name is unique within its country.
@@ -52,8 +53,8 @@ for country in countries:
   allowed={m.league_name_key(n) for n in rules[country]}
   assert all(m.league_name_key(x['displayName']) in allowed for x in got),country
  else:
-  # Twelve generic competitions reduced to the ten-competition cap.
-  assert len(got)==LIMIT,(country,len(got))
+  # Twelve generic competitions reduced to the per-country cap.
+  assert len(got)==min(LIMIT,12),(country,len(got))
 assert len({x['id'] for x in leagues})==len(leagues)
 assert len({x['name'] for x in leagues})==len(leagues)
 # Every discovered league carries its country label in the display name.
@@ -115,4 +116,4 @@ with tempfile.TemporaryDirectory() as td:
  assert d['teamsByLeague']['League']['Shared Team']['att'] != d['teamsByLeague']['Cup']['Shared Team']['att']
  assert len(d['leagues'])==2 and len(d['history'])==2
  assert (p/'api-request-cache.json').exists() and (p/'league-discovery-cache.json').exists()
-print('PASS: 47 countries, allowlist filtering (unlisted dropped, missing warned), ten-competition cap, country-labelled unique IDs/names, discovery cache, short-coverage warnings, request cache expiry and competition-isolated model ratings.')
+print('PASS: 76 countries, allowlist filtering (unlisted dropped, missing warned), per-country cap, country-labelled unique IDs/names, discovery cache, short-coverage warnings, request cache expiry and competition-isolated model ratings.')

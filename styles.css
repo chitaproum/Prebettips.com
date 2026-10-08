@@ -159,6 +159,12 @@ input.pick-cb{width:18px;height:18px;cursor:pointer;accent-color:var(--brand)}
 #view-predictions .match-cell .mc-date .date-cell{flex-direction:row;align-items:center;justify-content:flex-start;gap:5px}
 #view-predictions .pred-table:not(.stats-mode) th.col-date,
 #view-predictions .pred-table:not(.stats-mode) td.col-date{display:none}
+/* League page uses the SAME compact layout as the main predictions table:
+   date shown inside the Match cell, standalone Date column hidden. */
+#view-league .match-cell .mc-date{display:block}
+#view-league .match-cell .mc-date .date-cell{flex-direction:row;align-items:center;justify-content:flex-start;gap:5px}
+#view-league .pred-table th.col-date,
+#view-league .pred-table td.col-date{display:none}
 .league-cell{color:var(--muted);font-size:13px;white-space:nowrap}
 .prob{position:relative;font-weight:700;min-width:56px;display:inline-block;color:var(--muted);font-variant-numeric:tabular-nums}
 .prob .bar{display:block;height:4px;border-radius:3px;margin-top:5px;background:var(--line)}
@@ -646,19 +652,25 @@ td.col-score, th.col-score {
   .lp-grid{grid-template-columns:minmax(0,1fr) 230px;gap:12px}
   .lp-aside{display:block}
 }
-.lp-table-wrap{max-height:none!important;overflow:visible;overscroll-behavior:auto}
-.lp-table{min-width:0;width:100%;table-layout:fixed;font-size:11px}
-.lp-table tbody td{padding:9px 3px;overflow-wrap:anywhere}
-.lp-table thead th{padding:9px 2px!important;font-size:9px!important;letter-spacing:0;white-space:normal;top:0;z-index:15}
-.lp-table th:nth-child(1),.lp-table td:nth-child(1){width:27px}
-.lp-table th:nth-child(2),.lp-table td:nth-child(2){width:52px}
-.lp-table th:nth-child(3),.lp-table td:nth-child(3){width:30%;text-align:left}
-.lp-table .lp-match{min-width:0}
-.lp-table .mc-team{font-size:11px;gap:5px;min-width:0;overflow-wrap:anywhere}
-.lp-table .crest{width:20px;height:20px;flex-basis:20px;font-size:8px}
-.lp-table .date-cell b{font-size:11px}.lp-table .date-cell .time{font-size:10px}
-.lp-table .tip{min-width:0;padding:3px 5px;font-size:10px}
-.lp-table td b{white-space:nowrap}.lp-table .odds-price{min-width:0;font-size:11px}
+/* League page table now matches the main predictions table layout:
+   auto column widths, normal font, horizontal scroll inside the wrap. */
+.lp-table-wrap{max-height:none!important;overflow-x:auto;overflow-y:visible;overscroll-behavior:auto}
+.lp-table{min-width:720px;width:100%;font-size:14px}
+.lp-table tbody td{padding:12px 10px}
+.lp-table thead th{top:0;z-index:15}
+.lp-table .mc-team{gap:7px;font-size:14px}
+/* Make the league table fit its (narrower) column container so the horizontal
+   scrollbar disappears: let the table and the Match column shrink, and
+   ellipsize long team names instead of forcing extra width. */
+#view-league .lp-table{min-width:0}
+#view-league .lp-table th.col-match,#view-league .lp-table td.col-match{min-width:0}
+#view-league .lp-table .lp-match{min-width:0}
+#view-league .lp-table .mc-team{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#view-league .lp-table th.col-live,#view-league .lp-table td.col-live{min-width:0}
+#view-league .lp-table th.col-odds,#view-league .lp-table td.col-odds{min-width:0}
+#view-league .lp-table .prob{min-width:46px}
+#view-league .lp-table tbody td{padding:12px 8px}
+#view-league .lp-table-wrap{overflow-x:auto}
 .lp-round-summary{margin:0;font-size:12px;font-weight:700;color:var(--muted)}
 .lp-round th{position:static!important}
 .lp-standings-scroll{overflow:visible}.lp-standings{table-layout:fixed}
@@ -671,13 +683,8 @@ td.col-score, th.col-score {
 .lp-zone{display:inline-block;width:9px;height:9px;border-radius:50%;vertical-align:middle;flex-shrink:0;margin-right:3px}
 .lp-zone.champions{background:#19b83c}.lp-zone.europa{background:#f4b400}.lp-zone.relegation{background:#e92335}
 @media(max-width:1000px){.lp-grid{grid-template-columns:minmax(0,1fr)}.lp-aside{display:block}}
-@media(max-width:480px){
-  .lp-table{font-size:9px}.lp-table .mc-team{font-size:10px}.lp-table .crest{display:none}
-  .lp-table th:nth-child(1),.lp-table td:nth-child(1){width:22px}
-  .lp-table th:nth-child(2),.lp-table td:nth-child(2){width:42px}
-  .lp-table tbody td{padding:8px 1px}.lp-table .pick-cb{width:14px;height:14px}
-  .lp-table .tip{font-size:9px;padding:2px}.lp-table .date-cell b{font-size:10px}
-}
+/* On phones the league table uses the shared .pred-table card layout
+   (see the max-width:720px block), so no league-specific shrink overrides. */
 
 /* ---------- Page loading indicator (shown while switching menus) ---------- */
 /* Thin progress bar fixed at the very top of the page, like YouTube/GitHub. */

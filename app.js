@@ -15,7 +15,8 @@
   var CATALOG = DATA.leagues || DATA.popularLeagues || [];
   var activeLeague = null;
   function teamRating(name) { return ((DATA.teamsByLeague || {})[activeLeague] || TEAMS)[name]; }
-  function countryLabel(name) { return name === 'South-Korea' ? 'South Korea' : name === 'Czech-Republic' ? 'Czech Republic' : name === 'Saudi-Arabia' ? 'Saudi Arabia' : name; }
+  var COUNTRY_LABELS = { 'South-Korea': 'South Korea', 'Czech-Republic': 'Czech Republic', 'Saudi-Arabia': 'Saudi Arabia', 'Costa-Rica': 'Costa Rica', 'Faroe-Islands': 'Faroe Islands', 'Northern-Ireland': 'Northern Ireland', 'South-Africa': 'South Africa' };
+  function countryLabel(name) { return COUNTRY_LABELS[name] || name; }
 
   /* ---------- tiny DOM helpers ---------- */
   function $(sel, root) { return (root || document).querySelector(sel); }
@@ -710,7 +711,37 @@
     'Ukraine': { iso: 'ua', code: 'Ua', flag: '🇺🇦', icon: 'UA' },
     'Uruguay': { iso: 'uy', code: 'Uy', flag: '🇺🇾', icon: 'UY' },
     'USA': { iso: 'us', code: 'Us', flag: '🇺🇸', icon: 'US' },
-    'Wales': { iso: 'gb-wls', code: 'Wa', flag: '🏴󠁧󠁢󠁷󠁬󠁳󠁿', icon: 'WA' }
+    'Wales': { iso: 'gb-wls', code: 'Wa', flag: '🏴󠁧󠁢󠁷󠁬󠁳󠁿', icon: 'WA' },
+    'World': { iso: 'eu', code: 'Eu', flag: '🇪🇺', icon: 'EU' },
+    'Armenia': { iso: 'am', code: 'Am', flag: '🇦🇲', icon: 'AM' },
+    'Azerbaijan': { iso: 'az', code: 'Az', flag: '🇦🇿', icon: 'AZ' },
+    'Bahrain': { iso: 'bh', code: 'Bh', flag: '🇧🇭', icon: 'BH' },
+    'Bolivia': { iso: 'bo', code: 'Bo', flag: '🇧🇴', icon: 'BO' },
+    'Cambodia': { iso: 'kh', code: 'Kh', flag: '🇰🇭', icon: 'KH' },
+    'Colombia': { iso: 'co', code: 'Co', flag: '🇨🇴', icon: 'CO' },
+    'Costa-Rica': { iso: 'cr', code: 'Cr', flag: '🇨🇷', icon: 'CR' },
+    'Ecuador': { iso: 'ec', code: 'Ec', flag: '🇪🇨', icon: 'EC' },
+    'Egypt': { iso: 'eg', code: 'Eg', flag: '🇪🇬', icon: 'EG' },
+    'Faroe-Islands': { iso: 'fo', code: 'Fo', flag: '🇫🇴', icon: 'FO' },
+    'Georgia': { iso: 'ge', code: 'Ge', flag: '🇬🇪', icon: 'GE' },
+    'Indonesia': { iso: 'id', code: 'Id', flag: '🇮🇩', icon: 'ID' },
+    'Kazakhstan': { iso: 'kz', code: 'Kz', flag: '🇰🇿', icon: 'KZ' },
+    'Kuwait': { iso: 'kw', code: 'Kw', flag: '🇰🇼', icon: 'KW' },
+    'Laos': { iso: 'la', code: 'La', flag: '🇱🇦', icon: 'LA' },
+    'Latvia': { iso: 'lv', code: 'Lv', flag: '🇱🇻', icon: 'LV' },
+    'Lithuania': { iso: 'lt', code: 'Lt', flag: '🇱🇹', icon: 'LT' },
+    'Malaysia': { iso: 'my', code: 'My', flag: '🇲🇾', icon: 'MY' },
+    'Malta': { iso: 'mt', code: 'Mt', flag: '🇲🇹', icon: 'MT' },
+    'Northern-Ireland': { iso: 'gb-nir', code: 'NI', flag: '🇬🇧', icon: 'NIR' },
+    'Paraguay': { iso: 'py', code: 'Py', flag: '🇵🇾', icon: 'PY' },
+    'Peru': { iso: 'pe', code: 'Pe', flag: '🇵🇪', icon: 'PE' },
+    'Qatar': { iso: 'qa', code: 'Qa', flag: '🇶🇦', icon: 'QA' },
+    'Singapore': { iso: 'sg', code: 'Sg', flag: '🇸🇬', icon: 'SG' },
+    'South-Africa': { iso: 'za', code: 'Za', flag: '🇿🇦', icon: 'ZA' },
+    'Thailand': { iso: 'th', code: 'Th', flag: '🇹🇭', icon: 'TH' },
+    'Uzbekistan': { iso: 'uz', code: 'Uz', flag: '🇺🇿', icon: 'UZ' },
+    'Venezuela': { iso: 've', code: 'Ve', flag: '🇻🇪', icon: 'VE' },
+    'Vietnam': { iso: 'vn', code: 'Vn', flag: '🇻🇳', icon: 'VN' }
   };
 
   function getLeagueShortCode(leagueName, countryName) {
@@ -1855,13 +1886,36 @@ function leagueCode(l) {
     // Do not produce retrospective forecasts for completed matches.
     if (finished) p = f.prediction || null;
     else p = state.engine === 'poisson' && f.prediction ? f.prediction : predict(f.home, f.away, f.league);
-    var ou = leaguePageState.market === 'ou', key = p ? (ou ? (p.pOver >= 0.5 ? 'over' : 'under') : bestKey(p)) : null;
-    var probs = p ? (ou ? '<td>' + pct(p.pOver) + '%</td><td>' + pct(1-p.pOver) + '%</td>' : '<td>' + pct(p.pHome) + '%</td><td>' + pct(p.pDraw) + '%</td><td>' + pct(p.pAway) + '%</td>') : (ou ? '<td>—</td><td>—</td>' : '<td>—</td><td>—</td><td>—</td>');
-    var actual = finished ? (f.currentHome != null && f.currentAway != null ? f.currentHome + '–' + f.currentAway : f.fh + '–' + f.fa) : (f.live && f.currentHome != null ? f.currentHome + '–' + f.currentAway : '—');
-    var forecast = p ? p.scoreH + '–' + p.scoreA : '—';
-    var tip = key ? (ou ? '<span class="tip t1">' + (key === 'over' ? 'Over' : 'Under') + ' 2.5</span>' : tipBadge(key)) : '—';
+    var ou = leaguePageState.market === 'ou';
+    var k = fxKey(f), checked = state.selection[k] ? ' checked' : '';
     var status = finished && p ? 'Saved before kickoff' : (!finished ? 'Model estimate' : 'No saved forecast');
-    return '<tr><td><input class="pick-cb" type="checkbox" data-key="' + esc(fxKey(f)) + '" aria-label="Select ' + esc(f.home + ' vs ' + f.away) + '"' + (state.selection[fxKey(f)] ? ' checked' : '') + (finished ? ' disabled' : '') + '></td><td>' + fmtDate(f.date) + '</td><td class="lp-match">' + matchCell(f) + '</td>' + probs + '<td title="' + esc(status) + '">' + tip + '</td><td><b>' + esc(forecast) + '</b></td><td><b>' + esc(actual) + '</b>' + (f.ht ? '<small class="lp-muted">HT ' + esc(f.ht.join('–')) + '</small>' : '') + '</td>' + (key && !finished ? oddsCell(f, ou ? 'ou' : '1x2', key) : '<td>—</td>') + '</tr>';
+    // Shared leading cells — identical column structure to the main predictions table.
+    var common = '<td class="col-pick"><input type="checkbox" class="pick-cb" data-key="' + esc(k) + '"' + checked + (finished ? ' disabled' : '') + ' aria-label="Select ' + esc(f.home + ' vs ' + f.away) + '"></td>'
+      + '<td class="col-date">' + fmtDate(f.date) + '</td>'
+      + '<td class="col-league">' + renderLeagueBadge(f) + '</td>'
+      + '<td class="col-match">' + matchCell(f) + '</td>'
+      + '<td class="col-live">' + resultLiveCell(f) + '</td>';
+    if (ou) {
+      if (!p) return '<tr>' + common + '<td>—</td><td>—</td><td>—</td><td title="' + esc(status) + '">—</td>' + oddsCell(f, 'ou', 'over') + '</tr>';
+      var over = p.pOver, under = 1 - over, tip = over >= 0.5 ? 'over' : 'under';
+      return '<tr>' + common
+        + '<td><span class="score">' + p.expTotal.toFixed(2) + '</span></td>'
+        + '<td><span class="ou over">' + pct(over) + '<span class="pct-sym">%</span></span></td>'
+        + '<td><span class="ou under">' + pct(under) + '<span class="pct-sym">%</span></span></td>'
+        + '<td title="' + esc(status) + '"><span class="ou ' + tip + '">' + (tip === 'over' ? 'Over 2.5' : 'Under 2.5') + '</span></td>'
+        + oddsCell(f, 'ou', tip)
+        + '</tr>';
+    }
+    if (!p) return '<tr>' + common + '<td>—</td><td>—</td><td>—</td><td title="' + esc(status) + '">—</td><td>—</td>' + oddsCell(f, '1x2', '1') + '</tr>';
+    var best = bestKey(p);
+    return '<tr>' + common
+      + '<td>' + probCell(p.pHome, '1', best) + '</td>'
+      + '<td>' + probCell(p.pDraw, 'X', best) + '</td>'
+      + '<td>' + probCell(p.pAway, '2', best) + '</td>'
+      + '<td title="' + esc(status) + '">' + tipBadge(best) + '</td>'
+      + '<td><span class="score">' + p.scoreH + '-' + p.scoreA + '</span></td>'
+      + oddsCell(f, '1x2', best)
+      + '</tr>';
   }
   function renderLeaguePage() {
     var host = $('#leaguePage'), name = leaguePageState.name, lg = leagueByName(name);
@@ -1872,14 +1926,14 @@ function leagueCode(l) {
       return { title: g.title, rows: g.rows.filter(function (f) { return f.date.slice(0,10) === leaguePageState.date; }) };
     }).filter(function (g) { return g.rows.length; });
     var list = [].concat.apply([], groups.map(function (g) { return g.rows; }));
-    var ou = leaguePageState.market === 'ou', cols = ou ? 9 : 10;
+    var ou = leaguePageState.market === 'ou', cols = ou ? 10 : 11;
     var body = groups.map(function (g) { return '<tr class="lp-round"><th scope="rowgroup" colspan="' + cols + '">' + esc(g.title) + '</th></tr>' + g.rows.map(leagueMatchRow).join(''); }).join('');
     var booknames = {};
     rows.forEach(function (r) { ((r.odds || {}).bookmakers || []).forEach(function (b) { booknames[b.id] = b.name; }); });
     host.innerHTML = '<header class="lp-title"><div><h1>' + esc(lg.displayName || name) + '</h1><p>' + esc(countryLabel(lg.country || '')) + ' · Season ' + esc((DATA.seasons || {})[name] || lg.season || '—') + '</p></div><button type="button" class="lp-button" data-lp-action="back">← Predictions</button></header>'
       + '<div class="lp-grid"><div class="lp-main"><div class="lp-controls"><p class="lp-round-summary">Latest results &amp; upcoming round · Full match lists</p>'
       + '<div class="lp-options"><label>Market<select data-lp-select="market"><option value="1x2"' + (!ou ? ' selected' : '') + '>1X2</option><option value="ou"' + (ou ? ' selected' : '') + '>Over/Under 2.5</option></select></label><label>Model<select data-lp-select="engine"><option value="poisson"' + (state.engine === 'poisson' ? ' selected' : '') + '>Poisson</option><option value="random"' + (state.engine === 'random' ? ' selected' : '') + '>KPI</option></select></label><label>Bookmaker<select data-lp-select="book"><option value="best">Best available</option>' + Object.keys(booknames).map(function (id) { return '<option value="' + esc(id) + '"' + (String(id) === selectedBookmaker ? ' selected' : '') + '>' + esc(booknames[id]) + '</option>'; }).join('') + '</select></label></div></div>'
-      + '<div class="table-wrap lp-table-wrap"><table class="pred-table lp-table"><thead><tr><th>Pick</th><th>Date</th><th>Match</th>' + (ou ? '<th>Over 2.5</th><th>Under 2.5</th>' : '<th>1</th><th>X</th><th>2</th>') + '<th>Tip</th><th>Pred.</th><th>Result</th><th>Coef.</th></tr></thead><tbody>' + body + '</tbody></table>' + (!list.length ? '<p class="empty">No ' + (leaguePageState.tab === 'recent' ? 'completed matches' : 'matches in the latest and upcoming rounds') + ' available' + (leaguePageState.date ? ' on this date' : '') + '.</p>' : '') + '</div>'
+      + '<div class="table-wrap lp-table-wrap"><table class="pred-table lp-table' + (ou ? ' ou-mode' : '') + '"><thead>' + HEADS[ou ? 'ou' : '1x2'] + '</thead><tbody>' + body + '</tbody></table>' + (!list.length ? '<p class="empty">No ' + (leaguePageState.tab === 'recent' ? 'completed matches' : 'matches in the latest and upcoming rounds') + ' available' + (leaguePageState.date ? ' on this date' : '') + '.</p>' : '') + '</div>'
       + '<p class="lp-note">Match times: ' + esc(DATA.timezone || 'UTC') + '. Updated: ' + esc(DATA.generatedAt || 'Not available') + '. Live scores are update snapshots. Completed matches show only forecasts saved before kickoff; — means unavailable. Odds and model estimates are not guarantees.</p></div>'
       + '<aside class="lp-aside"><section class="lp-card"><h2>Match calendar</h2><label>Date<input type="date" data-lp-select="date" value="' + esc(leaguePageState.date) + '"></label><button class="lp-button" data-lp-action="clear-date">All dates</button><p class="lp-muted">Filters these two round lists. Clear the date to see every match.</p></section><section class="lp-card"><h2>Standings</h2>' + leagueStandings(name) + '</section>' + standingsLegend() + '</aside></div>';
     $all('.pick-cb', host).forEach(function (cb) { cb.addEventListener('change', function () { var key = cb.getAttribute('data-key'); if (cb.checked) state.selection[key] = true; else delete state.selection[key]; updateSelBadges(); }); });
