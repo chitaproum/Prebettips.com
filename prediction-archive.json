@@ -124942,5 +124942,138 @@
       "expA": 1.8826343538892498,
       "expTotal": 2.7201142370468525
     }
+  },
+  "1645222": {
+    "savedAt": "2026-10-09T08:31:49.743193+00:00",
+    "kickoffUtc": "2026-10-10T19:30:00+00:00",
+    "home": "Monagas II",
+    "away": "Atletico Avila FC",
+    "league": "Segunda División · Venezuela",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.691425225709921,
+      "pDraw": 0.2098752222617715,
+      "pAway": 0.09869955202830753,
+      "pOver": 0.4193492602348158,
+      "scoreH": 1,
+      "scoreA": 0,
+      "expH": 1.835423543973106,
+      "expA": 0.525257727785805,
+      "expTotal": 2.360681271758911
+    }
+  },
+  "1645225": {
+    "savedAt": "2026-10-09T08:31:49.743193+00:00",
+    "kickoffUtc": "2026-10-10T20:00:00+00:00",
+    "home": "Yaracuyanos FC",
+    "away": "Fundación Lara Deportiva",
+    "league": "Segunda División · Venezuela",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.38477987338565783,
+      "pDraw": 0.2562183017904861,
+      "pAway": 0.35900182482385606,
+      "pOver": 0.5145995960552805,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.395386531979118,
+      "expA": 1.339088218126232,
+      "expTotal": 2.73447475010535
+    }
+  },
+  "1645226": {
+    "savedAt": "2026-10-09T08:31:49.743193+00:00",
+    "kickoffUtc": "2026-10-11T19:30:00+00:00",
+    "home": "Atletico el Vigia FC",
+    "away": "Urena SC",
+    "league": "Segunda División · Venezuela",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.3113664129222842,
+      "pDraw": 0.23410089605529197,
+      "pAway": 0.45453269102242383,
+      "pOver": 0.6037497850198321,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.3958838714630513,
+      "expA": 1.72941153957236,
+      "expTotal": 3.1252954110354114
+    }
+  },
+  "1645227": {
+    "savedAt": "2026-10-09T08:31:49.743193+00:00",
+    "kickoffUtc": "2026-10-11T19:30:00+00:00",
+    "home": "Real Frontera",
+    "away": "Puerto Cabello II",
+    "league": "Segunda División · Venezuela",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.18743143687280744,
+      "pDraw": 0.206721917598978,
+      "pAway": 0.6058466455282145,
+      "pOver": 0.6072814922330009,
+      "scoreH": 1,
+      "scoreA": 2,
+      "expH": 1.0670482981643368,
+      "expA": 2.0788622542293904,
+      "expTotal": 3.145910552393727
+    }
+  },
+  "1645223": {
+    "savedAt": "2026-10-09T08:31:49.743193+00:00",
+    "kickoffUtc": "2026-10-11T19:30:00+00:00",
+    "home": "Petare FC",
+    "away": "Dinamo de Puerto La Cruz",
+    "league": "Segunda División · Venezuela",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.45204070360599935,
+      "pDraw": 0.2901983826805659,
+      "pAway": 0.25776091371343474,
+      "pOver": 0.3568882525395522,
+      "scoreH": 1,
+      "scoreA": 0,
+      "expH": 1.2537013399458241,
+      "expA": 0.8706585825422941,
+      "expTotal": 2.124359922488118
+    }
+  },
+  "1645224": {
+    "savedAt": "2026-10-09T08:31:49.743193+00:00",
+    "kickoffUtc": "2026-10-11T20:00:00+00:00",
+    "home": "Aragua FC",
+    "away": "Mineros de Guyana",
+    "league": "Segunda División · Venezuela",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.49387803434347016,
+      "pDraw": 0.2938417959208533,
+      "pAway": 0.2122801697356766,
+      "pOver": 0.3200607002205093,
+      "scoreH": 1,
+      "scoreA": 0,
+      "expH": 1.2662012856369347,
+      "expA": 0.72194544100896,
+      "expTotal": 1.9881467266458945
+    }
+  },
+  "1645228": {
+    "savedAt": "2026-10-09T08:31:49.743193+00:00",
+    "kickoffUtc": "2026-10-11T21:00:00+00:00",
+    "home": "Deportivo Lara",
+    "away": "Zamora FC B",
+    "league": "Segunda División · Venezuela",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.65004237312367,
+      "pDraw": 0.19242739862311423,
+      "pAway": 0.15753022825321583,
+      "pOver": 0.6196952788645163,
+      "scoreH": 2,
+      "scoreA": 0,
+      "expH": 2.2150542275459792,
+      "expA": 0.992960732834455,
+      "expTotal": 3.208014960380434
+    }
   }
 }
