@@ -436,30 +436,56 @@
       + '<span class="ad-body">Your banner here<span class="ad-size">Leaderboard 728×90</span></span></div></td></tr>';
   }
 
-  function fmtDate(d) {
+  // Offset (ms) of a named IANA zone from UTC at a given instant: wallclock - utc.
+  function zoneOffsetMs(instantMs, tzName) {
+    var dtf = new Intl.DateTimeFormat('en-US', {
+      timeZone: tzName, hour12: false,
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+    var map = {};
+    dtf.formatToParts(new Date(instantMs)).forEach(function (p) {
+      if (p.type !== 'literal') map[p.type] = p.value;
+    });
+    var hour = map.hour === '24' ? 0 : +map.hour;
+    var asUTC = Date.UTC(+map.year, +map.month - 1, +map.day, hour, +map.minute, +map.second);
+    return asUTC - instantMs;
+  }
+  // Interpret a stored "YYYY-MM-DD HH:MM" wall-clock string expressed in the
+  // data's base timezone (DATA.timezone) and return the matching UTC instant.
+  // Used only as a fallback when a fixture has no explicit kickoffUtc.
+  function baseZoneToDate(str) {
+    var m = String(str).match(/(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
+    if (!m) { var g = new Date(str); return isNaN(g.getTime()) ? null : g; }
+    var utcGuess = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
+    var baseTz = DATA.timezone || 'UTC';
+    if (baseTz === 'UTC') return new Date(utcGuess);
+    try { return new Date(utcGuess - zoneOffsetMs(utcGuess, baseTz)); }
+    catch (e) { return new Date(utcGuess); }
+  }
+  function fmtDate(d, utcIso) {
     if (!d) return '<span class="date-cell"><b>—</b></span>';
     var str = String(d);
-    var dateObj = null;
 
     if (userSettings.timezone !== 'default') {
       try {
-        var isoStr = str.replace(' ', 'T') + 'Z';
-        var parsed = new Date(isoStr);
-        if (!isNaN(parsed.getTime())) {
+        // Prefer the authoritative UTC kickoff instant; otherwise interpret the
+        // stored string as the data's base timezone (NOT blindly as UTC).
+        var parsed = utcIso ? new Date(utcIso) : null;
+        if (!parsed || isNaN(parsed.getTime())) parsed = baseZoneToDate(str);
+        if (parsed && !isNaN(parsed.getTime())) {
           var tzOpt = userSettings.timezone === 'local' ? undefined : userSettings.timezone;
           var dFmt = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', timeZone: tzOpt });
           var tFmt = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: tzOpt });
-          var datePart = dFmt.format(parsed);
-          var timePart = tFmt.format(parsed);
-          return '<span class="date-cell"><b>' + esc(datePart) + '</b><span class="time">' + esc(timePart) + '</span></span>';
+          return '<span class="date-cell"><b>' + esc(dFmt.format(parsed)) + '</b><span class="time">' + esc(tFmt.format(parsed)) + '</span></span>';
         }
       } catch (e) {}
     }
 
-    var parts = str.split(' ');
-    var dd = parts[0] ? parts[0].slice(5) : '';
+    var parts2 = str.split(' ');
+    var dd = parts2[0] ? parts2[0].slice(5) : '';
     return '<span class="date-cell"><b>' + esc(dd.split('-').reverse().join('/')) + '</b>'
-      + (parts[1] ? '<span class="time">' + esc(parts[1]) + '</span>' : '') + '</span>';
+      + (parts2[1] ? '<span class="time">' + esc(parts2[1]) + '</span>' : '') + '</span>';
   }
   function initials(name) {
     var w = String(name).replace(/\./g, '').split(/\s+/).filter(Boolean);
@@ -469,7 +495,7 @@
     return '<div class="match-cell">'
       + '<span class="mc-team"><span class="crest" aria-hidden="true">' + esc(initials(f.home)) + '</span>' + esc(f.home) + '</span>'
       + '<span class="mc-team"><span class="crest" aria-hidden="true">' + esc(initials(f.away)) + '</span>' + esc(f.away) + '</span>'
-      + '<span class="mc-meta"><span class="mc-date">' + fmtDate(f.date) + '</span></span>'
+      + '<span class="mc-meta"><span class="mc-date">' + fmtDate(f.date, f.kickoffUtc) + '</span></span>'
       + '<span class="mc-league">' + esc(f.league) + '</span></div>';
   }
   // Result / Live cell: final score for finished games, live score + clock for
@@ -607,7 +633,7 @@
     var best = bestKey(p), k = fxKey(f), checked = state.selection[k] ? ' checked' : '';
     return '<tr>'
       + '<td class="col-pick"><input type="checkbox" class="pick-cb" data-key="' + esc(k) + '"' + checked + ' aria-label="Add to selection"></td>'
-      + '<td class="col-date">' + fmtDate(f.date) + '</td>'
+      + '<td class="col-date">' + fmtDate(f.date, f.kickoffUtc) + '</td>'
       + '<td class="col-league">' + renderLeagueBadge(f) + '</td>'
       + '<td class="col-match">' + matchCell(f) + '</td>'
       + '<td class="col-live">' + resultLiveCell(f) + '</td>'
@@ -624,7 +650,7 @@
     var tip = over >= 0.5 ? 'over' : 'under';
     return '<tr>'
       + '<td class="col-pick"><input type="checkbox" class="pick-cb" data-key="' + esc(k) + '"' + checked + ' aria-label="Add to selection"></td>'
-      + '<td class="col-date">' + fmtDate(f.date) + '</td>'
+      + '<td class="col-date">' + fmtDate(f.date, f.kickoffUtc) + '</td>'
       + '<td class="col-league">' + renderLeagueBadge(f) + '</td>'
       + '<td class="col-match">' + matchCell(f) + '</td>'
       + '<td class="col-live">' + resultLiveCell(f) + '</td>'
@@ -637,7 +663,7 @@
   }
   function rowStats(f, p, idx) {
     return '<tr class="stats-row" data-idx="' + idx + '" tabindex="0" aria-expanded="false">'
-      + '<td class="col-date">' + fmtDate(f.date) + '</td>'
+      + '<td class="col-date">' + fmtDate(f.date, f.kickoffUtc) + '</td>'
       + '<td class="col-league">' + renderLeagueBadge(f) + '</td>'
       + '<td class="col-match"><span class="exp-caret">&#9662;</span><span class="sr-match">' + esc(f.home) + ' v ' + esc(f.away) + '</span></td>'
       + '<td><span class="sr-num">' + p.expH.toFixed(2) + '</span></td>'
@@ -1117,7 +1143,7 @@ function leagueCode(l) {
     var rows = fx.map(function (f) {
       var p = (state.engine === 'poisson' && f.prediction ? f.prediction : predict(f.home, f.away, f.league)), k = fxKey(f);
       return '<tr>'
-        + '<td class="col-date">' + fmtDate(f.date) + '</td>'
+        + '<td class="col-date">' + fmtDate(f.date, f.kickoffUtc) + '</td>'
         + '<td class="col-league">' + renderLeagueBadge(f) + '</td>'
         + '<td class="col-match">' + matchCell(f) + '</td>'
         + '<td class="col-prob">' + selProbHtml(p) + '</td>'
@@ -1199,8 +1225,9 @@ function leagueCode(l) {
     if (!w) return;
     var rows = fx.map(function (f) {
       var p = (state.engine === 'poisson' && f.prediction ? f.prediction : predict(f.home, f.away, f.league));
-      return '<tr><td>' + esc(f.date) + '</td><td>' + esc(f.league) + '</td>'
-        + '<td>' + esc(f.home + ' v ' + f.away) + '</td>'
+      return '<tr><td>' + esc(f.date) + '</td>'
+        + '<td><div class="m-name">' + esc(f.home + ' v ' + f.away) + '</div>'
+        + '<div class="m-league">' + esc(f.league) + '</div></td>'
         + '<td>1 ' + pct(p.pHome) + '% / X ' + pct(p.pDraw) + '% / 2 ' + pct(p.pAway) + '%</td>'
         + '<td style="font-weight:700">' + bestKey(p) + '</td>'
         + '<td>' + p.scoreH + '-' + p.scoreA + '</td>'
@@ -1211,10 +1238,11 @@ function leagueCode(l) {
       + 'h1{font-size:20px;margin:0 0 2px}.sub{color:#666;font-size:12px;margin:0 0 16px}'
       + 'table{width:100%;border-collapse:collapse;font-size:12px}'
       + 'th,td{border:1px solid #ccc;padding:7px 8px;text-align:left}'
-      + 'th{background:#f0f3f7}.foot{margin-top:16px;color:#888;font-size:11px}</style></head><body>'
+      + 'th{background:#f0f3f7}.m-name{font-weight:600}.m-league{color:#666;font-size:11px;margin-top:2px}'
+      + '.foot{margin-top:16px;color:#888;font-size:11px}</style></head><body>'
       + '<h1>GoalPre — My Selection</h1>'
       + '<p class="sub">' + fx.length + ' match(es) · ' + engName + ' engine · generated ' + new Date().toLocaleString() + '</p>'
-      + '<table><thead><tr><th>Date</th><th>League</th><th>Match</th><th>1 X 2</th><th>Tip</th><th>Score</th><th>O/U</th></tr></thead>'
+      + '<table><thead><tr><th>Date</th><th>Match &amp; League</th><th>1 X 2</th><th>Tip</th><th>Score</th><th>O/U</th></tr></thead>'
       + '<tbody>' + rows + '</tbody></table>'
       + '<p class="foot">Statistical predictions — not betting advice. 18+ Please gamble responsibly.</p>'
       + '<script>window.onload=function(){window.print();}<\/script></body></html>';
@@ -1891,7 +1919,7 @@ function leagueCode(l) {
     var status = finished && p ? 'Saved before kickoff' : (!finished ? 'Model estimate' : 'No saved forecast');
     // Shared leading cells — identical column structure to the main predictions table.
     var common = '<td class="col-pick"><input type="checkbox" class="pick-cb" data-key="' + esc(k) + '"' + checked + (finished ? ' disabled' : '') + ' aria-label="Select ' + esc(f.home + ' vs ' + f.away) + '"></td>'
-      + '<td class="col-date">' + fmtDate(f.date) + '</td>'
+      + '<td class="col-date">' + fmtDate(f.date, f.kickoffUtc) + '</td>'
       + '<td class="col-league">' + renderLeagueBadge(f) + '</td>'
       + '<td class="col-match">' + matchCell(f) + '</td>'
       + '<td class="col-live">' + resultLiveCell(f) + '</td>';
