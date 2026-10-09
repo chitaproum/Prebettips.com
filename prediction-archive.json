@@ -125075,5 +125075,24 @@
       "expA": 0.992960732834455,
       "expTotal": 3.208014960380434
     }
+  },
+  "1645380": {
+    "savedAt": "2026-10-09T16:29:45.487986+00:00",
+    "kickoffUtc": "2026-10-20T23:00:00+00:00",
+    "home": "Union La Calera",
+    "away": "Coquimbo Unido",
+    "league": "Copa Chile · Chile",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.38465544217756237,
+      "pDraw": 0.2792209541630572,
+      "pAway": 0.3361236036593804,
+      "pOver": 0.4187956516341452,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.2278752376266426,
+      "expA": 1.1285374606198557,
+      "expTotal": 2.3564126982464986
+    }
   }
 }
