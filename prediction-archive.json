@@ -146906,5 +146906,765 @@
       "expA": 1.6768041414125925,
       "expTotal": 3.3881113018171662
     }
+  },
+  "1551693": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-10T21:00:00+00:00",
+    "home": "Inter San Carlos",
+    "away": "Perez Zeledon",
+    "league": "Primera División · Costa Rica",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.4763928320908928,
+      "pDraw": 0.26615639632739313,
+      "pAway": 0.2574507715817141,
+      "pOver": 0.4363671077302055,
+      "scoreH": 1,
+      "scoreA": 0,
+      "expH": 1.4407486082495624,
+      "expA": 0.9830845476259498,
+      "expTotal": 2.423833155875512
+    }
+  },
+  "1643968": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-16T18:30:00+00:00",
+    "home": "Evans & Williams",
+    "away": "Rockspur",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643984": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-16T18:45:00+00:00",
+    "home": "GAP Connah S Quay FC",
+    "away": "Porthmadog",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643976": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-16T18:45:00+00:00",
+    "home": "Briton Ferry",
+    "away": "Afan United",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643970": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-16T18:45:00+00:00",
+    "home": "Cambrian & Clydach",
+    "away": "Trethomas Bluebirds",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643969": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-16T18:45:00+00:00",
+    "home": "Airbus UK",
+    "away": "The New Saints",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643978": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-16T18:45:00+00:00",
+    "home": "Caerau (Ely)",
+    "away": "llanelli AFC",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643971": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-17T13:00:00+00:00",
+    "home": "Aberystwyth Town",
+    "away": "Prestatyn Town",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643973": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-17T13:00:00+00:00",
+    "home": "Bala Town",
+    "away": "Holyhead Hotspur",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643980": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-17T13:00:00+00:00",
+    "home": "Cardiff MET",
+    "away": "Ynyshir Albions",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643991": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-17T13:00:00+00:00",
+    "home": "Newtown AFC",
+    "away": "Llanuwchllyn",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643981": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-17T13:00:00+00:00",
+    "home": "Carmarthen Town",
+    "away": "Newport City",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643974": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-17T13:00:00+00:00",
+    "home": "Barry Town",
+    "away": "Tredegar Town",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643987": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-17T13:00:00+00:00",
+    "home": "Haverfordwest County AFC",
+    "away": "Cardiff Corinthians",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643977": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-17T13:00:00+00:00",
+    "home": "Buckley Town",
+    "away": "Colwyn Bay",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643975": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-17T13:00:00+00:00",
+    "home": "Brickfield Rangers",
+    "away": "Llangefni Town",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643982": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-17T13:00:00+00:00",
+    "home": "Cefn Albion",
+    "away": "Y Felinheli",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643983": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-17T13:00:00+00:00",
+    "home": "Coedpoeth United",
+    "away": "Guilsfield",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643985": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-17T13:00:00+00:00",
+    "home": "Denbigh Town",
+    "away": "Bangor City 1876 FC",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643990": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-17T13:00:00+00:00",
+    "home": "Llay Miners Welfare",
+    "away": "Holywell",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643992": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-17T13:00:00+00:00",
+    "home": "Penycae",
+    "away": "Dolgellau Athletic",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643993": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-17T13:00:00+00:00",
+    "home": "Radnor Valley",
+    "away": "Cardiff Draconians",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643995": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-17T13:00:00+00:00",
+    "home": "FC Cwmaman",
+    "away": "Ammanford AFC",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643988": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-17T13:00:00+00:00",
+    "home": "Llanefydd",
+    "away": "Llandudno",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643979": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-17T13:00:00+00:00",
+    "home": "Caerphilly Athletic",
+    "away": "Chepstow Town",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643989": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-17T13:00:00+00:00",
+    "home": "Llantwit Fardre",
+    "away": "Baglan Dragons",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643996": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-17T13:00:00+00:00",
+    "home": "Blaen-y-Maes",
+    "away": "Ely Rangers",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643997": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-17T13:00:00+00:00",
+    "home": "Llangennech",
+    "away": "Pontardawe Town",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643998": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-17T13:00:00+00:00",
+    "home": "Llysfaen",
+    "away": "Mochdre Sports",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643999": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-17T13:00:00+00:00",
+    "home": "Pontarddulais",
+    "away": "Goytre United",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643994": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-17T16:30:00+00:00",
+    "home": "Trefelin",
+    "away": "Llantwit Major",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643986": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-17T18:45:00+00:00",
+    "home": "Flint Town United",
+    "away": "Caernarfon Town",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1643972": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-18T11:30:00+00:00",
+    "home": "Afan Lido",
+    "away": "Penybont",
+    "league": "Welsh Cup · Wales",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.42191608577749046,
+      "pDraw": 0.24630534011357524,
+      "pAway": 0.33177857410893424,
+      "pOver": 0.5543185243000931,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.5525,
+      "expA": 1.35,
+      "expTotal": 2.9025
+    }
+  },
+  "1606172": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-21T13:00:00+00:00",
+    "home": "Levski Karlovo",
+    "away": "Spartak Plovdiv",
+    "league": "Third League - Southeast · Bulgaria",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.11602661486457655,
+      "pDraw": 0.15378093205577012,
+      "pAway": 0.7301924530796533,
+      "pOver": 0.7082495374838872,
+      "scoreH": 1,
+      "scoreA": 2,
+      "expH": 1.0022886554345158,
+      "expA": 2.6995298152129803,
+      "expTotal": 3.7018184706474964
+    }
+  },
+  "1606174": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-21T13:00:00+00:00",
+    "home": "Neftochimic Burgas",
+    "away": "Sayana Haskovo",
+    "league": "Third League - Southeast · Bulgaria",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.31422989233787185,
+      "pDraw": 0.23877055002574246,
+      "pAway": 0.44699955763638566,
+      "pOver": 0.5828930014971488,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.3622453162200252,
+      "expA": 1.6669660714606684,
+      "expTotal": 3.029211387680694
+    }
+  },
+  "1606175": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-21T13:00:00+00:00",
+    "home": "Rodopa Smolyan",
+    "away": "Gigant Saedinenie",
+    "league": "Third League - Southeast · Bulgaria",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.38394609546613384,
+      "pDraw": 0.21001605807277657,
+      "pAway": 0.40603784646108954,
+      "pOver": 0.7459926155813088,
+      "scoreH": 1,
+      "scoreA": 1,
+      "expH": 1.9248026795193356,
+      "expA": 1.9817939670840843,
+      "expTotal": 3.90659664660342
+    }
+  },
+  "1606177": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-21T13:00:00+00:00",
+    "home": "Botev Plovdiv II",
+    "away": "Yambol 1915",
+    "league": "Third League - Southeast · Bulgaria",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.2059479566557777,
+      "pDraw": 0.1784672741519586,
+      "pAway": 0.6155847691922637,
+      "pOver": 0.7748859981733751,
+      "scoreH": 1,
+      "scoreA": 2,
+      "expH": 1.5014564445840526,
+      "expA": 2.6317759253037005,
+      "expTotal": 4.133232369887753
+    }
+  },
+  "1606171": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-21T13:00:00+00:00",
+    "home": "Levski Krumovgrad",
+    "away": "Lokomotiv Plovdiv II",
+    "league": "Third League - Southeast · Bulgaria",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.8718619354622527,
+      "pDraw": 0.07922499757836744,
+      "pAway": 0.04891306695937997,
+      "pOver": 0.8246278589550267,
+      "scoreH": 4,
+      "scoreA": 0,
+      "expH": 4.023355880917964,
+      "expA": 0.9984656397433684,
+      "expTotal": 5.021821520661332
+    }
+  },
+  "1606176": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-21T13:00:00+00:00",
+    "home": "Sekirovo Rakovski",
+    "away": "Zagorets",
+    "league": "Third League - Southeast · Bulgaria",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.3846373696413543,
+      "pDraw": 0.20500864081308268,
+      "pAway": 0.410353989545563,
+      "pOver": 0.7718232830283166,
+      "scoreH": 2,
+      "scoreA": 2,
+      "expH": 2.0094719265063925,
+      "expA": 2.0773255672398903,
+      "expTotal": 4.086797493746283
+    }
+  },
+  "1603404": {
+    "savedAt": "2026-10-10T08:27:54.844418+00:00",
+    "kickoffUtc": "2026-10-24T23:00:00+00:00",
+    "home": "Atlético San Luis W",
+    "away": "América W",
+    "league": "Liga MX Femenil · Mexico",
+    "model": "poisson-v1",
+    "prediction": {
+      "pHome": 0.18655333870905913,
+      "pDraw": 0.1517131833154579,
+      "pAway": 0.6617334779754829,
+      "pOver": 0.863850309043363,
+      "scoreH": 1,
+      "scoreA": 3,
+      "expH": 1.8075258653119415,
+      "expA": 3.301589243904336,
+      "expTotal": 5.109115109216278
+    }
   }
 }
